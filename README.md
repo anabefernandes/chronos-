@@ -47,7 +47,7 @@ Um sistema backend para gerenciamento de ponto, escala, tarefas e holerites de f
 1. Clonar o repositório:
 
 ```bash
-git clone <REPO_URL>
+git clone https://github.com/anabefernandes/chronos-.git
 cd chronos
 ```
 3. Criar arquivo .env com as variáveis:
@@ -70,3 +70,4 @@ ADMIN_NAME=Admin
 npm run dev
 
 ```
+
