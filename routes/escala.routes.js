@@ -13,7 +13,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  * @swagger
  * /escala/criarOuEditarEscala:
  *   post:
- *     summary: Criar ou editar escala de um funcionário (somente chefia e admin)
+ *     summary: Criar ou editar escala de um funcionário (somente chefe e admin)
  *     tags: [Escala]
  *     security:
  *       - bearerAuth: []
@@ -54,7 +54,7 @@ const { auth, requireRole } = require("../middlewares/auth");
 router.post(
   "/criarOuEditarEscala",
   auth,
-  requireRole("chefia", "admin"),
+  requireRole("chefe", "admin"),
   ctrl.criarOuEditarEscala
 );
 

@@ -58,6 +58,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  */
 router.post("/", auth, requireRole("chefe", "admin"), ctrl.criarTarefa);
 
+router.get("/", auth, requireRole("chefe", "admin"), ctrl.todasTarefas);
 /**
  * @swagger
  * /tarefas/funcionario/{funcionarioId}:

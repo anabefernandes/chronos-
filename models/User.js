@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   senha: { type: String, required: true },
   role: {
     type: String,
-    enum: ["admin", "funcionario", "chefia"],
+    enum: ["admin", "funcionario", "chefe"],
     default: "funcionario",
   },
   foto: String,

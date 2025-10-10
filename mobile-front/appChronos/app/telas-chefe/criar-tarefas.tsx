@@ -1,0 +1,421 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Image, Modal } from 'react-native';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { AuthContext } from '../../contexts/AuthContext';
+import api from '../../services/api';
+import Navbar from '../../components/public/Navbar';
+import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
+import { Funcionario } from '../../components/admin/FuncionarioCard';
+import CategoriaSelector from '../../components/admin/CategoriaSelector';
+
+export default function CriarTarefas() {
+  const { usuarios, carregarUsuarios } = useContext(AuthContext);
+  const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
+  const [modalFuncionarios, setModalFuncionarios] = useState(false);
+  const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [paciente, setPaciente] = useState('');
+  const [data, setData] = useState(new Date());
+  const [mostrarSeletorData, setMostrarSeletorData] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState([]);
+  const [prioridade, setPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
+  const IconRemover = require('../../assets/images/dashboard/icone_excluir.png');
+
+  useEffect(() => {
+    carregarUsuarios();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!funcionarioSelecionado || !titulo) {
+      Alert.alert('Atenção', 'Selecione um funcionário e insira o título!');
+      return;
+    }
+
+    try {
+      await api.post('tarefas', {
+        funcionario: funcionarioSelecionado._id,
+        titulo,
+        descricao,
+        paciente,
+        categorias: categoriasSelecionadas.map(c => ({
+          nome: c.nome,
+          cor: c.cor || '#3C188F',
+          icone: c.icone || '⭐'
+        })),
+        dataPrevista: data.toISOString(),
+        prioridade
+      });
+      Alert.alert('Sucesso', 'Tarefa criada com sucesso!');
+
+      // reset
+      setFuncionarioSelecionado(null);
+      setTitulo('');
+      setDescricao('');
+      setPaciente('');
+      setCategoriasSelecionadas([]);
+      setCategorias([]);
+    } catch (err: any) {
+      Alert.alert('Erro', err.response?.data?.msg || 'Erro ao criar tarefa');
+    }
+  };
+
+  const confirmarData = (selectedDate: Date) => {
+    setData(selectedDate);
+    setMostrarSeletorData(false);
+  };
+
+  const renderFuncionarioSelecionado = () => {
+    if (!funcionarioSelecionado) {
+      return (
+        <TouchableOpacity style={styles.selectFuncionario} onPress={() => setModalFuncionarios(true)}>
+          <Text style={styles.selectText}>Selecione o funcionário</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <View style={styles.cardFuncionario}>
+        <View style={styles.row}>
+          <Image
+            source={
+              funcionarioSelecionado.foto
+                ? { uri: funcionarioSelecionado.foto }
+                : require('../../assets/images/telas-public/sem_foto.png')
+            }
+            style={styles.avatar}
+          />
+          <View style={styles.infoFuncionario}>
+            <Text style={styles.nome}>{funcionarioSelecionado.nome}</Text>
+            <Text style={styles.funcao}>{funcionarioSelecionado.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
+          </View>
+          <TouchableOpacity onPress={() => setFuncionarioSelecionado(null)}>
+            <Image source={IconRemover} style={styles.iconRemover} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Navbar />
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Criar Tarefas</Text>
+        {renderFuncionarioSelecionado()}
+
+        {/* Título */}
+        <View style={styles.inputWrapper}>
+          <Text style={styles.inputLabel}>Título da tarefa</Text>
+          <TextInput
+            style={styles.input}
+            value={titulo}
+            onChangeText={setTitulo}
+            placeholder=" "
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        {/* Descrição */}
+        <View style={styles.inputWrapper}>
+          <Text style={styles.inputLabel}>Descrição da tarefa</Text>
+          <TextInput
+            style={[styles.input, { height: 80 }]}
+            multiline
+            value={descricao}
+            onChangeText={setDescricao}
+            placeholder=" "
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        {/* Paciente */}
+        <View style={styles.inputWrapper}>
+          <Text style={styles.inputLabel}>Paciente vinculado</Text>
+          <TextInput
+            style={styles.input}
+            value={paciente}
+            onChangeText={setPaciente}
+            placeholder=" "
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        {/* Data/Hora */}
+        <View style={styles.inputWrapper}>
+          <Text style={styles.inputLabel}>Data/Hora</Text>
+          <TouchableOpacity style={styles.inputDataHora} onPress={() => setMostrarSeletorData(true)}>
+            <FontAwesome5 name="calendar-alt" size={18} color="#555" style={{ marginRight: 6 }} />
+            <Text style={styles.inputText}>{data.toLocaleDateString('pt-BR')}</Text>
+            <View style={{ width: 20 }} />
+            <FontAwesome5 name="clock" size={18} color="#555" style={{ marginRight: 6 }} />
+            <Text style={styles.inputText}>
+              {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+          </TouchableOpacity>
+
+          <DateTimePickerModal
+            isVisible={mostrarSeletorData}
+            mode="datetime"
+            date={data}
+            onConfirm={confirmarData}
+            onCancel={() => setMostrarSeletorData(false)}
+            confirmTextIOS="Confirmar"
+            cancelTextIOS="Cancelar"
+            locale="pt-BR"
+            is24Hour={true}
+            isDarkModeEnabled={false}
+            textColor="#3C188F"
+            buttonTextColorIOS="#377ACF"
+          />
+        </View>
+
+        {/* Categorias */}
+        <View style={styles.separator} />
+        <CategoriaSelector
+          categorias={categorias}
+          categoriasSelecionadas={categoriasSelecionadas}
+          setCategorias={setCategorias}
+          setCategoriasSelecionadas={setCategoriasSelecionadas}
+        />
+        <View style={styles.separator} />
+
+        {/* Prioridade */}
+        <View style={styles.inputWrapper}>
+          <Text style={styles.sectionTitle}>Selecione uma Prioridade:</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12 }}>
+            {['baixa', 'media', 'alta'].map(p => {
+              const cores: Record<string, string> = { baixa: '#2ECC71', media: '#F1C40F', alta: '#E74C3C' };
+              const selecionado = prioridade === p;
+              return (
+                <TouchableOpacity
+                  key={p}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 20,
+                    borderRadius: 20,
+                    borderWidth: selecionado ? 2 : 1,
+                    borderColor: selecionado ? cores[p] : '#ccc',
+                    backgroundColor: selecionado ? cores[p] + '33' : '#fff',
+                    marginHorizontal: 6
+                  }}
+                  onPress={() => setPrioridade(p as 'baixa' | 'media' | 'alta')}
+                >
+                  <Text
+                    style={{
+                      color: selecionado ? cores[p] : '#555',
+                      textTransform: 'capitalize',
+                      fontWeight: selecionado ? '700' : '500'
+                    }}
+                  >
+                    {p}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.btnConfirmar} onPress={handleCreate}>
+          <Text style={styles.btnText}>Confirmar</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+      {/* Modal Funcionário */}
+      <Modal visible={modalFuncionarios} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecione o Funcionário</Text>
+              <TouchableOpacity onPress={() => setModalFuncionarios(false)} style={styles.cancelButton}>
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 400 }}>
+              {usuarios.map(u => (
+                <FuncionarioCardSelect
+                  key={u._id}
+                  funcionario={{
+                    ...u,
+                    role: u.role === ('chefia' as any) ? 'chefe' : u.role
+                  }}
+                  onSelect={f => {
+                    setFuncionarioSelecionado(f);
+                    setModalFuncionarios(false);
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#fff'
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#3C188F',
+    marginBottom: 16
+  },
+  selectFuncionario: {
+    borderWidth: 1.5,
+    borderColor: '#3C188F',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center'
+  },
+  selectText: {
+    color: '#3C188F',
+    fontFamily: 'Poppins_400Regular'
+  },
+  cardFuncionario: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    backgroundColor: '#F9FAFF'
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  inputWrapper: {
+    marginBottom: 16,
+    position: 'relative'
+  },
+  inputLabel: {
+    position: 'absolute',
+    top: -8,
+    left: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 5,
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 12,
+    color: '#1B0A43',
+    zIndex: 1
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Poppins_400Regular',
+    color: '#3C188F',
+    marginBottom: 1,
+    marginLeft: 4
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#3C188F',
+    borderRadius: 28,
+    height: 55,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    fontSize: 16,
+    backgroundColor: '#fff'
+  },
+  inputDataHora: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#3C188F',
+    borderRadius: 28,
+    height: 55,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff'
+  },
+  inputText: {
+    fontSize: 16,
+    color: '#000',
+    fontFamily: 'Poppins_400Regular'
+  },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10
+  },
+  infoFuncionario: {
+    marginLeft: 8,
+    flex: 1
+  },
+  iconRemover: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain'
+  },
+  nome: {
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#222'
+  },
+  funcao: {
+    fontFamily: 'Poppins_400Regular',
+    color: '#777'
+  },
+  btnConfirmar: {
+    backgroundColor: '#3C188F',
+    paddingVertical: 14,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginTop: 8
+  },
+  btnText: {
+    color: '#fff',
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 16
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  modalBox: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 0,
+    width: '92%',
+    overflow: 'hidden'
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f0ededff',
+    paddingVertical: 12,
+    paddingHorizontal: 16
+  },
+  modalTitle: {
+    color: '#3C188F',
+    fontSize: 18,
+    fontFamily: 'Poppins_600SemiBold'
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: '#3C188F',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12
+  },
+  cancelButtonText: {
+    color: '#3C188F',
+    fontWeight: 'bold',
+    fontFamily: 'Poppins_500Medium'
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 12,
+    borderRadius: 1
+  }
+});

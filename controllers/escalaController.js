@@ -1,7 +1,7 @@
 const Escala = require("../models/Escala");
 const User = require("../models/User");
 
-//cria/edita escala (chefia/admin)
+//cria/edita escala (chefe/admin)
 exports.criarOuEditarEscala = async (req, res, next) => {
   try {
     const { funcionario, data, horaEntrada, horaSaida } = req.body;

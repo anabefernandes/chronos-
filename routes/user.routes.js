@@ -13,7 +13,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  * @swagger
  * /user/criarUsuario:
  *   post:
- *     summary: Criar usuário (funcionário ou chefia) – apenas admin
+ *     summary: Criar usuário (funcionário ou chefe) – apenas admin
  *     tags: [User (ADMIN)]
  *     security:
  *       - bearerAuth: []
@@ -40,7 +40,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  *                 example: "123456"
  *               role:
  *                 type: string
- *                 enum: [funcionario, chefia]
+ *                 enum: [funcionario, chefe]
  *                 example: funcionario
  *     responses:
  *       201:
@@ -75,19 +75,19 @@ router.get(
 
 /**
  * @swagger
- * /user/listarChefias:
+ * /user/listarChefe:
  *   get:
- *     summary: Listar todas as chefias – apenas admin
+ *     summary: Listar todas as chefe – apenas admin
  *     tags: [User (ADMIN)]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de chefias
+ *         description: Lista de chefe
  *       403:
  *         description: Permissão negada
  */
-router.get("/listarChefias", auth, requireRole("admin"), ctrl.listarChefias);
+router.get("/listarChefe", auth, requireRole("admin"), ctrl.listarChefe);
 
 /**
  * @swagger
@@ -122,7 +122,7 @@ router.get("/listarChefias", auth, requireRole("admin"), ctrl.listarChefias);
  *                 example: "novaSenha123"
  *               role:
  *                 type: string
- *                 enum: [funcionario, chefia]
+ *                 enum: [funcionario, chefe]
  *                 example: funcionario
  *     responses:
  *       200:

@@ -79,11 +79,11 @@ exports.listarFuncionarios = async (req, res, next) => {
   }
 };
 
-//ver tds chefes
-exports.listarChefias = async (req, res, next) => {
+//ver tds chefe
+exports.listarChefe = async (req, res, next) => {
   try {
-    const chefias = await User.find({ role: "chefia" }).select("-senha");
-    res.json(chefias);
+    const chefe = await User.find({ role: "chefe" }).select("-senha");
+    res.json(chefe);
   } catch (err) {
     next(err);
   }

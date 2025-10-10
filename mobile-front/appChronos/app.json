@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "appChronos",
+    "slug": "appChronos",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "chronos",
+    "icon": "./assets/expoGo/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/expoGo/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/expoGo/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/expoGo/favicon.png"
+    },
+    "plugins": ["expo-font", "expo-router"]
+  }
+}

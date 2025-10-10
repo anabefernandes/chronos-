@@ -16,6 +16,14 @@ const TarefaSchema = new mongoose.Schema({
   funcionario: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   dataPrevista: Date,
   tempoEstimado: Number,
+  paciente: String,
+  categorias: [
+    {
+      nome: { type: String, required: true },
+      cor: { type: String, default: "#3C188F" },
+      icone: { type: String, default: "⭐" },
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 
