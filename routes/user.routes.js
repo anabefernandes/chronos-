@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const ctrl = require("../controllers/userController");
 const { auth, requireRole } = require("../middlewares/auth");
+const upload = require("../middlewares/upload");
 
 /**
  * @swagger
@@ -50,7 +51,13 @@ const { auth, requireRole } = require("../middlewares/auth");
  *       403:
  *         description: Permissão negada
  */
-router.post("/criarUsuario", auth, requireRole("admin"), ctrl.criarUsuario);
+router.post(
+  "/criarUsuario",
+  auth,
+  upload.single("foto"),
+  requireRole("admin"),
+  ctrl.criarUsuario
+);
 
 /**
  * @swagger
@@ -135,6 +142,7 @@ router.get("/listarChefe", auth, requireRole("admin"), ctrl.listarChefe);
 router.put(
   "/atualizarUsuario/:id",
   auth,
+  upload.single("foto"),
   requireRole("admin"),
   ctrl.atualizarUsuario
 );

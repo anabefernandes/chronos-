@@ -8,6 +8,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import React, { useState, useContext } from 'react';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
+import api from '../../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -26,7 +27,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post('http://192.168.10.144:5000/api/auth/login', {
+      const res = await api.post('/auth/login', {
         email,
         senha
       });

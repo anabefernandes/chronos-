@@ -7,6 +7,7 @@ const dbConnect = require("./config/db");
 const { swaggerUi, swaggerSpec } = require("./swagger");
 const User = require("./models/User");
 const bcrypt = require("bcryptjs");
+const path = require("path");
 
 const app = express();
 dbConnect();
@@ -17,6 +18,8 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.get("/", (req, res) => res.json({ ok: true }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //ROTAS
 app.use("/api/auth", require("./routes/auth.routes"));

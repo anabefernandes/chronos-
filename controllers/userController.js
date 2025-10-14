@@ -12,11 +12,15 @@ exports.criarUsuario = async (req, res, next) => {
       return res.status(400).json({ msg: "Email já cadastrado" });
 
     const hashed = await bcrypt.hash(senha, 10);
+
+    const foto = req.file ? `/uploads/${req.file.filename}` : null;
+
     const user = await User.create({
       nome,
       email: email.toLowerCase(),
       senha: hashed,
       role,
+      foto,
     });
 
     res.status(201).json({
@@ -26,6 +30,7 @@ exports.criarUsuario = async (req, res, next) => {
         nome: user.nome,
         email: user.email,
         role: user.role,
+        foto: user.foto,
       },
     });
   } catch (err) {
@@ -39,8 +44,16 @@ exports.atualizarUsuario = async (req, res, next) => {
     const { id } = req.params;
     const updates = { ...req.body };
 
+    if (req.file) {
+      updates.foto = `/uploads/${req.file.filename}`;
+    }
+
     if (updates.senha) {
-      updates.senha = await bcrypt.hash(updates.senha, 10);
+      if (updates.senha.trim() !== "") {
+        updates.senha = await bcrypt.hash(updates.senha, 10);
+      } else {
+        delete updates.senha;
+      }
     }
 
     const user = await User.findByIdAndUpdate(id, updates, {

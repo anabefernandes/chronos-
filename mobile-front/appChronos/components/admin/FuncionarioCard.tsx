@@ -39,20 +39,30 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
     Folga: '#B9D7F0'
   };
 
-  const getUserImage = () => {
-    const foto = funcionario.foto;
+  // Função para pegar a URL da imagem
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace("/api", "");
 
-    if (foto) {
-      if (foto.startsWith('http') || foto.startsWith('https') || foto.startsWith('file://')) {
-        return { uri: foto };
-      }
-    }
+const getUserImage = () => {
+  if (!funcionario.foto) return require("../../assets/images/telas-public/sem_foto.png");
 
-    return require('../../assets/images/telas-public/sem_foto.png');
-  };
+  if (funcionario.foto.startsWith("http")) return { uri: funcionario.foto };
+
+  // Se vier do backend como "/uploads/arquivo.png", converta em URL completa
+  if (funcionario.foto.startsWith("/uploads")) {
+    if (!baseUrl) return require("../../assets/images/telas-public/sem_foto.png");
+    return { uri: `${baseUrl}${funcionario.foto}` };
+  }
+
+  return require("../../assets/images/telas-public/sem_foto.png");
+};
+
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={toggleExpand} style={[styles.card, expanded && styles.cardExpanded]}>
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={toggleExpand}
+      style={[styles.card, expanded && styles.cardExpanded]}
+    >
       {/* Cabeçalho */}
       <View style={styles.header}>
         <Image source={getUserImage()} style={styles.foto} />
@@ -65,7 +75,7 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
           {onEdit && (
             <TouchableOpacity onPress={() => onEdit(funcionario)}>
               <Image
-                source={require('../../assets/images/dashboard/icone_editar.png')} 
+                source={require('../../assets/images/dashboard/icone_editar.png')}
                 style={styles.iconImage}
               />
             </TouchableOpacity>
@@ -73,7 +83,7 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
           {onDelete && (
             <TouchableOpacity onPress={() => onDelete(funcionario._id)}>
               <Image
-                source={require('../../assets/images/dashboard/icone_excluir.png')} 
+                source={require('../../assets/images/dashboard/icone_excluir.png')}
                 style={styles.iconImage}
               />
             </TouchableOpacity>
@@ -85,6 +95,7 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
         </View>
       </View>
 
+      {/* Conteúdo expandido */}
       {expanded && (
         <View style={styles.expandedContainer}>
           <View style={styles.row}>
@@ -121,12 +132,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1.5,
     borderColor: '#504f5322'
-  },
-  iconImage: {
-    width: 22,
-    height: 22,
-    resizeMode: 'contain',
-    marginLeft: 8
   },
   cardExpanded: {
     borderWidth: 1.5,
@@ -194,7 +199,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     gap: 8
   },
-  iconText: {
-    fontSize: 18
+  iconImage: {
+    width: 22,
+    height: 22,
+    resizeMode: 'contain',
+    marginLeft: 8
   }
 });

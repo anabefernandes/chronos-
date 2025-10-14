@@ -83,19 +83,24 @@ export default function GerenciarFuncionarios() {
               setEditingFuncionario(null);
             }}
             onAdd={async dados => {
-              if (editingFuncionario) {
-                // Atualiza
-                await atualizarUsuario(editingFuncionario._id, dados);
-                Alert.alert('Sucesso', 'Usuário atualizado!');
-              } else {
-                // Cria
-                await criarUsuario(dados);
-                Alert.alert('Sucesso', 'Usuário criado!');
-              }
-              setShowForm(false);
-              setEditingFuncionario(null);
-              carregarUsuarios();
-            }}
+  try {
+    if (editingFuncionario) {
+      // Atualiza
+      await atualizarUsuario(editingFuncionario._id, dados);
+      Alert.alert('Sucesso', 'Usuário atualizado!');
+    } else {
+      // Cria
+      await criarUsuario(dados as {nome: string; email: string; senha: string; role: 'funcionario' | 'chefe'; foto?: string});
+      Alert.alert('Sucesso', 'Usuário criado!');
+    }
+
+    setShowForm(false);
+    setEditingFuncionario(null);
+    await carregarUsuarios(); // garante que os usuários criados apareçam
+  } catch (err: any) {
+    Alert.alert('Erro', err?.response?.data?.msg || err.message || 'Erro ao salvar usuário');
+  }
+}}
             funcionario={editingFuncionario}
           />
         )}

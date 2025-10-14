@@ -3,10 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Platform, A
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { Funcionario } from './FuncionarioCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface FormProps {
   onClose: () => void;
-  onAdd: (dados: { nome: string; email: string; senha: string; role: 'funcionario' | 'chefe'; foto?: string }) => void;
+  onAdd: (dados: { nome: string; email: string; senha?: string; role: 'funcionario' | 'chefe'; foto?: string }) => void;
   funcionario?: Funcionario;
 }
 
@@ -35,19 +36,78 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+       mediaTypes: ['images'],
       quality: 0.8
     });
+
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setFoto(result.assets[0].uri);
     }
   };
 
-  const handleSubmit = () => {
-    if (!nome || !email) return;
-    onAdd({ nome, email, senha, role, foto });
-  };
+  const handleSubmit = async () => {
+  if (!nome || !email) return;
+
+  const formData = new FormData();
+  formData.append('nome', nome);
+  formData.append('email', email);
+  formData.append('role', role);
+  if (senha.trim()) formData.append('senha', senha);
+
+  if (foto && !foto.startsWith('http')) {
+  const uri = foto; // ImagePicker já retorna 'file://...'
+const filename = uri.split('/').pop() || `foto-${Date.now()}.jpg`;
+const match = /\.(\w+)$/.exec(filename);
+let type = 'image/jpeg';
+
+if (match) {
+  const ext = match[1].toLowerCase();
+  if (ext === 'png') type = 'image/png';
+  else if (ext === 'heic') type = 'image/heic';
+  else if (ext === 'jpg' || ext === 'jpeg') type = 'image/jpeg';
+}
+
+formData.append('foto', {
+  uri,
+  name: filename,
+  type
+} as any);
+}
+
+
+  const url = funcionario
+    ? `${process.env.EXPO_PUBLIC_API_URL}/user/atualizarUsuario/${funcionario._id}`
+    : `${process.env.EXPO_PUBLIC_API_URL}/user/criarUsuario`;
+
+  const method = funcionario ? 'PUT' : 'POST';
+
+  const token = await AsyncStorage.getItem('token');
+  const res = await fetch(url, {
+  method,
+  body: formData,
+  headers: {
+    'Authorization': `Bearer ${token}`
+  },
+});
+
+
+  const data = await res.json();
+  console.log(data);
+
+  if (data.user) {
+    const usuarioCompleto = {
+      nome: data.user.nome,
+      email: data.user.email,
+      role: data.user.role,
+      foto: data.user.foto,
+      senha: senha
+    };
+    onAdd(usuarioCompleto);
+    onClose();
+  }
+};
+
 
   return (
     <Modal transparent animationType="none">
@@ -66,9 +126,16 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
           {/* Foto */}
           <View style={styles.imageContainer}>
             <Image
-              source={foto ? { uri: foto } : require('../../assets/images/telas-public/sem_foto.png')}
-              style={styles.foto}
-            />
+  source={
+    foto
+      ? { uri: foto.startsWith('http') || foto.startsWith('https') || foto.startsWith('/') 
+          ? `${process.env.EXPO_PUBLIC_API_URL}${foto}` 
+          : foto }
+      : require('../../assets/images/telas-public/sem_foto.png')
+  }
+  style={styles.foto}
+/>
+
             <TouchableOpacity style={styles.imageButton} onPress={selecionarImagem}>
               <Text style={styles.imageButtonText}>Selecionar imagem</Text>
             </TouchableOpacity>
