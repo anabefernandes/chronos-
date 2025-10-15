@@ -1,11 +1,13 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-const baseURL = 'http://192.168.10.144:5000/api';
+const baseURL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_API_URL;
 
+console.log('Base URL da API:', baseURL);
 const api = axios.create({
   baseURL,
-  timeout: 5000
+  timeout: 5000,
 });
 
 // Interceptor para adicionar o token em todas as requisições
