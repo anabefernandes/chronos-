@@ -1,4 +1,3 @@
-
 # Chronos – Sistema de Controle de Ponto
 
 Um sistema backend para gerenciamento de ponto, escala, tarefas e holerites de funcionários, com autenticação, permissões por papel (admin, chefia, funcionário) e cálculos automáticos de horas trabalhadas.
