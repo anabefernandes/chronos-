@@ -8,6 +8,7 @@ import Navbar from '../../components/public/Navbar';
 import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
 import { Funcionario } from '../../components/admin/FuncionarioCard';
 import CategoriaSelector from '../../components/admin/CategoriaSelector';
+import PacienteModal from '../../components/admin/PacienteModal';
 
 export default function CriarTarefas() {
   const { usuarios, carregarUsuarios } = useContext(AuthContext);
@@ -15,7 +16,6 @@ export default function CriarTarefas() {
   const [modalFuncionarios, setModalFuncionarios] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [paciente, setPaciente] = useState('');
   const [data, setData] = useState(new Date());
   const [mostrarSeletorData, setMostrarSeletorData] = useState(false);
   const [categorias, setCategorias] = useState<{ nome: string; cor?: string; icone?: string }[]>([]);
@@ -23,7 +23,36 @@ export default function CriarTarefas() {
     { nome: string; cor?: string; icone?: string }[]
   >([]);
   const [prioridade, setPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '');
+
+  // Estados do paciente
+  const [modalPaciente, setModalPaciente] = useState(false);
+  const [pacienteSelecionado, setPacienteSelecionado] = useState({
+    nome: 'Nenhum',
+    temperatura: '',
+    sintomas: ''
+  });
+
   const IconRemover = require('../../assets/images/dashboard/icone_excluir.png');
+
+  const getUserImage = (funcionario: Funcionario) => {
+    if (!funcionario.foto) return require('../../assets/images/telas-public/sem_foto.png');
+
+    if (
+      funcionario.foto.startsWith('http') ||
+      funcionario.foto.startsWith('https') ||
+      funcionario.foto.startsWith('file://')
+    ) {
+      return { uri: funcionario.foto };
+    }
+
+    if (funcionario.foto.startsWith('/uploads')) {
+      if (!baseUrl) return require('../../assets/images/telas-public/sem_foto.png');
+      return { uri: `${baseUrl}${funcionario.foto}` };
+    }
+
+    return require('../../assets/images/telas-public/sem_foto.png');
+  };
 
   useEffect(() => {
     carregarUsuarios();
@@ -40,7 +69,7 @@ export default function CriarTarefas() {
         funcionario: funcionarioSelecionado._id,
         titulo,
         descricao,
-        paciente,
+        paciente: pacienteSelecionado.nome !== 'Nenhum' ? pacienteSelecionado : null,
         categorias: categoriasSelecionadas.map(c => ({
           nome: c.nome,
           cor: c.cor || '#3C188F',
@@ -55,9 +84,9 @@ export default function CriarTarefas() {
       setFuncionarioSelecionado(null);
       setTitulo('');
       setDescricao('');
-      setPaciente('');
       setCategoriasSelecionadas([]);
       setCategorias([]);
+      setPacienteSelecionado({ nome: 'Nenhum', temperatura: '', sintomas: '' });
     } catch (err: any) {
       Alert.alert('Erro', err.response?.data?.msg || 'Erro ao criar tarefa');
     }
@@ -80,14 +109,7 @@ export default function CriarTarefas() {
     return (
       <View style={styles.cardFuncionario}>
         <View style={styles.row}>
-          <Image
-            source={
-              funcionarioSelecionado.foto
-                ? { uri: funcionarioSelecionado.foto }
-                : require('../../assets/images/telas-public/sem_foto.png')
-            }
-            style={styles.avatar}
-          />
+          <Image source={getUserImage(funcionarioSelecionado)} style={styles.avatar} />
           <View style={styles.infoFuncionario}>
             <Text style={styles.nome}>{funcionarioSelecionado.nome}</Text>
             <Text style={styles.funcao}>{funcionarioSelecionado.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
@@ -132,16 +154,18 @@ export default function CriarTarefas() {
           />
         </View>
 
-        {/* Paciente */}
+        {/* Paciente vinculado */}
         <View style={styles.inputWrapper}>
           <Text style={styles.inputLabel}>Paciente vinculado</Text>
-          <TextInput
-            style={styles.input}
-            value={paciente}
-            onChangeText={setPaciente}
-            placeholder=" "
-            placeholderTextColor="#999"
-          />
+          <TouchableOpacity style={styles.input} onPress={() => setModalPaciente(true)}>
+            <Text style={{ color: pacienteSelecionado.nome === 'Nenhum' ? '#999' : '#000' }}>
+              {pacienteSelecionado.nome !== 'Nenhum'
+                ? `${pacienteSelecionado.nome}${
+                    pacienteSelecionado.temperatura ? ' - ' + pacienteSelecionado.temperatura + '°C' : ''
+                  }`
+                : 'Nenhum'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Data/Hora */}
@@ -181,7 +205,6 @@ export default function CriarTarefas() {
           categoriasSelecionadas={categoriasSelecionadas}
           setCategoriasSelecionadas={setCategoriasSelecionadas}
         />
-
         <View style={styles.separator} />
 
         {/* Prioridade */}
@@ -236,7 +259,7 @@ export default function CriarTarefas() {
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ maxHeight: 400 }}>
+            <ScrollView style={{ maxHeight: 400, paddingHorizontal:12 }}>
               {usuarios.map(u => (
                 <FuncionarioCardSelect
                   key={u._id}
@@ -254,6 +277,16 @@ export default function CriarTarefas() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal Paciente */}
+      <PacienteModal
+        visible={modalPaciente}
+        onClose={() => setModalPaciente(false)}
+        pacienteInicial={pacienteSelecionado.nome !== 'Nenhum' ? pacienteSelecionado.nome : ''}
+        onConfirm={(nome, temperatura, sintomas) => {
+          setPacienteSelecionado({ nome, temperatura, sintomas });
+        }}
+      />
     </View>
   );
 }
@@ -270,6 +303,14 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   selectFuncionario: {
+    borderWidth: 1.5,
+    borderColor: '#3C188F',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center'
+  },
+  selectPaciente: {
     borderWidth: 1.5,
     borderColor: '#3C188F',
     borderRadius: 12,

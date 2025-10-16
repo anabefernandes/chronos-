@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity, Animated, TextInput, Image } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Animated,
+  TextInput,
+  Image
+} from 'react-native';
 import TarefaCardAdmin from './TarefaCardAdmin';
 import { AuthContext } from '../../contexts/AuthContext';
 
@@ -44,12 +54,8 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
   const [showFiltroModal, setShowFiltroModal] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Filtra tarefas
   const tarefasFiltradas = tarefas
-    .filter(t => {
-      if (filtro === 'todas') return true; // mostra todas
-      return t.funcionario._id === usuarioLogadoId; // minhas tarefas
-    })
+    .filter(t => filtro === 'todas' || t.funcionario._id === usuarioLogadoId)
     .filter(t => t.funcionario.nome.toLowerCase().includes(search.toLowerCase()));
 
   const tarefasConcluidas = tarefasFiltradas.filter(t => t.concluida);
@@ -119,7 +125,8 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
       </View>
 
       <View style={styles.filterSearchRow}>
-        <View style={[styles.searchContainer, { flex: 0.58 }]}>
+        {/* Campo de pesquisa */}
+        <View style={styles.searchWrapper}>
           <Image source={require('../../assets/images/telas-admin/icone_lupa.png')} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
@@ -130,30 +137,25 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
           />
         </View>
 
+        {/* Campo de filtro */}
         <TouchableOpacity
-          style={[styles.inputWrapper, { flex: 0.4, marginLeft: 8 }]}
+          style={styles.filterWrapper}
           onPress={() => setShowFiltroModal(prev => !prev)}
           activeOpacity={0.8}
         >
           <Text style={styles.inputLabel}>Filtrar</Text>
-          <Text style={styles.input}>{filtro === 'todas' ? 'Todas as tarefas' : 'Minhas tarefas'}</Text>
+          <Text style={styles.inputFiltro}>{filtro === 'todas' ? 'Todas as tarefas' : 'Minhas tarefas'}</Text>
         </TouchableOpacity>
       </View>
-
       {showFiltroModal && (
-        <View
-          style={[
-            styles.modalContainer,
-            { left: larguraTela * 0.58 + 8, width: larguraTela * 0.4, position: 'absolute', top: 105 }
-          ]}
-        >
+        <View style={styles.modalFiltro}>
           {opcoesFiltro.map(opt => (
             <TouchableOpacity
               key={opt.value}
               style={styles.modalOption}
               onPress={() => {
-                setFiltro(opt.value as 'todas' | 'minhas');
-                setShowFiltroModal(false);
+                setFiltro(opt.value as 'todas' | 'minhas'); // atualiza filtro
+                setShowFiltroModal(false); // fecha o modal
               }}
             >
               <Text style={styles.modalOptionText}>{opt.label}</Text>
@@ -180,28 +182,28 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
 export default TarefasPrioridadeAdmin;
 
 const styles = StyleSheet.create({
-  headerPrioridade: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 8 
+  headerPrioridade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8
   },
-  bolaPrioridade: { 
-    width: 12, 
-    height: 12, 
-    borderRadius: 6, 
-    marginRight: 8 
+  bolaPrioridade: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8
   },
-  titlePrioridade: { 
-    fontSize: 16, 
-    fontWeight: '600', 
-    color: '#3C188F', 
-    flex: 1, 
-    marginBottom: 20 
+  titlePrioridade: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3C188F',
+    flex: 1,
+    marginBottom: 20
   },
-  expandText: { 
-    color: '#3C188F', 
-    fontWeight: '500', 
-    marginTop: 4 
+  expandText: {
+    color: '#3C188F',
+    fontWeight: '500',
+    marginTop: 4
   },
   progressoContainer: {
     height: 20,
@@ -212,38 +214,101 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     backgroundColor: '#A4A4A4'
   },
-  progressoFill: { 
-    height: '100%', 
-    backgroundColor: '#377ACF' 
+  progressoFill: {
+    height: '100%',
+    backgroundColor: '#377ACF'
   },
-  progressoText: { 
-    position: 'absolute', 
-    width: '100%', 
-    textAlign: 'center', 
-    fontWeight: '600', 
-    color: '#fff' 
+  progressoText: {
+    position: 'absolute',
+    width: '100%',
+    textAlign: 'center',
+    fontWeight: '600',
+    color: '#fff'
   },
-  progressoTitulo: { 
-    fontSize: 18, 
-    fontWeight: '600', 
-    color: '#377ACF', 
-    marginBottom: 4 
+  progressoTitulo: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#377ACF',
+    marginBottom: 10,
+    marginTop: 20
   },
-  progressoContador: { 
-    textAlign: 'center', 
-    marginBottom: 10, 
-    fontSize: 14, 
-    color: '#555', 
-    fontWeight: '500' 
+  progressoContador: {
+    textAlign: 'center',
+    marginBottom: 1,
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500'
   },
-  filterSearchRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 16 
+  filterSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20, // espaço maior após a linha
+    marginTop: 10 // espaço antes da linha
   },
-  inputWrapper: { 
-    marginBottom: 0, 
-    position: 'relative' 
+  searchWrapper: {
+    flex: 0.58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3C188F',
+    borderRadius: 28,
+    height: 45,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    marginRight: 6,
+    marginLeft: 6
+  },
+  searchIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 6
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#000'
+  },
+  filterWrapper: {
+    flex: 0.4,
+    height: 45,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#3C188F',
+    borderRadius: 28,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff'
+  },
+  inputFiltro: {
+    fontSize: 14,
+    color: '#000',
+    textAlign: 'center', // centraliza horizontalmente
+    lineHeight: 45 // centraliza verticalmente
+  },
+  modalFiltro: {
+    position: 'absolute',
+    top: 270,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+    width: '40%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 1000
+  },
+  modalOption: {
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE'
+  },
+  modalOptionText: {
+    fontSize: 14,
+    color: '#1B0A43',
+    textAlign: 'center'
   },
   inputLabel: {
     position: 'absolute',
@@ -256,49 +321,11 @@ const styles = StyleSheet.create({
     color: '#1B0A43',
     zIndex: 1
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#3C188F',
-    borderRadius: 28,
-    height: 45,
-    paddingHorizontal: 16,
-    fontSize: 14,
-    color: '#000',
-    justifyContent: 'center'
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3C188F',
-    borderRadius: 28,
-    height: 45,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff'
-  },
-  searchIcon: { 
-    width: 18, 
-    height: 18, 
-    marginRight: 6 
-  },
-  searchInput: { 
-    flex: 1, 
-    fontSize: 14, 
-    color: '#000' 
-  },
-  modalContainer: { 
-    backgroundColor: '#fff', 
-    borderRadius: 12, 
-    paddingVertical: 8, 
-    elevation: 5 
-  },
-  modalOption: { 
-    paddingVertical: 10, 
-    paddingHorizontal: 16 
-  },
-  modalOptionText: { 
-    fontSize: 14, 
-    color: '#1B0A43' 
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 8,
+    elevation: 5
   },
   overlay: {
     position: 'absolute',
@@ -309,9 +336,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  overlayTexto: { 
-    fontSize: 16, 
-    color: '#555', 
-    fontWeight: '500' 
+  overlayTexto: {
+    fontSize: 16,
+    color: '#555',
+    fontWeight: '500'
   }
 });

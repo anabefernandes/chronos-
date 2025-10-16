@@ -14,11 +14,18 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
     Folga: '#B9D7F0'
   };
 
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '');
+
   const getUserImage = () => {
-    const foto = funcionario.foto;
-    if (foto && (foto.startsWith('http') || foto.startsWith('https') || foto.startsWith('file://'))) {
-      return { uri: foto };
+    if (!funcionario.foto) return require('../../assets/images/telas-public/sem_foto.png');
+
+    if (funcionario.foto.startsWith('http')) return { uri: funcionario.foto };
+
+    if (funcionario.foto.startsWith('/uploads')) {
+      if (!baseUrl) return require('../../assets/images/telas-public/sem_foto.png');
+      return { uri: `${baseUrl}${funcionario.foto}` };
     }
+
     return require('../../assets/images/telas-public/sem_foto.png');
   };
 
