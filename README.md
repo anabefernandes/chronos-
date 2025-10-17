@@ -41,6 +41,20 @@ Um sistema backend para gerenciamento de ponto, escala, tarefas e holerites de f
 
 - Criação, atualização e exclusão de tarefas (chefia/admin)
 - Consulta de tarefas por funcionário
+
+## Machine Learning
+
+- Para êxito do teste, cada integrante deve criar um ambiente vitual dentro do projeto que está em sua máquina. Segue o passo a passo:
+- 1. Entre na pasta do Machine Learning com "cd backend/ml
+- 2. Crie o ambiente virtual "python -m venv ml_env"
+- 3. Instale as dependências "pip install pandas scikit-learn numpy joblib"
+- 4. Se necessário instale também o dotenv "npm install dotenv"
+- 5. Por fim, ainda no ambiente virtual (ml_env), faça o teste dos arquivos .py 
+"py treinar_modelo.py" e "py app.py".
+- 6. Para teste, a URL do ML é "http://localhost:5000/api/ml/predict", 
+e no body em JSON preencha com os dados de sua preferência
+{ "idade": 25, "temperatura": 37.8, "saturacao": 98, "queixa": "Dor de garganta e tosse leve"} 
+
 ## Configuração
 
 1. Clonar o repositório:

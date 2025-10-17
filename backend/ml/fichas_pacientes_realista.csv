@@ -1,0 +1,1001 @@
+id_paciente,idade,sexo,queixa,temperatura,pressao,saturacao,prioridade
+1,19,F,Coceira e alergia na pele,37.7,9/10,86,ALTA
+2,81,F,Falta de ar e chiado no peito,39.7,17/10,98,ALTA
+3,54,M,Pressão alta e tontura,36.3,13/9,95,BAIXA
+4,33,M,Tosse seca persistente,37.9,13/6,100,BAIXA
+5,46,M,Cansaço extremo e fraqueza,37.5,11/8,95,BAIXA
+6,76,M,Falta de ar e chiado no peito,37.4,12/9,91,ALTA
+7,41,F,Manchas vermelhas pelo corpo,39.1,9/11,88,ALTA
+8,55,M,Dor abdominal intensa,38.8,11/10,90,ALTA
+9,3,M,Febre alta e dor no corpo,38.4,9/10,85,ALTA
+10,21,M,Cansaço extremo e fraqueza,36.2,14/10,92,BAIXA
+11,81,F,Febre alta e dor no corpo,37.7,10/10,88,ALTA
+12,3,M,Dor de cabeça forte e enjoo,38.8,17/9,91,ALTA
+13,26,F,Dor de cabeça forte e enjoo,37.6,11/9,96,BAIXA
+14,58,F,Dor abdominal intensa,38.7,17/12,97,MÉDIA
+15,55,F,Febre alta e dor no corpo,36.0,17/6,92,BAIXA
+16,20,M,Inchaço nas pernas,38.3,18/7,86,ALTA
+17,1,F,Tosse seca persistente,38.2,15/12,95,MÉDIA
+18,36,M,Tosse seca persistente,38.6,11/11,87,ALTA
+19,86,F,Dor abdominal intensa,39.9,9/10,99,ALTA
+20,42,M,Dor no peito e formigamento no braço,39.7,18/11,98,ALTA
+21,49,M,Manchas vermelhas pelo corpo,37.0,13/6,99,BAIXA
+22,31,F,Manchas vermelhas pelo corpo,39.3,15/6,89,ALTA
+23,52,F,Cansaço extremo e fraqueza,36.3,17/11,98,BAIXA
+24,63,F,Dor de cabeça forte e enjoo,37.1,11/6,94,BAIXA
+25,29,F,Tosse seca persistente,36.7,16/8,98,BAIXA
+26,25,M,Sangramento nasal frequente,38.6,9/11,99,MÉDIA
+27,63,M,Sangramento nasal frequente,36.1,16/8,87,ALTA
+28,82,M,Pressão alta e tontura,38.6,14/8,95,MÉDIA
+29,43,M,Dor de cabeça forte e enjoo,36.7,12/10,91,ALTA
+30,19,M,Tosse seca persistente,36.1,14/6,89,ALTA
+31,41,F,Dor no peito e formigamento no braço,38.9,13/7,87,ALTA
+32,1,M,Dor no peito e formigamento no braço,39.2,13/11,96,ALTA
+33,29,F,Coceira e alergia na pele,39.5,17/7,85,ALTA
+34,18,M,Tosse seca persistente,36.1,9/12,85,ALTA
+35,46,M,Cansaço extremo e fraqueza,39.3,11/6,98,ALTA
+36,62,M,Falta de ar e chiado no peito,38.7,10/8,100,MÉDIA
+37,5,F,Dor no peito e formigamento no braço,37.6,17/7,100,BAIXA
+38,20,F,Perda de apetite e emagrecimento rápido,37.6,13/10,96,BAIXA
+39,19,F,Sangramento nasal frequente,36.5,14/9,91,ALTA
+40,21,M,Perda de apetite e emagrecimento rápido,36.6,11/10,97,BAIXA
+41,35,F,Perda de apetite e emagrecimento rápido,39.8,17/8,99,ALTA
+42,26,F,Pressão alta e tontura,36.0,11/12,98,BAIXA
+43,23,F,Dificuldade para urinar,37.5,18/9,98,BAIXA
+44,9,F,Manchas vermelhas pelo corpo,38.1,12/12,93,MÉDIA
+45,68,F,Cansaço extremo e fraqueza,38.4,13/9,99,MÉDIA
+46,67,M,Falta de ar e chiado no peito,37.7,16/8,90,ALTA
+47,69,F,Dor abdominal intensa,37.7,12/10,92,BAIXA
+48,31,M,Diarreia e vômito,37.2,10/10,95,BAIXA
+49,11,M,Perda de apetite e emagrecimento rápido,36.3,15/12,89,ALTA
+50,79,F,Tosse seca persistente,37.0,14/11,96,BAIXA
+51,5,M,Dor no peito e formigamento no braço,36.7,16/9,99,BAIXA
+52,66,M,Dor de cabeça forte e enjoo,38.9,13/11,99,MÉDIA
+53,77,M,Perda de apetite e emagrecimento rápido,38.3,18/9,100,MÉDIA
+54,10,F,Dor no peito e formigamento no braço,38.0,17/8,98,MÉDIA
+55,46,F,Falta de ar e chiado no peito,36.4,15/7,85,ALTA
+56,26,F,Cansaço extremo e fraqueza,37.1,18/6,93,BAIXA
+57,17,F,Coceira e alergia na pele,39.4,13/7,97,ALTA
+58,52,F,Sangramento nasal frequente,38.9,18/12,99,MÉDIA
+59,14,M,Tosse seca persistente,38.8,18/6,99,MÉDIA
+60,21,F,Pressão alta e tontura,37.6,16/6,91,ALTA
+61,20,F,Diarreia e vômito,36.9,15/9,100,BAIXA
+62,44,M,Pressão alta e tontura,38.0,11/9,92,MÉDIA
+63,89,F,Falta de ar e chiado no peito,37.4,12/7,99,BAIXA
+64,68,F,Falta de ar e chiado no peito,36.8,16/10,96,BAIXA
+65,44,F,Febre alta e dor no corpo,36.8,13/6,98,BAIXA
+66,15,M,Pressão alta e tontura,37.9,12/11,87,ALTA
+67,30,M,Febre alta e dor no corpo,36.2,12/12,96,BAIXA
+68,29,M,Manchas vermelhas pelo corpo,39.3,16/11,99,ALTA
+69,55,M,Febre alta e dor no corpo,38.6,16/8,96,MÉDIA
+70,44,F,Diarreia e vômito,36.4,17/8,89,ALTA
+71,43,F,Febre alta e dor no corpo,37.5,13/12,85,ALTA
+72,7,M,Dor de cabeça forte e enjoo,39.3,15/6,85,ALTA
+73,45,F,Cansaço extremo e fraqueza,38.6,15/6,94,MÉDIA
+74,61,F,Inchaço nas pernas,38.0,14/7,89,ALTA
+75,39,M,Falta de ar e chiado no peito,39.8,18/6,90,ALTA
+76,74,F,Dor abdominal intensa,39.1,10/9,85,ALTA
+77,56,F,Pressão alta e tontura,38.5,17/12,98,MÉDIA
+78,66,F,Inchaço nas pernas,36.0,11/9,100,BAIXA
+79,19,F,Inchaço nas pernas,38.9,18/10,89,ALTA
+80,44,F,Diarreia e vômito,39.0,10/7,90,ALTA
+81,74,F,Sangramento nasal frequente,39.5,17/7,100,ALTA
+82,53,M,Dificuldade para urinar,38.0,16/10,86,ALTA
+83,68,M,Dor no peito e formigamento no braço,36.4,15/6,96,BAIXA
+84,69,M,Cansaço extremo e fraqueza,37.1,16/9,91,ALTA
+85,53,F,Tosse seca persistente,36.5,17/11,92,BAIXA
+86,51,M,Febre alta e dor no corpo,36.9,17/10,85,ALTA
+87,36,M,Dor no peito e formigamento no braço,37.4,16/6,97,BAIXA
+88,81,F,Perda de apetite e emagrecimento rápido,36.3,12/12,87,ALTA
+89,41,M,Coceira e alergia na pele,37.3,17/11,93,BAIXA
+90,40,M,Perda de apetite e emagrecimento rápido,38.5,13/6,90,ALTA
+91,37,M,Dor abdominal intensa,38.3,9/6,87,ALTA
+92,14,F,Inchaço nas pernas,36.2,9/9,85,ALTA
+93,32,F,Falta de ar e chiado no peito,36.6,17/8,94,BAIXA
+94,45,F,Dor no peito e formigamento no braço,36.3,11/10,87,ALTA
+95,27,M,Coceira e alergia na pele,39.2,16/12,90,ALTA
+96,1,F,Dor no peito e formigamento no braço,38.3,13/12,88,ALTA
+97,71,M,Cansaço extremo e fraqueza,36.5,9/12,90,ALTA
+98,27,F,Inchaço nas pernas,36.3,11/8,90,ALTA
+99,81,M,Inchaço nas pernas,38.6,14/6,87,ALTA
+100,2,F,Inchaço nas pernas,37.6,10/9,86,ALTA
+101,55,M,Inchaço nas pernas,38.5,13/10,86,ALTA
+102,32,M,Febre alta e dor no corpo,37.7,14/9,97,BAIXA
+103,51,F,Tosse seca persistente,39.1,16/8,97,ALTA
+104,17,F,Dor abdominal intensa,38.6,16/12,93,MÉDIA
+105,35,M,Tosse seca persistente,38.6,18/12,100,MÉDIA
+106,57,M,Cansaço extremo e fraqueza,37.4,15/11,93,BAIXA
+107,24,M,Dor abdominal intensa,38.9,17/12,99,MÉDIA
+108,62,F,Perda de apetite e emagrecimento rápido,39.2,11/9,95,ALTA
+109,53,M,Inchaço nas pernas,36.3,11/9,96,BAIXA
+110,19,F,Coceira e alergia na pele,37.9,14/10,97,BAIXA
+111,50,M,Diarreia e vômito,38.1,18/6,94,MÉDIA
+112,48,F,Febre alta e dor no corpo,37.8,14/8,85,ALTA
+113,28,M,Diarreia e vômito,37.6,12/9,86,ALTA
+114,21,F,Dificuldade para urinar,38.2,9/8,91,ALTA
+115,17,M,Tosse seca persistente,36.1,16/11,88,ALTA
+116,31,F,Tosse seca persistente,39.3,11/6,88,ALTA
+117,54,M,Perda de apetite e emagrecimento rápido,37.6,12/7,85,ALTA
+118,26,F,Pressão alta e tontura,37.5,18/11,87,ALTA
+119,42,M,Falta de ar e chiado no peito,38.6,14/8,89,ALTA
+120,33,F,Dor abdominal intensa,39.2,12/8,99,ALTA
+121,83,M,Tosse seca persistente,39.6,11/7,85,ALTA
+122,58,M,Febre alta e dor no corpo,36.7,13/10,89,ALTA
+123,27,F,Dor de cabeça forte e enjoo,37.0,14/6,86,ALTA
+124,41,M,Pressão alta e tontura,37.9,15/11,90,ALTA
+125,77,M,Dor no peito e formigamento no braço,39.3,15/12,90,ALTA
+126,76,M,Febre alta e dor no corpo,36.3,18/11,99,BAIXA
+127,14,F,Dor no peito e formigamento no braço,38.1,11/12,86,ALTA
+128,10,F,Falta de ar e chiado no peito,36.7,13/11,88,ALTA
+129,88,M,Inchaço nas pernas,39.2,18/9,96,ALTA
+130,17,F,Tosse seca persistente,36.7,9/12,87,ALTA
+131,10,F,Coceira e alergia na pele,39.3,12/6,92,ALTA
+132,56,F,Tosse seca persistente,39.2,11/6,96,ALTA
+133,16,M,Inchaço nas pernas,36.7,18/6,85,ALTA
+134,78,M,Coceira e alergia na pele,37.1,18/11,86,ALTA
+135,43,F,Dor abdominal intensa,39.4,12/7,91,ALTA
+136,18,F,Perda de apetite e emagrecimento rápido,38.2,15/12,91,ALTA
+137,16,F,Sangramento nasal frequente,36.4,9/7,88,ALTA
+138,46,M,Sangramento nasal frequente,36.9,17/11,100,BAIXA
+139,1,F,Inchaço nas pernas,38.3,18/11,100,MÉDIA
+140,62,M,Dificuldade para urinar,39.8,16/8,93,ALTA
+141,64,F,Falta de ar e chiado no peito,37.8,13/9,87,ALTA
+142,51,F,Dor de cabeça forte e enjoo,37.7,9/7,97,BAIXA
+143,77,M,Diarreia e vômito,36.6,13/6,93,BAIXA
+144,30,M,Dificuldade para urinar,38.5,13/6,98,MÉDIA
+145,1,M,Perda de apetite e emagrecimento rápido,37.3,12/12,89,ALTA
+146,55,M,Tosse seca persistente,36.7,18/12,95,BAIXA
+147,79,F,Inchaço nas pernas,39.8,10/7,90,ALTA
+148,17,F,Dificuldade para urinar,38.3,14/12,94,MÉDIA
+149,70,M,Sangramento nasal frequente,38.6,12/8,95,MÉDIA
+150,36,M,Falta de ar e chiado no peito,36.7,9/12,94,BAIXA
+151,64,F,Dor no peito e formigamento no braço,38.0,13/10,87,ALTA
+152,30,M,Febre alta e dor no corpo,38.9,11/8,89,ALTA
+153,15,M,Dor no peito e formigamento no braço,37.9,16/12,91,ALTA
+154,18,M,Dificuldade para urinar,38.1,9/8,92,MÉDIA
+155,73,M,Cansaço extremo e fraqueza,36.8,14/12,88,ALTA
+156,89,F,Febre alta e dor no corpo,37.4,10/9,99,BAIXA
+157,20,M,Manchas vermelhas pelo corpo,36.7,10/9,89,ALTA
+158,31,F,Coceira e alergia na pele,37.2,12/8,96,BAIXA
+159,24,F,Dor no peito e formigamento no braço,38.6,10/10,97,MÉDIA
+160,29,F,Febre alta e dor no corpo,39.4,18/8,100,ALTA
+161,67,M,Tosse seca persistente,39.1,14/6,90,ALTA
+162,38,F,Dor no peito e formigamento no braço,37.0,12/11,90,ALTA
+163,27,F,Dor de cabeça forte e enjoo,38.4,16/12,87,ALTA
+164,19,F,Inchaço nas pernas,37.1,9/9,85,ALTA
+165,10,F,Pressão alta e tontura,36.4,10/7,88,ALTA
+166,44,M,Pressão alta e tontura,39.5,14/8,87,ALTA
+167,53,F,Febre alta e dor no corpo,39.6,18/12,94,ALTA
+168,66,M,Dor de cabeça forte e enjoo,38.6,15/7,100,MÉDIA
+169,46,M,Perda de apetite e emagrecimento rápido,37.4,18/11,91,ALTA
+170,52,F,Perda de apetite e emagrecimento rápido,39.0,16/8,93,ALTA
+171,73,M,Falta de ar e chiado no peito,36.9,15/8,99,BAIXA
+172,64,F,Dor no peito e formigamento no braço,39.4,16/6,92,ALTA
+173,62,M,Perda de apetite e emagrecimento rápido,37.2,13/12,96,BAIXA
+174,45,F,Dor abdominal intensa,37.1,9/11,86,ALTA
+175,13,M,Diarreia e vômito,37.4,10/10,96,BAIXA
+176,1,F,Cansaço extremo e fraqueza,38.6,15/7,91,ALTA
+177,49,F,Falta de ar e chiado no peito,38.4,17/7,85,ALTA
+178,79,M,Diarreia e vômito,37.7,17/10,90,ALTA
+179,34,F,Pressão alta e tontura,38.7,13/6,99,MÉDIA
+180,6,F,Tosse seca persistente,38.3,18/12,97,MÉDIA
+181,59,M,Dor no peito e formigamento no braço,37.2,15/9,88,ALTA
+182,49,M,Dor abdominal intensa,39.7,18/12,89,ALTA
+183,90,F,Coceira e alergia na pele,39.0,18/11,100,ALTA
+184,40,F,Dor abdominal intensa,39.5,9/10,100,ALTA
+185,20,F,Dificuldade para urinar,38.1,16/11,87,ALTA
+186,71,M,Dor de cabeça forte e enjoo,39.7,17/9,86,ALTA
+187,90,M,Pressão alta e tontura,36.6,14/11,91,ALTA
+188,35,M,Inchaço nas pernas,36.3,9/12,100,BAIXA
+189,79,F,Dor no peito e formigamento no braço,37.5,16/7,88,ALTA
+190,1,F,Dificuldade para urinar,37.4,13/12,90,ALTA
+191,49,F,Manchas vermelhas pelo corpo,36.6,13/6,97,BAIXA
+192,81,M,Dor no peito e formigamento no braço,37.4,13/10,87,ALTA
+193,35,F,Falta de ar e chiado no peito,38.2,16/8,97,MÉDIA
+194,37,M,Perda de apetite e emagrecimento rápido,38.2,12/7,98,MÉDIA
+195,52,F,Febre alta e dor no corpo,38.0,11/12,88,ALTA
+196,31,M,Manchas vermelhas pelo corpo,39.1,16/7,91,ALTA
+197,29,F,Dor abdominal intensa,37.1,13/11,93,BAIXA
+198,59,M,Dor de cabeça forte e enjoo,37.9,10/9,95,BAIXA
+199,14,M,Cansaço extremo e fraqueza,37.0,12/10,96,BAIXA
+200,4,F,Pressão alta e tontura,39.6,16/8,86,ALTA
+201,59,F,Inchaço nas pernas,39.6,17/6,90,ALTA
+202,78,M,Perda de apetite e emagrecimento rápido,39.0,15/9,100,ALTA
+203,37,F,Pressão alta e tontura,39.7,9/11,91,ALTA
+204,63,M,Febre alta e dor no corpo,37.1,13/8,97,BAIXA
+205,35,M,Dor abdominal intensa,38.0,14/6,99,MÉDIA
+206,1,M,Dor abdominal intensa,39.9,17/7,91,ALTA
+207,26,M,Pressão alta e tontura,37.0,9/6,100,BAIXA
+208,61,M,Pressão alta e tontura,39.8,11/11,96,ALTA
+209,71,F,Pressão alta e tontura,36.3,9/7,100,BAIXA
+210,10,M,Dor de cabeça forte e enjoo,38.3,9/8,96,MÉDIA
+211,5,F,Dificuldade para urinar,37.8,13/12,85,ALTA
+212,58,M,Dor de cabeça forte e enjoo,37.2,17/7,96,BAIXA
+213,64,M,Inchaço nas pernas,37.6,14/12,86,ALTA
+214,27,M,Pressão alta e tontura,39.2,11/11,96,ALTA
+215,59,F,Coceira e alergia na pele,37.1,18/10,99,BAIXA
+216,2,M,Perda de apetite e emagrecimento rápido,38.4,13/11,100,MÉDIA
+217,32,F,Dor no peito e formigamento no braço,38.5,16/7,94,MÉDIA
+218,3,M,Inchaço nas pernas,36.1,9/7,88,ALTA
+219,41,F,Sangramento nasal frequente,38.5,9/10,89,ALTA
+220,34,M,Dificuldade para urinar,37.5,16/12,86,ALTA
+221,29,F,Dor no peito e formigamento no braço,36.4,9/9,100,BAIXA
+222,36,M,Pressão alta e tontura,39.4,12/9,100,ALTA
+223,10,M,Manchas vermelhas pelo corpo,38.6,11/8,85,ALTA
+224,20,F,Dor no peito e formigamento no braço,38.4,10/9,93,MÉDIA
+225,38,F,Sangramento nasal frequente,39.3,17/12,92,ALTA
+226,63,F,Dor de cabeça forte e enjoo,39.5,14/6,97,ALTA
+227,85,F,Dor no peito e formigamento no braço,37.4,14/6,100,BAIXA
+228,19,M,Tosse seca persistente,37.9,16/8,93,BAIXA
+229,22,F,Sangramento nasal frequente,38.4,15/7,86,ALTA
+230,23,M,Inchaço nas pernas,37.3,15/11,95,BAIXA
+231,71,M,Coceira e alergia na pele,38.5,15/10,87,ALTA
+232,22,F,Pressão alta e tontura,36.3,12/12,95,BAIXA
+233,45,M,Diarreia e vômito,37.2,12/8,92,BAIXA
+234,85,F,Manchas vermelhas pelo corpo,39.7,12/11,95,ALTA
+235,76,F,Diarreia e vômito,39.6,18/10,97,ALTA
+236,23,F,Sangramento nasal frequente,38.7,14/9,95,MÉDIA
+237,33,F,Cansaço extremo e fraqueza,37.2,18/10,93,BAIXA
+238,14,M,Perda de apetite e emagrecimento rápido,38.7,18/7,92,MÉDIA
+239,35,F,Dificuldade para urinar,37.4,14/7,86,ALTA
+240,48,F,Diarreia e vômito,37.5,12/11,86,ALTA
+241,87,F,Tosse seca persistente,38.1,9/7,99,MÉDIA
+242,73,M,Diarreia e vômito,36.6,14/7,98,BAIXA
+243,27,M,Dor abdominal intensa,37.1,11/8,85,ALTA
+244,36,M,Coceira e alergia na pele,36.3,14/6,92,BAIXA
+245,47,F,Pressão alta e tontura,39.1,9/11,94,ALTA
+246,16,M,Dificuldade para urinar,38.9,18/12,85,ALTA
+247,68,F,Inchaço nas pernas,39.8,14/12,90,ALTA
+248,33,M,Tosse seca persistente,37.3,14/7,99,BAIXA
+249,5,F,Febre alta e dor no corpo,40.0,11/9,85,ALTA
+250,22,F,Sangramento nasal frequente,40.0,10/8,85,ALTA
+251,34,F,Dificuldade para urinar,36.0,16/9,94,BAIXA
+252,17,M,Tosse seca persistente,38.5,18/10,96,MÉDIA
+253,57,M,Dor abdominal intensa,38.0,9/8,98,MÉDIA
+254,35,F,Cansaço extremo e fraqueza,39.2,15/9,99,ALTA
+255,19,M,Perda de apetite e emagrecimento rápido,36.4,16/7,93,BAIXA
+256,79,M,Dificuldade para urinar,37.3,18/10,95,BAIXA
+257,18,F,Manchas vermelhas pelo corpo,38.0,14/12,96,MÉDIA
+258,70,F,Febre alta e dor no corpo,36.1,16/8,90,ALTA
+259,25,M,Dor no peito e formigamento no braço,38.7,11/6,99,MÉDIA
+260,42,M,Cansaço extremo e fraqueza,38.6,15/6,93,MÉDIA
+261,37,M,Tosse seca persistente,36.5,18/10,100,BAIXA
+262,83,M,Dor no peito e formigamento no braço,38.6,16/11,99,MÉDIA
+263,84,F,Cansaço extremo e fraqueza,37.7,16/10,98,BAIXA
+264,83,M,Sangramento nasal frequente,36.3,12/10,91,ALTA
+265,27,F,Diarreia e vômito,36.7,14/8,96,BAIXA
+266,31,F,Dor abdominal intensa,39.2,17/7,93,ALTA
+267,46,M,Dor abdominal intensa,36.1,16/6,96,BAIXA
+268,18,F,Sangramento nasal frequente,36.1,9/8,95,BAIXA
+269,63,F,Febre alta e dor no corpo,37.3,10/7,97,BAIXA
+270,55,M,Febre alta e dor no corpo,38.9,18/11,87,ALTA
+271,66,F,Sangramento nasal frequente,39.1,14/10,96,ALTA
+272,14,M,Coceira e alergia na pele,38.9,16/6,91,ALTA
+273,4,F,Dor no peito e formigamento no braço,38.3,16/12,90,ALTA
+274,31,F,Dor abdominal intensa,39.3,13/8,100,ALTA
+275,4,M,Tosse seca persistente,39.4,14/10,88,ALTA
+276,38,M,Dificuldade para urinar,37.3,11/11,88,ALTA
+277,31,F,Dificuldade para urinar,37.7,18/7,86,ALTA
+278,68,F,Perda de apetite e emagrecimento rápido,39.3,11/6,86,ALTA
+279,77,F,Coceira e alergia na pele,36.3,11/10,100,BAIXA
+280,78,F,Dificuldade para urinar,39.8,11/8,98,ALTA
+281,19,M,Perda de apetite e emagrecimento rápido,37.6,15/11,98,BAIXA
+282,89,M,Manchas vermelhas pelo corpo,38.1,17/12,92,MÉDIA
+283,66,F,Dor no peito e formigamento no braço,39.0,14/10,99,ALTA
+284,37,M,Sangramento nasal frequente,38.5,14/12,96,MÉDIA
+285,25,M,Cansaço extremo e fraqueza,39.8,17/11,94,ALTA
+286,47,M,Pressão alta e tontura,39.0,11/8,99,ALTA
+287,24,F,Dor abdominal intensa,39.8,9/9,89,ALTA
+288,23,F,Falta de ar e chiado no peito,39.0,18/8,85,ALTA
+289,60,M,Pressão alta e tontura,39.0,10/10,97,ALTA
+290,70,F,Perda de apetite e emagrecimento rápido,38.6,11/10,97,MÉDIA
+291,43,M,Dor no peito e formigamento no braço,37.2,11/11,91,ALTA
+292,90,M,Tosse seca persistente,37.1,11/9,91,ALTA
+293,35,F,Dor de cabeça forte e enjoo,36.8,11/11,85,ALTA
+294,28,F,Dificuldade para urinar,39.3,10/8,85,ALTA
+295,67,F,Perda de apetite e emagrecimento rápido,37.9,17/8,87,ALTA
+296,41,F,Pressão alta e tontura,36.2,10/10,85,ALTA
+297,17,M,Dor de cabeça forte e enjoo,36.0,16/10,87,ALTA
+298,65,F,Dificuldade para urinar,38.8,15/6,92,MÉDIA
+299,15,F,Tosse seca persistente,38.3,17/12,92,MÉDIA
+300,74,F,Tosse seca persistente,38.0,10/10,88,ALTA
+301,31,M,Inchaço nas pernas,38.7,10/8,89,ALTA
+302,55,M,Cansaço extremo e fraqueza,37.7,16/10,94,BAIXA
+303,79,F,Febre alta e dor no corpo,39.1,15/10,91,ALTA
+304,42,F,Dificuldade para urinar,37.4,17/6,93,BAIXA
+305,31,F,Pressão alta e tontura,39.2,11/10,91,ALTA
+306,39,F,Diarreia e vômito,39.7,10/11,97,ALTA
+307,67,F,Falta de ar e chiado no peito,39.7,15/8,87,ALTA
+308,87,F,Diarreia e vômito,37.8,9/8,88,ALTA
+309,18,F,Sangramento nasal frequente,37.0,15/6,93,BAIXA
+310,9,F,Dor abdominal intensa,39.3,12/11,89,ALTA
+311,49,F,Dor no peito e formigamento no braço,38.1,13/8,93,MÉDIA
+312,47,M,Manchas vermelhas pelo corpo,36.9,18/11,98,BAIXA
+313,47,M,Pressão alta e tontura,38.0,15/12,87,ALTA
+314,34,M,Febre alta e dor no corpo,36.1,17/9,97,BAIXA
+315,60,M,Cansaço extremo e fraqueza,39.2,13/10,88,ALTA
+316,57,F,Perda de apetite e emagrecimento rápido,39.6,11/10,94,ALTA
+317,84,M,Dor no peito e formigamento no braço,36.3,14/10,88,ALTA
+318,80,F,Inchaço nas pernas,39.8,9/9,90,ALTA
+319,69,M,Manchas vermelhas pelo corpo,37.8,13/8,97,BAIXA
+320,73,M,Pressão alta e tontura,38.5,9/9,99,MÉDIA
+321,19,F,Pressão alta e tontura,38.9,16/11,94,MÉDIA
+322,54,M,Dor abdominal intensa,37.1,9/8,91,ALTA
+323,81,F,Falta de ar e chiado no peito,36.6,12/9,99,BAIXA
+324,9,M,Tosse seca persistente,38.8,13/7,99,MÉDIA
+325,45,M,Falta de ar e chiado no peito,37.8,9/11,96,BAIXA
+326,10,F,Sangramento nasal frequente,37.7,9/8,99,BAIXA
+327,79,M,Perda de apetite e emagrecimento rápido,36.1,9/12,95,BAIXA
+328,78,F,Dor no peito e formigamento no braço,37.4,17/10,94,BAIXA
+329,32,M,Dificuldade para urinar,40.0,9/7,90,ALTA
+330,38,F,Dificuldade para urinar,36.6,15/6,89,ALTA
+331,38,F,Dificuldade para urinar,38.0,15/9,91,ALTA
+332,8,M,Falta de ar e chiado no peito,38.5,11/7,85,ALTA
+333,37,F,Coceira e alergia na pele,39.8,12/6,96,ALTA
+334,42,F,Manchas vermelhas pelo corpo,37.7,13/9,93,BAIXA
+335,67,M,Cansaço extremo e fraqueza,38.4,13/11,94,MÉDIA
+336,21,M,Manchas vermelhas pelo corpo,39.6,15/12,88,ALTA
+337,73,F,Inchaço nas pernas,37.9,9/9,91,ALTA
+338,56,M,Febre alta e dor no corpo,36.5,15/11,97,BAIXA
+339,84,F,Pressão alta e tontura,40.0,17/8,98,ALTA
+340,70,F,Dor no peito e formigamento no braço,36.1,15/6,91,ALTA
+341,82,F,Dor de cabeça forte e enjoo,39.3,18/10,90,ALTA
+342,58,F,Dor no peito e formigamento no braço,40.0,9/8,96,ALTA
+343,66,M,Inchaço nas pernas,38.4,9/6,98,MÉDIA
+344,78,M,Febre alta e dor no corpo,36.1,11/10,94,BAIXA
+345,84,F,Dor no peito e formigamento no braço,39.8,15/10,87,ALTA
+346,72,M,Sangramento nasal frequente,36.4,14/6,87,ALTA
+347,28,M,Diarreia e vômito,36.7,12/12,91,ALTA
+348,29,F,Manchas vermelhas pelo corpo,39.7,13/12,91,ALTA
+349,4,F,Manchas vermelhas pelo corpo,37.2,11/6,100,BAIXA
+350,55,F,Pressão alta e tontura,39.1,17/6,88,ALTA
+351,12,F,Inchaço nas pernas,37.1,14/6,91,ALTA
+352,42,M,Manchas vermelhas pelo corpo,39.9,10/11,96,ALTA
+353,7,M,Coceira e alergia na pele,37.4,16/12,86,ALTA
+354,40,F,Cansaço extremo e fraqueza,37.4,10/6,96,BAIXA
+355,53,F,Cansaço extremo e fraqueza,36.6,15/10,95,BAIXA
+356,70,M,Dor abdominal intensa,37.0,15/7,95,BAIXA
+357,38,M,Sangramento nasal frequente,39.3,18/8,99,ALTA
+358,68,F,Perda de apetite e emagrecimento rápido,37.2,16/7,90,ALTA
+359,55,M,Tosse seca persistente,39.1,15/8,93,ALTA
+360,4,M,Dificuldade para urinar,39.2,10/9,93,ALTA
+361,51,F,Dificuldade para urinar,39.4,9/11,90,ALTA
+362,85,F,Diarreia e vômito,37.6,13/12,87,ALTA
+363,31,F,Sangramento nasal frequente,37.3,10/10,88,ALTA
+364,70,F,Sangramento nasal frequente,37.5,14/12,100,BAIXA
+365,81,F,Perda de apetite e emagrecimento rápido,38.6,9/12,94,MÉDIA
+366,57,M,Diarreia e vômito,37.2,16/8,95,BAIXA
+367,83,F,Dor abdominal intensa,38.4,15/9,89,ALTA
+368,79,M,Diarreia e vômito,36.7,15/12,89,ALTA
+369,65,F,Cansaço extremo e fraqueza,38.5,12/9,95,MÉDIA
+370,8,M,Pressão alta e tontura,37.7,9/9,99,BAIXA
+371,82,M,Coceira e alergia na pele,37.8,12/9,94,BAIXA
+372,43,M,Inchaço nas pernas,38.3,9/9,86,ALTA
+373,15,F,Tosse seca persistente,38.1,9/8,96,MÉDIA
+374,47,F,Coceira e alergia na pele,36.8,12/8,86,ALTA
+375,21,M,Pressão alta e tontura,39.0,16/9,93,ALTA
+376,46,M,Perda de apetite e emagrecimento rápido,38.1,15/10,94,MÉDIA
+377,77,M,Dor no peito e formigamento no braço,38.1,17/12,100,MÉDIA
+378,36,F,Dor abdominal intensa,38.3,15/6,85,ALTA
+379,73,F,Inchaço nas pernas,39.9,15/6,86,ALTA
+380,46,M,Sangramento nasal frequente,37.3,12/6,96,BAIXA
+381,61,M,Tosse seca persistente,38.4,10/11,98,MÉDIA
+382,79,M,Tosse seca persistente,37.7,12/10,85,ALTA
+383,6,F,Dificuldade para urinar,38.1,15/12,97,MÉDIA
+384,5,F,Dor abdominal intensa,36.3,12/10,100,BAIXA
+385,18,M,Tosse seca persistente,38.8,14/12,89,ALTA
+386,76,M,Febre alta e dor no corpo,39.3,13/6,100,ALTA
+387,64,F,Falta de ar e chiado no peito,36.5,13/6,99,BAIXA
+388,90,M,Pressão alta e tontura,36.0,10/10,95,BAIXA
+389,79,F,Dor abdominal intensa,36.8,17/11,89,ALTA
+390,53,F,Cansaço extremo e fraqueza,37.7,12/9,88,ALTA
+391,56,M,Dor no peito e formigamento no braço,36.3,13/11,87,ALTA
+392,77,M,Febre alta e dor no corpo,37.6,12/9,89,ALTA
+393,2,F,Dificuldade para urinar,37.5,9/6,94,BAIXA
+394,75,M,Coceira e alergia na pele,37.4,16/8,92,BAIXA
+395,28,M,Coceira e alergia na pele,37.3,10/10,95,BAIXA
+396,60,M,Falta de ar e chiado no peito,38.0,18/12,91,ALTA
+397,75,F,Sangramento nasal frequente,36.6,11/8,92,BAIXA
+398,87,M,Dor abdominal intensa,36.1,16/10,99,BAIXA
+399,12,M,Coceira e alergia na pele,36.2,15/7,87,ALTA
+400,8,M,Dor abdominal intensa,37.5,12/12,96,BAIXA
+401,35,F,Dor no peito e formigamento no braço,37.8,14/6,88,ALTA
+402,78,M,Coceira e alergia na pele,38.9,15/9,89,ALTA
+403,89,F,Diarreia e vômito,39.1,9/6,86,ALTA
+404,57,F,Manchas vermelhas pelo corpo,36.8,12/11,98,BAIXA
+405,49,M,Dor abdominal intensa,36.7,13/6,100,BAIXA
+406,74,M,Febre alta e dor no corpo,39.5,11/9,94,ALTA
+407,73,F,Dificuldade para urinar,39.2,10/10,91,ALTA
+408,67,M,Sangramento nasal frequente,38.7,9/7,86,ALTA
+409,13,F,Falta de ar e chiado no peito,39.0,18/12,90,ALTA
+410,24,M,Cansaço extremo e fraqueza,39.3,12/7,90,ALTA
+411,26,F,Dificuldade para urinar,39.3,9/8,100,ALTA
+412,7,F,Inchaço nas pernas,37.2,9/9,98,BAIXA
+413,53,M,Tosse seca persistente,38.3,10/6,90,ALTA
+414,51,M,Diarreia e vômito,37.3,15/10,98,BAIXA
+415,11,F,Febre alta e dor no corpo,37.5,18/12,95,BAIXA
+416,14,M,Febre alta e dor no corpo,37.4,13/7,86,ALTA
+417,79,M,Inchaço nas pernas,36.3,13/10,93,BAIXA
+418,54,M,Falta de ar e chiado no peito,37.1,10/11,100,BAIXA
+419,4,F,Dor de cabeça forte e enjoo,36.7,10/11,87,ALTA
+420,8,F,Sangramento nasal frequente,39.6,9/9,99,ALTA
+421,37,F,Coceira e alergia na pele,39.7,10/10,90,ALTA
+422,9,M,Perda de apetite e emagrecimento rápido,37.8,18/8,100,BAIXA
+423,24,M,Diarreia e vômito,37.4,16/8,86,ALTA
+424,87,F,Dificuldade para urinar,39.7,10/7,86,ALTA
+425,46,F,Coceira e alergia na pele,39.7,11/12,95,ALTA
+426,50,M,Dor no peito e formigamento no braço,36.3,10/10,93,BAIXA
+427,76,M,Falta de ar e chiado no peito,38.6,11/7,93,MÉDIA
+428,70,M,Inchaço nas pernas,38.0,17/6,100,MÉDIA
+429,78,F,Sangramento nasal frequente,36.6,18/9,93,BAIXA
+430,53,F,Dor de cabeça forte e enjoo,38.6,18/8,87,ALTA
+431,12,F,Dificuldade para urinar,36.7,11/9,99,BAIXA
+432,19,F,Dificuldade para urinar,36.7,9/9,100,BAIXA
+433,40,F,Cansaço extremo e fraqueza,39.2,15/7,87,ALTA
+434,61,F,Pressão alta e tontura,39.8,16/8,87,ALTA
+435,53,F,Febre alta e dor no corpo,37.4,15/9,98,BAIXA
+436,36,F,Febre alta e dor no corpo,38.9,18/11,97,MÉDIA
+437,3,F,Dor abdominal intensa,37.5,18/8,87,ALTA
+438,52,M,Dor de cabeça forte e enjoo,37.0,14/8,97,BAIXA
+439,85,F,Febre alta e dor no corpo,36.8,13/9,98,BAIXA
+440,22,F,Sangramento nasal frequente,36.7,10/6,85,ALTA
+441,79,F,Sangramento nasal frequente,38.2,18/9,96,MÉDIA
+442,47,F,Diarreia e vômito,39.5,9/10,97,ALTA
+443,44,M,Pressão alta e tontura,36.2,9/10,98,BAIXA
+444,5,M,Dor de cabeça forte e enjoo,37.3,12/9,94,BAIXA
+445,31,F,Dor abdominal intensa,37.0,9/9,98,BAIXA
+446,46,F,Inchaço nas pernas,36.8,10/6,87,ALTA
+447,58,F,Cansaço extremo e fraqueza,36.4,13/11,88,ALTA
+448,61,F,Falta de ar e chiado no peito,37.7,13/9,85,ALTA
+449,27,F,Perda de apetite e emagrecimento rápido,39.3,10/8,96,ALTA
+450,10,M,Sangramento nasal frequente,38.5,16/9,99,MÉDIA
+451,73,F,Coceira e alergia na pele,36.1,15/7,89,ALTA
+452,27,F,Manchas vermelhas pelo corpo,39.9,16/8,94,ALTA
+453,58,F,Diarreia e vômito,36.8,10/11,92,BAIXA
+454,10,M,Falta de ar e chiado no peito,37.0,9/9,87,ALTA
+455,71,F,Dor abdominal intensa,38.8,16/11,96,MÉDIA
+456,69,F,Dor de cabeça forte e enjoo,36.3,11/9,87,ALTA
+457,1,F,Dor de cabeça forte e enjoo,39.0,17/9,97,ALTA
+458,64,M,Febre alta e dor no corpo,36.8,10/12,89,ALTA
+459,44,F,Coceira e alergia na pele,38.5,12/11,87,ALTA
+460,47,M,Dor abdominal intensa,38.5,10/6,96,MÉDIA
+461,58,F,Perda de apetite e emagrecimento rápido,36.7,15/10,93,BAIXA
+462,23,M,Manchas vermelhas pelo corpo,39.7,10/9,90,ALTA
+463,34,M,Dificuldade para urinar,38.8,18/8,93,MÉDIA
+464,63,M,Falta de ar e chiado no peito,36.7,16/10,98,BAIXA
+465,18,M,Tosse seca persistente,39.7,11/11,85,ALTA
+466,87,M,Dificuldade para urinar,39.7,17/7,94,ALTA
+467,52,M,Dificuldade para urinar,37.8,13/12,98,BAIXA
+468,24,F,Coceira e alergia na pele,39.4,15/6,95,ALTA
+469,44,M,Diarreia e vômito,36.8,10/7,100,BAIXA
+470,45,F,Cansaço extremo e fraqueza,38.4,17/12,89,ALTA
+471,25,F,Dor de cabeça forte e enjoo,39.5,15/6,96,ALTA
+472,74,F,Manchas vermelhas pelo corpo,37.3,17/9,98,BAIXA
+473,12,F,Sangramento nasal frequente,38.5,10/11,92,MÉDIA
+474,50,M,Dor de cabeça forte e enjoo,37.7,18/9,90,ALTA
+475,27,F,Cansaço extremo e fraqueza,38.9,18/6,85,ALTA
+476,18,M,Cansaço extremo e fraqueza,38.3,12/8,93,MÉDIA
+477,74,M,Inchaço nas pernas,40.0,11/10,96,ALTA
+478,76,F,Falta de ar e chiado no peito,38.2,18/7,95,MÉDIA
+479,10,F,Diarreia e vômito,37.4,9/9,95,BAIXA
+480,3,M,Sangramento nasal frequente,37.2,17/6,92,BAIXA
+481,50,F,Coceira e alergia na pele,37.5,18/9,89,ALTA
+482,17,M,Manchas vermelhas pelo corpo,39.7,15/10,100,ALTA
+483,6,F,Tosse seca persistente,39.0,16/8,100,ALTA
+484,16,M,Dor de cabeça forte e enjoo,36.5,12/6,86,ALTA
+485,61,F,Falta de ar e chiado no peito,38.9,13/8,95,MÉDIA
+486,48,M,Pressão alta e tontura,37.3,14/9,99,BAIXA
+487,65,F,Dificuldade para urinar,36.3,16/8,95,BAIXA
+488,69,F,Sangramento nasal frequente,37.1,15/9,91,ALTA
+489,31,M,Cansaço extremo e fraqueza,39.5,10/6,92,ALTA
+490,5,M,Sangramento nasal frequente,39.4,18/9,91,ALTA
+491,38,M,Tosse seca persistente,39.3,11/12,85,ALTA
+492,67,F,Dor abdominal intensa,39.2,18/7,92,ALTA
+493,18,M,Manchas vermelhas pelo corpo,39.0,16/7,98,ALTA
+494,50,M,Sangramento nasal frequente,38.9,11/9,98,MÉDIA
+495,28,F,Dor de cabeça forte e enjoo,36.8,12/6,89,ALTA
+496,38,M,Dor no peito e formigamento no braço,39.2,9/10,98,ALTA
+497,78,F,Dificuldade para urinar,37.2,13/7,91,ALTA
+498,68,M,Manchas vermelhas pelo corpo,37.1,13/6,96,BAIXA
+499,50,M,Sangramento nasal frequente,36.6,13/8,90,ALTA
+500,86,F,Coceira e alergia na pele,39.2,17/12,94,ALTA
+501,47,F,Tosse seca persistente,37.1,15/7,88,ALTA
+502,55,M,Falta de ar e chiado no peito,39.9,11/10,93,ALTA
+503,69,F,Tosse seca persistente,37.0,18/6,89,ALTA
+504,9,F,Dor no peito e formigamento no braço,36.2,15/8,86,ALTA
+505,10,M,Manchas vermelhas pelo corpo,38.3,11/6,88,ALTA
+506,6,M,Febre alta e dor no corpo,39.9,15/9,96,ALTA
+507,2,M,Tosse seca persistente,36.1,9/12,85,ALTA
+508,11,M,Dor no peito e formigamento no braço,36.2,16/8,89,ALTA
+509,50,F,Dor abdominal intensa,38.8,17/7,94,MÉDIA
+510,15,M,Dificuldade para urinar,38.6,15/7,85,ALTA
+511,22,M,Coceira e alergia na pele,39.3,14/10,86,ALTA
+512,64,F,Coceira e alergia na pele,36.4,17/8,95,BAIXA
+513,83,M,Dor abdominal intensa,36.8,10/12,100,BAIXA
+514,80,M,Falta de ar e chiado no peito,37.8,17/11,94,BAIXA
+515,65,F,Manchas vermelhas pelo corpo,39.6,14/10,94,ALTA
+516,53,M,Dor de cabeça forte e enjoo,36.8,10/6,98,BAIXA
+517,8,M,Perda de apetite e emagrecimento rápido,37.9,11/12,99,BAIXA
+518,37,M,Tosse seca persistente,36.6,18/11,92,BAIXA
+519,68,M,Diarreia e vômito,36.1,17/8,88,ALTA
+520,5,M,Perda de apetite e emagrecimento rápido,39.8,17/12,87,ALTA
+521,82,M,Dor de cabeça forte e enjoo,39.1,12/7,99,ALTA
+522,24,F,Coceira e alergia na pele,36.1,9/12,92,BAIXA
+523,58,F,Dor de cabeça forte e enjoo,37.5,16/12,94,BAIXA
+524,58,M,Dor abdominal intensa,38.5,14/12,95,MÉDIA
+525,40,M,Tosse seca persistente,39.2,16/6,93,ALTA
+526,65,M,Febre alta e dor no corpo,39.8,9/12,95,ALTA
+527,12,M,Inchaço nas pernas,40.0,11/11,87,ALTA
+528,75,F,Dor no peito e formigamento no braço,38.0,15/9,95,MÉDIA
+529,85,F,Pressão alta e tontura,36.8,17/11,92,BAIXA
+530,66,M,Inchaço nas pernas,36.3,12/6,97,BAIXA
+531,38,F,Cansaço extremo e fraqueza,39.4,11/12,85,ALTA
+532,6,F,Pressão alta e tontura,38.7,18/7,100,MÉDIA
+533,14,F,Diarreia e vômito,37.5,15/12,93,BAIXA
+534,43,F,Cansaço extremo e fraqueza,36.5,17/7,97,BAIXA
+535,9,F,Cansaço extremo e fraqueza,39.5,9/10,85,ALTA
+536,75,F,Coceira e alergia na pele,39.2,14/7,87,ALTA
+537,10,F,Febre alta e dor no corpo,39.3,15/11,88,ALTA
+538,77,F,Inchaço nas pernas,36.1,14/11,93,BAIXA
+539,1,F,Tosse seca persistente,37.3,16/7,87,ALTA
+540,75,M,Dor de cabeça forte e enjoo,39.5,14/6,92,ALTA
+541,31,M,Tosse seca persistente,36.7,12/10,87,ALTA
+542,45,F,Dificuldade para urinar,37.3,11/8,97,BAIXA
+543,57,F,Dor abdominal intensa,37.0,12/9,91,ALTA
+544,51,F,Falta de ar e chiado no peito,39.3,17/12,87,ALTA
+545,43,M,Diarreia e vômito,37.0,11/12,99,BAIXA
+546,40,M,Coceira e alergia na pele,39.9,10/7,97,ALTA
+547,28,M,Perda de apetite e emagrecimento rápido,39.2,11/11,86,ALTA
+548,34,M,Dor abdominal intensa,38.6,18/6,93,MÉDIA
+549,60,F,Febre alta e dor no corpo,36.6,15/9,86,ALTA
+550,57,M,Diarreia e vômito,37.6,18/8,93,BAIXA
+551,79,F,Perda de apetite e emagrecimento rápido,39.9,14/12,95,ALTA
+552,35,F,Dor de cabeça forte e enjoo,37.5,14/11,85,ALTA
+553,77,F,Perda de apetite e emagrecimento rápido,39.8,10/11,100,ALTA
+554,43,F,Coceira e alergia na pele,39.9,13/7,86,ALTA
+555,12,F,Dor de cabeça forte e enjoo,38.7,12/9,92,MÉDIA
+556,12,M,Dor abdominal intensa,39.6,17/10,96,ALTA
+557,33,F,Coceira e alergia na pele,39.4,15/7,91,ALTA
+558,56,M,Febre alta e dor no corpo,39.4,17/6,85,ALTA
+559,49,M,Febre alta e dor no corpo,37.6,13/6,87,ALTA
+560,78,M,Coceira e alergia na pele,38.4,12/8,90,ALTA
+561,79,F,Inchaço nas pernas,37.4,14/8,92,BAIXA
+562,29,M,Dificuldade para urinar,37.3,17/9,91,ALTA
+563,21,M,Dor abdominal intensa,38.8,9/11,91,ALTA
+564,17,F,Dor no peito e formigamento no braço,38.3,18/11,89,ALTA
+565,42,M,Dor abdominal intensa,36.1,12/9,87,ALTA
+566,8,F,Falta de ar e chiado no peito,38.5,9/11,99,MÉDIA
+567,50,M,Pressão alta e tontura,39.6,10/8,90,ALTA
+568,43,F,Febre alta e dor no corpo,39.1,16/8,98,ALTA
+569,61,M,Falta de ar e chiado no peito,36.9,16/12,85,ALTA
+570,43,M,Dor de cabeça forte e enjoo,36.0,9/10,89,ALTA
+571,72,F,Sangramento nasal frequente,37.7,13/11,88,ALTA
+572,60,F,Coceira e alergia na pele,36.7,15/11,96,BAIXA
+573,21,M,Dor abdominal intensa,39.1,12/8,86,ALTA
+574,20,M,Falta de ar e chiado no peito,39.7,12/6,87,ALTA
+575,90,F,Perda de apetite e emagrecimento rápido,37.2,15/12,98,BAIXA
+576,9,M,Diarreia e vômito,37.9,14/11,99,BAIXA
+577,81,F,Dificuldade para urinar,39.4,16/10,99,ALTA
+578,37,M,Falta de ar e chiado no peito,38.8,9/11,94,MÉDIA
+579,82,F,Manchas vermelhas pelo corpo,36.7,13/8,92,BAIXA
+580,24,F,Dor no peito e formigamento no braço,37.0,10/11,91,ALTA
+581,11,F,Dor de cabeça forte e enjoo,37.3,17/10,93,BAIXA
+582,74,M,Cansaço extremo e fraqueza,38.6,13/7,94,MÉDIA
+583,53,F,Febre alta e dor no corpo,36.5,16/10,97,BAIXA
+584,81,F,Dor no peito e formigamento no braço,38.6,18/11,99,MÉDIA
+585,62,M,Tosse seca persistente,37.4,16/8,98,BAIXA
+586,46,M,Dificuldade para urinar,37.8,10/6,85,ALTA
+587,67,F,Inchaço nas pernas,36.7,11/9,94,BAIXA
+588,1,F,Diarreia e vômito,37.0,13/12,90,ALTA
+589,76,M,Diarreia e vômito,36.0,9/11,99,BAIXA
+590,55,F,Dor abdominal intensa,39.2,15/8,87,ALTA
+591,34,M,Inchaço nas pernas,38.7,17/7,92,MÉDIA
+592,33,M,Dor de cabeça forte e enjoo,36.8,9/10,93,BAIXA
+593,44,F,Manchas vermelhas pelo corpo,38.1,14/7,85,ALTA
+594,38,F,Manchas vermelhas pelo corpo,37.3,14/10,95,BAIXA
+595,19,F,Cansaço extremo e fraqueza,37.7,18/7,98,BAIXA
+596,26,M,Perda de apetite e emagrecimento rápido,38.9,18/6,96,MÉDIA
+597,6,M,Dor no peito e formigamento no braço,39.5,18/6,87,ALTA
+598,27,F,Inchaço nas pernas,36.8,18/6,90,ALTA
+599,43,M,Sangramento nasal frequente,38.1,9/8,85,ALTA
+600,51,M,Tosse seca persistente,37.4,9/9,85,ALTA
+601,8,F,Falta de ar e chiado no peito,37.9,18/12,88,ALTA
+602,41,F,Manchas vermelhas pelo corpo,37.9,14/9,93,BAIXA
+603,16,M,Perda de apetite e emagrecimento rápido,39.4,12/11,88,ALTA
+604,34,F,Sangramento nasal frequente,36.1,13/6,94,BAIXA
+605,12,M,Dor de cabeça forte e enjoo,37.2,9/11,89,ALTA
+606,7,M,Manchas vermelhas pelo corpo,37.4,12/7,96,BAIXA
+607,87,M,Falta de ar e chiado no peito,39.5,14/9,97,ALTA
+608,14,F,Inchaço nas pernas,37.9,18/9,86,ALTA
+609,82,M,Coceira e alergia na pele,37.8,9/7,99,BAIXA
+610,85,F,Manchas vermelhas pelo corpo,39.3,10/7,90,ALTA
+611,47,M,Pressão alta e tontura,39.9,17/8,89,ALTA
+612,44,M,Sangramento nasal frequente,36.0,10/6,97,BAIXA
+613,29,M,Febre alta e dor no corpo,38.0,9/12,98,MÉDIA
+614,54,F,Perda de apetite e emagrecimento rápido,36.7,13/9,98,BAIXA
+615,78,F,Perda de apetite e emagrecimento rápido,38.4,12/11,93,MÉDIA
+616,2,M,Perda de apetite e emagrecimento rápido,36.7,12/8,99,BAIXA
+617,54,F,Dificuldade para urinar,36.9,12/6,87,ALTA
+618,77,F,Manchas vermelhas pelo corpo,38.5,10/11,98,MÉDIA
+619,34,M,Manchas vermelhas pelo corpo,37.6,17/7,96,BAIXA
+620,9,M,Dor de cabeça forte e enjoo,38.6,18/6,86,ALTA
+621,16,F,Falta de ar e chiado no peito,38.3,11/9,89,ALTA
+622,43,M,Dor no peito e formigamento no braço,36.3,17/12,85,ALTA
+623,83,M,Tosse seca persistente,36.8,18/12,96,BAIXA
+624,37,F,Perda de apetite e emagrecimento rápido,37.6,14/6,94,BAIXA
+625,77,M,Perda de apetite e emagrecimento rápido,39.4,9/7,90,ALTA
+626,80,F,Pressão alta e tontura,38.0,12/9,97,MÉDIA
+627,19,M,Dificuldade para urinar,36.7,13/12,87,ALTA
+628,38,M,Manchas vermelhas pelo corpo,36.8,9/10,96,BAIXA
+629,86,M,Falta de ar e chiado no peito,39.5,15/8,100,ALTA
+630,19,F,Dor no peito e formigamento no braço,36.6,14/8,100,BAIXA
+631,16,M,Falta de ar e chiado no peito,39.0,10/8,93,ALTA
+632,36,M,Febre alta e dor no corpo,39.4,14/10,89,ALTA
+633,77,M,Sangramento nasal frequente,37.4,17/8,96,BAIXA
+634,38,M,Coceira e alergia na pele,36.6,14/8,97,BAIXA
+635,60,F,Pressão alta e tontura,38.1,16/8,97,MÉDIA
+636,65,M,Diarreia e vômito,36.1,16/8,89,ALTA
+637,86,F,Cansaço extremo e fraqueza,39.1,17/12,96,ALTA
+638,19,M,Diarreia e vômito,38.1,13/10,100,MÉDIA
+639,3,F,Sangramento nasal frequente,39.5,18/9,92,ALTA
+640,86,M,Diarreia e vômito,37.0,9/9,95,BAIXA
+641,83,M,Falta de ar e chiado no peito,37.2,17/6,98,BAIXA
+642,31,F,Perda de apetite e emagrecimento rápido,36.5,10/6,90,ALTA
+643,2,M,Manchas vermelhas pelo corpo,39.4,12/7,94,ALTA
+644,72,F,Pressão alta e tontura,37.8,10/12,100,BAIXA
+645,31,M,Dificuldade para urinar,39.0,13/11,90,ALTA
+646,41,F,Sangramento nasal frequente,37.9,17/7,88,ALTA
+647,36,M,Perda de apetite e emagrecimento rápido,38.6,18/12,89,ALTA
+648,60,M,Cansaço extremo e fraqueza,36.6,12/10,94,BAIXA
+649,25,F,Dor abdominal intensa,36.7,10/9,100,BAIXA
+650,5,M,Manchas vermelhas pelo corpo,37.7,14/9,90,ALTA
+651,77,M,Febre alta e dor no corpo,37.1,9/6,99,BAIXA
+652,70,F,Dor no peito e formigamento no braço,38.5,15/9,97,MÉDIA
+653,21,F,Dor no peito e formigamento no braço,37.8,12/11,90,ALTA
+654,1,F,Perda de apetite e emagrecimento rápido,36.8,17/9,95,BAIXA
+655,80,M,Dor no peito e formigamento no braço,36.7,18/9,89,ALTA
+656,83,M,Dor no peito e formigamento no braço,39.3,12/11,93,ALTA
+657,39,M,Dor no peito e formigamento no braço,39.9,13/8,95,ALTA
+658,82,M,Cansaço extremo e fraqueza,37.2,10/12,98,BAIXA
+659,35,M,Diarreia e vômito,37.7,10/6,95,BAIXA
+660,10,M,Manchas vermelhas pelo corpo,37.6,13/6,87,ALTA
+661,53,M,Tosse seca persistente,36.8,15/6,88,ALTA
+662,78,F,Tosse seca persistente,39.6,9/9,100,ALTA
+663,80,F,Coceira e alergia na pele,39.4,13/12,92,ALTA
+664,63,M,Pressão alta e tontura,36.2,12/11,93,BAIXA
+665,58,F,Dor de cabeça forte e enjoo,39.9,11/9,97,ALTA
+666,46,M,Dor no peito e formigamento no braço,39.9,12/11,93,ALTA
+667,54,M,Dor de cabeça forte e enjoo,37.9,11/11,95,BAIXA
+668,2,F,Sangramento nasal frequente,37.6,13/12,97,BAIXA
+669,22,M,Dificuldade para urinar,38.7,11/7,93,MÉDIA
+670,57,M,Manchas vermelhas pelo corpo,39.2,13/12,95,ALTA
+671,37,F,Dificuldade para urinar,36.6,15/8,85,ALTA
+672,27,F,Dor no peito e formigamento no braço,39.5,14/12,97,ALTA
+673,78,F,Coceira e alergia na pele,38.2,11/8,97,MÉDIA
+674,73,M,Dor no peito e formigamento no braço,38.1,13/8,85,ALTA
+675,59,M,Inchaço nas pernas,39.8,17/8,99,ALTA
+676,31,F,Diarreia e vômito,37.8,12/12,85,ALTA
+677,53,M,Cansaço extremo e fraqueza,39.6,9/11,93,ALTA
+678,49,F,Coceira e alergia na pele,36.9,18/7,97,BAIXA
+679,13,M,Sangramento nasal frequente,37.2,16/10,93,BAIXA
+680,66,M,Diarreia e vômito,39.4,13/9,87,ALTA
+681,45,M,Febre alta e dor no corpo,38.1,11/9,94,MÉDIA
+682,42,M,Manchas vermelhas pelo corpo,36.4,18/8,94,BAIXA
+683,32,F,Dor de cabeça forte e enjoo,36.2,9/8,89,ALTA
+684,45,F,Falta de ar e chiado no peito,39.8,11/10,99,ALTA
+685,30,F,Dor abdominal intensa,36.1,10/9,92,BAIXA
+686,78,F,Dor de cabeça forte e enjoo,36.3,12/11,100,BAIXA
+687,46,F,Tosse seca persistente,36.1,17/8,96,BAIXA
+688,76,M,Pressão alta e tontura,38.9,9/8,91,ALTA
+689,48,F,Dor no peito e formigamento no braço,37.3,16/11,86,ALTA
+690,52,M,Perda de apetite e emagrecimento rápido,38.1,10/7,85,ALTA
+691,29,F,Inchaço nas pernas,40.0,12/11,92,ALTA
+692,32,M,Pressão alta e tontura,38.8,13/8,88,ALTA
+693,10,F,Sangramento nasal frequente,37.2,10/6,94,BAIXA
+694,70,F,Dificuldade para urinar,38.4,12/7,100,MÉDIA
+695,31,M,Manchas vermelhas pelo corpo,38.3,11/6,100,MÉDIA
+696,76,M,Dor no peito e formigamento no braço,39.2,12/10,86,ALTA
+697,11,F,Tosse seca persistente,38.1,17/6,94,MÉDIA
+698,26,M,Diarreia e vômito,38.4,10/10,99,MÉDIA
+699,72,F,Manchas vermelhas pelo corpo,36.9,17/12,89,ALTA
+700,19,M,Inchaço nas pernas,39.6,12/9,85,ALTA
+701,29,F,Manchas vermelhas pelo corpo,38.7,12/12,94,MÉDIA
+702,37,M,Dor de cabeça forte e enjoo,39.8,14/12,85,ALTA
+703,75,F,Diarreia e vômito,37.3,15/10,90,ALTA
+704,22,M,Dificuldade para urinar,38.8,18/8,86,ALTA
+705,1,F,Pressão alta e tontura,38.0,17/9,94,MÉDIA
+706,25,F,Dor de cabeça forte e enjoo,37.6,9/6,99,BAIXA
+707,43,M,Tosse seca persistente,37.4,14/6,92,BAIXA
+708,36,M,Perda de apetite e emagrecimento rápido,37.0,12/11,94,BAIXA
+709,77,M,Cansaço extremo e fraqueza,37.1,9/10,99,BAIXA
+710,22,F,Perda de apetite e emagrecimento rápido,39.3,10/6,88,ALTA
+711,3,M,Febre alta e dor no corpo,39.1,9/12,92,ALTA
+712,17,F,Diarreia e vômito,37.7,14/10,89,ALTA
+713,19,M,Cansaço extremo e fraqueza,36.0,13/8,90,ALTA
+714,19,F,Cansaço extremo e fraqueza,38.4,13/6,95,MÉDIA
+715,54,F,Sangramento nasal frequente,36.2,11/8,97,BAIXA
+716,76,M,Pressão alta e tontura,36.3,12/8,99,BAIXA
+717,27,M,Diarreia e vômito,39.1,13/8,85,ALTA
+718,59,M,Manchas vermelhas pelo corpo,36.0,18/8,95,BAIXA
+719,6,M,Pressão alta e tontura,36.5,11/9,86,ALTA
+720,19,F,Cansaço extremo e fraqueza,38.5,12/7,87,ALTA
+721,10,F,Manchas vermelhas pelo corpo,36.2,13/12,93,BAIXA
+722,55,M,Pressão alta e tontura,37.8,13/6,94,BAIXA
+723,74,F,Falta de ar e chiado no peito,36.6,10/9,100,BAIXA
+724,74,M,Coceira e alergia na pele,38.7,15/8,97,MÉDIA
+725,49,F,Diarreia e vômito,36.9,14/10,86,ALTA
+726,32,M,Sangramento nasal frequente,37.5,16/7,90,ALTA
+727,5,F,Manchas vermelhas pelo corpo,38.7,10/10,85,ALTA
+728,84,M,Pressão alta e tontura,36.2,16/8,85,ALTA
+729,66,F,Dor de cabeça forte e enjoo,38.1,11/9,88,ALTA
+730,61,F,Cansaço extremo e fraqueza,36.5,11/10,85,ALTA
+731,26,F,Dor de cabeça forte e enjoo,37.2,15/8,90,ALTA
+732,24,M,Dificuldade para urinar,38.2,17/7,99,MÉDIA
+733,82,M,Sangramento nasal frequente,39.1,15/9,89,ALTA
+734,8,F,Coceira e alergia na pele,37.7,14/8,98,BAIXA
+735,41,F,Febre alta e dor no corpo,39.2,9/12,100,ALTA
+736,2,M,Sangramento nasal frequente,38.3,17/10,94,MÉDIA
+737,88,F,Febre alta e dor no corpo,39.9,17/12,85,ALTA
+738,7,F,Cansaço extremo e fraqueza,36.9,16/11,90,ALTA
+739,35,M,Sangramento nasal frequente,37.0,10/9,89,ALTA
+740,36,M,Dificuldade para urinar,38.8,16/8,89,ALTA
+741,78,F,Cansaço extremo e fraqueza,37.0,13/9,85,ALTA
+742,45,M,Pressão alta e tontura,36.6,15/6,90,ALTA
+743,49,F,Manchas vermelhas pelo corpo,38.1,12/7,85,ALTA
+744,69,M,Inchaço nas pernas,38.2,17/7,97,MÉDIA
+745,84,F,Diarreia e vômito,38.4,18/11,97,MÉDIA
+746,80,M,Perda de apetite e emagrecimento rápido,37.4,18/6,90,ALTA
+747,68,F,Coceira e alergia na pele,38.5,16/12,93,MÉDIA
+748,48,F,Inchaço nas pernas,38.7,15/12,89,ALTA
+749,2,M,Dor abdominal intensa,38.7,14/12,97,MÉDIA
+750,26,M,Cansaço extremo e fraqueza,36.5,13/9,93,BAIXA
+751,86,M,Coceira e alergia na pele,39.5,13/8,90,ALTA
+752,40,M,Manchas vermelhas pelo corpo,37.7,13/12,91,ALTA
+753,88,F,Dor no peito e formigamento no braço,39.1,12/10,98,ALTA
+754,50,F,Cansaço extremo e fraqueza,36.9,9/8,91,ALTA
+755,8,F,Dor no peito e formigamento no braço,37.4,9/6,100,BAIXA
+756,56,F,Dor de cabeça forte e enjoo,36.9,10/12,93,BAIXA
+757,87,F,Febre alta e dor no corpo,38.3,16/12,91,ALTA
+758,22,F,Falta de ar e chiado no peito,39.2,13/10,91,ALTA
+759,36,M,Pressão alta e tontura,36.6,10/12,94,BAIXA
+760,42,F,Cansaço extremo e fraqueza,37.6,18/12,90,ALTA
+761,42,F,Cansaço extremo e fraqueza,37.6,11/6,97,BAIXA
+762,76,M,Diarreia e vômito,38.5,13/10,86,ALTA
+763,45,M,Tosse seca persistente,39.7,15/9,97,ALTA
+764,26,M,Sangramento nasal frequente,38.8,15/10,97,MÉDIA
+765,5,M,Sangramento nasal frequente,36.2,10/11,93,BAIXA
+766,80,M,Perda de apetite e emagrecimento rápido,38.4,16/6,88,ALTA
+767,11,F,Inchaço nas pernas,39.6,11/6,97,ALTA
+768,81,F,Pressão alta e tontura,37.4,18/6,91,ALTA
+769,2,M,Dor abdominal intensa,37.2,16/7,92,BAIXA
+770,20,M,Sangramento nasal frequente,39.1,17/7,95,ALTA
+771,66,F,Diarreia e vômito,39.2,14/9,99,ALTA
+772,15,F,Diarreia e vômito,36.6,12/6,87,ALTA
+773,56,M,Pressão alta e tontura,36.9,9/7,87,ALTA
+774,81,F,Manchas vermelhas pelo corpo,38.2,13/11,86,ALTA
+775,55,F,Tosse seca persistente,39.4,10/6,96,ALTA
+776,47,M,Sangramento nasal frequente,38.0,13/12,91,ALTA
+777,55,M,Dificuldade para urinar,37.0,10/8,92,BAIXA
+778,79,F,Coceira e alergia na pele,38.1,10/12,100,MÉDIA
+779,7,M,Pressão alta e tontura,38.7,13/10,87,ALTA
+780,81,M,Falta de ar e chiado no peito,38.5,18/10,99,MÉDIA
+781,60,M,Manchas vermelhas pelo corpo,37.3,14/7,87,ALTA
+782,13,F,Tosse seca persistente,38.0,17/10,100,MÉDIA
+783,79,F,Dor abdominal intensa,38.6,10/8,94,MÉDIA
+784,88,F,Dor no peito e formigamento no braço,38.9,14/10,87,ALTA
+785,29,F,Diarreia e vômito,36.6,15/12,88,ALTA
+786,29,M,Dor abdominal intensa,38.0,9/12,94,MÉDIA
+787,31,M,Falta de ar e chiado no peito,39.9,13/12,98,ALTA
+788,80,F,Dor abdominal intensa,38.2,16/10,95,MÉDIA
+789,37,M,Cansaço extremo e fraqueza,38.1,10/12,88,ALTA
+790,65,F,Inchaço nas pernas,37.9,10/11,91,ALTA
+791,84,M,Sangramento nasal frequente,36.5,14/9,93,BAIXA
+792,67,M,Perda de apetite e emagrecimento rápido,36.2,10/11,85,ALTA
+793,47,M,Dor no peito e formigamento no braço,39.9,13/8,96,ALTA
+794,87,F,Dor de cabeça forte e enjoo,39.6,18/10,98,ALTA
+795,6,F,Cansaço extremo e fraqueza,39.5,18/8,95,ALTA
+796,14,F,Pressão alta e tontura,37.2,12/8,90,ALTA
+797,39,F,Dor de cabeça forte e enjoo,36.2,18/12,98,BAIXA
+798,58,F,Manchas vermelhas pelo corpo,36.2,15/8,86,ALTA
+799,53,F,Manchas vermelhas pelo corpo,38.7,15/8,96,MÉDIA
+800,43,F,Dor de cabeça forte e enjoo,39.6,15/10,86,ALTA
+801,33,F,Tosse seca persistente,36.2,12/9,99,BAIXA
+802,70,F,Dor de cabeça forte e enjoo,37.5,18/6,98,BAIXA
+803,28,M,Dificuldade para urinar,38.9,17/12,99,MÉDIA
+804,41,M,Sangramento nasal frequente,38.2,11/6,95,MÉDIA
+805,68,F,Perda de apetite e emagrecimento rápido,36.5,11/11,96,BAIXA
+806,8,F,Inchaço nas pernas,37.6,12/10,99,BAIXA
+807,63,M,Febre alta e dor no corpo,39.8,18/6,96,ALTA
+808,15,F,Coceira e alergia na pele,36.1,11/11,93,BAIXA
+809,15,M,Coceira e alergia na pele,39.0,18/7,96,ALTA
+810,73,M,Febre alta e dor no corpo,37.3,11/11,99,BAIXA
+811,81,M,Diarreia e vômito,38.2,11/6,92,MÉDIA
+812,14,M,Perda de apetite e emagrecimento rápido,36.6,16/9,98,BAIXA
+813,36,M,Tosse seca persistente,37.3,14/8,97,BAIXA
+814,75,F,Febre alta e dor no corpo,39.4,17/12,96,ALTA
+815,1,F,Perda de apetite e emagrecimento rápido,39.0,17/9,96,ALTA
+816,90,F,Manchas vermelhas pelo corpo,39.9,9/10,86,ALTA
+817,4,M,Dor de cabeça forte e enjoo,36.4,16/12,90,ALTA
+818,89,M,Dor abdominal intensa,36.4,9/7,96,BAIXA
+819,51,M,Falta de ar e chiado no peito,38.2,11/12,99,MÉDIA
+820,5,F,Dor abdominal intensa,38.9,17/7,98,MÉDIA
+821,78,M,Coceira e alergia na pele,38.6,17/8,87,ALTA
+822,1,M,Dificuldade para urinar,40.0,15/6,87,ALTA
+823,12,M,Diarreia e vômito,39.6,9/9,86,ALTA
+824,42,M,Diarreia e vômito,37.9,17/8,97,BAIXA
+825,61,M,Falta de ar e chiado no peito,36.1,13/8,88,ALTA
+826,71,M,Manchas vermelhas pelo corpo,40.0,9/8,95,ALTA
+827,30,M,Dor abdominal intensa,37.7,13/11,86,ALTA
+828,40,F,Coceira e alergia na pele,37.6,17/8,89,ALTA
+829,69,F,Dor no peito e formigamento no braço,36.6,16/12,86,ALTA
+830,55,F,Dor de cabeça forte e enjoo,36.6,17/9,96,BAIXA
+831,72,M,Cansaço extremo e fraqueza,36.2,11/10,100,BAIXA
+832,82,M,Manchas vermelhas pelo corpo,38.7,12/6,96,MÉDIA
+833,33,F,Manchas vermelhas pelo corpo,36.5,11/8,89,ALTA
+834,16,F,Dificuldade para urinar,38.7,9/8,98,MÉDIA
+835,11,F,Tosse seca persistente,38.7,18/8,90,ALTA
+836,46,F,Inchaço nas pernas,39.1,9/8,90,ALTA
+837,64,F,Coceira e alergia na pele,39.0,11/11,97,ALTA
+838,15,F,Dificuldade para urinar,37.8,14/8,85,ALTA
+839,5,M,Perda de apetite e emagrecimento rápido,38.4,9/11,96,MÉDIA
+840,21,F,Dificuldade para urinar,38.8,12/11,87,ALTA
+841,2,M,Febre alta e dor no corpo,37.8,16/6,100,BAIXA
+842,25,M,Diarreia e vômito,36.5,15/12,99,BAIXA
+843,39,M,Falta de ar e chiado no peito,37.1,12/8,86,ALTA
+844,52,M,Falta de ar e chiado no peito,36.0,12/7,90,ALTA
+845,78,M,Sangramento nasal frequente,38.5,12/9,92,MÉDIA
+846,81,M,Falta de ar e chiado no peito,39.4,12/8,93,ALTA
+847,32,F,Falta de ar e chiado no peito,37.9,9/12,95,BAIXA
+848,1,F,Falta de ar e chiado no peito,39.2,17/8,88,ALTA
+849,76,M,Diarreia e vômito,39.9,18/11,98,ALTA
+850,31,M,Manchas vermelhas pelo corpo,38.1,10/11,89,ALTA
+851,39,F,Tosse seca persistente,39.6,17/8,91,ALTA
+852,44,M,Coceira e alergia na pele,39.5,14/7,100,ALTA
+853,77,F,Inchaço nas pernas,39.3,18/12,92,ALTA
+854,72,M,Coceira e alergia na pele,36.8,11/10,86,ALTA
+855,51,F,Febre alta e dor no corpo,37.8,13/11,100,BAIXA
+856,31,M,Inchaço nas pernas,38.0,13/9,85,ALTA
+857,83,F,Cansaço extremo e fraqueza,37.6,16/6,93,BAIXA
+858,52,F,Perda de apetite e emagrecimento rápido,37.6,10/6,87,ALTA
+859,12,M,Dor no peito e formigamento no braço,39.2,9/12,93,ALTA
+860,27,F,Perda de apetite e emagrecimento rápido,36.7,16/12,90,ALTA
+861,22,F,Coceira e alergia na pele,37.3,16/10,89,ALTA
+862,80,F,Perda de apetite e emagrecimento rápido,37.1,15/10,87,ALTA
+863,8,F,Sangramento nasal frequente,37.5,18/7,94,BAIXA
+864,88,M,Cansaço extremo e fraqueza,36.4,11/10,96,BAIXA
+865,54,M,Diarreia e vômito,37.0,16/10,95,BAIXA
+866,70,M,Pressão alta e tontura,36.8,14/12,99,BAIXA
+867,13,M,Dor de cabeça forte e enjoo,37.8,11/11,92,BAIXA
+868,9,M,Sangramento nasal frequente,36.9,11/10,96,BAIXA
+869,73,M,Febre alta e dor no corpo,37.2,15/11,92,BAIXA
+870,82,M,Tosse seca persistente,38.8,16/6,94,MÉDIA
+871,46,M,Tosse seca persistente,38.7,9/11,97,MÉDIA
+872,36,M,Dor abdominal intensa,38.7,14/12,100,MÉDIA
+873,45,M,Manchas vermelhas pelo corpo,39.4,11/10,93,ALTA
+874,85,M,Dor de cabeça forte e enjoo,37.2,18/6,85,ALTA
+875,71,F,Febre alta e dor no corpo,36.2,9/10,87,ALTA
+876,48,F,Perda de apetite e emagrecimento rápido,39.3,13/10,91,ALTA
+877,22,F,Sangramento nasal frequente,38.0,16/7,99,MÉDIA
+878,51,M,Perda de apetite e emagrecimento rápido,38.7,10/12,90,ALTA
+879,34,F,Febre alta e dor no corpo,36.3,9/7,94,BAIXA
+880,71,M,Dificuldade para urinar,37.4,17/6,100,BAIXA
+881,37,F,Coceira e alergia na pele,37.8,12/10,94,BAIXA
+882,86,M,Dor abdominal intensa,36.3,11/7,96,BAIXA
+883,86,M,Dificuldade para urinar,38.3,9/12,98,MÉDIA
+884,40,F,Sangramento nasal frequente,39.2,17/8,96,ALTA
+885,20,F,Tosse seca persistente,39.6,12/8,99,ALTA
+886,55,F,Perda de apetite e emagrecimento rápido,38.7,10/11,95,MÉDIA
+887,19,F,Dor no peito e formigamento no braço,39.5,9/7,97,ALTA
+888,67,M,Perda de apetite e emagrecimento rápido,38.6,10/6,90,ALTA
+889,35,F,Dificuldade para urinar,39.1,15/9,93,ALTA
+890,64,M,Dor abdominal intensa,38.4,18/7,91,ALTA
+891,58,M,Inchaço nas pernas,40.0,10/10,95,ALTA
+892,82,F,Dificuldade para urinar,39.2,12/12,86,ALTA
+893,41,M,Coceira e alergia na pele,37.6,16/7,93,BAIXA
+894,82,M,Diarreia e vômito,37.6,18/7,91,ALTA
+895,17,M,Dor no peito e formigamento no braço,37.2,12/9,93,BAIXA
+896,86,F,Tosse seca persistente,37.1,14/8,99,BAIXA
+897,24,M,Falta de ar e chiado no peito,39.2,15/10,90,ALTA
+898,83,F,Cansaço extremo e fraqueza,38.0,9/12,94,MÉDIA
+899,80,F,Coceira e alergia na pele,36.9,10/9,85,ALTA
+900,75,M,Tosse seca persistente,36.3,10/9,88,ALTA
+901,64,M,Perda de apetite e emagrecimento rápido,37.2,11/8,93,BAIXA
+902,78,M,Falta de ar e chiado no peito,36.9,10/11,91,ALTA
+903,59,M,Inchaço nas pernas,37.0,13/6,94,BAIXA
+904,37,F,Coceira e alergia na pele,36.3,16/9,98,BAIXA
+905,4,F,Falta de ar e chiado no peito,38.9,12/9,93,MÉDIA
+906,82,M,Diarreia e vômito,39.9,12/10,95,ALTA
+907,66,F,Tosse seca persistente,36.9,14/8,97,BAIXA
+908,16,M,Febre alta e dor no corpo,39.0,15/9,93,ALTA
+909,46,F,Cansaço extremo e fraqueza,38.0,18/7,88,ALTA
+910,33,F,Diarreia e vômito,37.8,10/7,96,BAIXA
+911,88,F,Febre alta e dor no corpo,39.4,18/10,97,ALTA
+912,48,F,Inchaço nas pernas,39.6,13/9,99,ALTA
+913,27,M,Falta de ar e chiado no peito,37.1,12/10,88,ALTA
+914,12,F,Dor abdominal intensa,38.4,13/10,100,MÉDIA
+915,82,M,Inchaço nas pernas,36.1,16/11,95,BAIXA
+916,53,M,Diarreia e vômito,39.3,11/6,94,ALTA
+917,67,M,Falta de ar e chiado no peito,38.7,16/8,89,ALTA
+918,16,M,Dor no peito e formigamento no braço,37.9,17/11,92,BAIXA
+919,12,M,Dor abdominal intensa,37.8,12/9,95,BAIXA
+920,53,F,Pressão alta e tontura,38.3,13/11,87,ALTA
+921,25,F,Perda de apetite e emagrecimento rápido,36.9,18/9,93,BAIXA
+922,28,M,Coceira e alergia na pele,39.9,9/6,96,ALTA
+923,84,M,Perda de apetite e emagrecimento rápido,37.0,13/7,87,ALTA
+924,86,M,Inchaço nas pernas,37.8,10/11,97,BAIXA
+925,69,F,Coceira e alergia na pele,39.3,14/10,94,ALTA
+926,43,F,Dor abdominal intensa,37.0,13/7,94,BAIXA
+927,4,M,Inchaço nas pernas,36.7,16/11,98,BAIXA
+928,49,M,Diarreia e vômito,39.6,13/11,95,ALTA
+929,15,F,Pressão alta e tontura,40.0,14/7,86,ALTA
+930,59,M,Dor de cabeça forte e enjoo,39.7,10/12,87,ALTA
+931,50,F,Inchaço nas pernas,40.0,12/7,100,ALTA
+932,12,M,Falta de ar e chiado no peito,37.3,9/12,86,ALTA
+933,35,F,Dor abdominal intensa,37.2,11/8,89,ALTA
+934,37,F,Manchas vermelhas pelo corpo,36.4,14/8,92,BAIXA
+935,28,M,Coceira e alergia na pele,39.0,10/9,85,ALTA
+936,17,F,Manchas vermelhas pelo corpo,37.0,11/7,99,BAIXA
+937,42,F,Inchaço nas pernas,37.0,12/7,98,BAIXA
+938,51,M,Diarreia e vômito,37.5,13/9,94,BAIXA
+939,48,M,Febre alta e dor no corpo,36.3,18/10,89,ALTA
+940,87,F,Diarreia e vômito,39.4,9/6,99,ALTA
+941,23,M,Pressão alta e tontura,36.1,13/8,97,BAIXA
+942,69,F,Coceira e alergia na pele,38.8,10/11,88,ALTA
+943,16,F,Inchaço nas pernas,39.3,10/9,92,ALTA
+944,39,F,Dificuldade para urinar,38.1,10/11,88,ALTA
+945,43,F,Tosse seca persistente,38.1,18/9,91,ALTA
+946,47,M,Dor de cabeça forte e enjoo,36.3,18/6,96,BAIXA
+947,78,M,Cansaço extremo e fraqueza,38.3,11/12,91,ALTA
+948,46,F,Coceira e alergia na pele,38.7,11/10,92,MÉDIA
+949,34,M,Sangramento nasal frequente,38.1,15/7,99,MÉDIA
+950,4,M,Febre alta e dor no corpo,37.8,10/7,92,BAIXA
+951,77,M,Pressão alta e tontura,37.4,11/8,97,BAIXA
+952,33,M,Perda de apetite e emagrecimento rápido,36.0,14/10,98,BAIXA
+953,4,F,Tosse seca persistente,36.1,11/10,91,ALTA
+954,34,M,Sangramento nasal frequente,37.9,12/8,88,ALTA
+955,25,M,Cansaço extremo e fraqueza,39.8,9/7,93,ALTA
+956,90,M,Dor no peito e formigamento no braço,37.2,13/9,87,ALTA
+957,18,M,Febre alta e dor no corpo,36.0,9/9,93,BAIXA
+958,7,M,Sangramento nasal frequente,39.5,15/8,96,ALTA
+959,66,F,Coceira e alergia na pele,39.1,16/10,92,ALTA
+960,33,M,Falta de ar e chiado no peito,37.5,11/10,100,BAIXA
+961,3,M,Perda de apetite e emagrecimento rápido,38.7,10/11,100,MÉDIA
+962,4,M,Tosse seca persistente,38.4,17/10,91,ALTA
+963,29,F,Inchaço nas pernas,39.4,13/11,94,ALTA
+964,9,M,Perda de apetite e emagrecimento rápido,38.5,10/9,100,MÉDIA
+965,6,M,Dificuldade para urinar,39.2,12/6,92,ALTA
+966,42,M,Dor abdominal intensa,36.9,12/11,85,ALTA
+967,85,F,Dor de cabeça forte e enjoo,36.1,13/8,94,BAIXA
+968,6,M,Diarreia e vômito,38.6,15/11,93,MÉDIA
+969,39,M,Dificuldade para urinar,37.3,17/7,88,ALTA
+970,74,M,Febre alta e dor no corpo,38.6,15/12,98,MÉDIA
+971,50,F,Dificuldade para urinar,37.7,13/6,91,ALTA
+972,6,F,Febre alta e dor no corpo,38.2,13/8,96,MÉDIA
+973,84,F,Inchaço nas pernas,39.2,9/9,99,ALTA
+974,24,F,Perda de apetite e emagrecimento rápido,39.7,17/11,93,ALTA
+975,34,M,Perda de apetite e emagrecimento rápido,38.9,17/10,95,MÉDIA
+976,17,F,Tosse seca persistente,39.2,18/7,90,ALTA
+977,57,M,Inchaço nas pernas,40.0,9/12,90,ALTA
+978,72,M,Cansaço extremo e fraqueza,39.0,12/9,100,ALTA
+979,74,M,Falta de ar e chiado no peito,36.5,17/10,98,BAIXA
+980,72,M,Manchas vermelhas pelo corpo,38.7,17/12,93,MÉDIA
+981,1,M,Manchas vermelhas pelo corpo,37.7,13/12,91,ALTA
+982,27,M,Dificuldade para urinar,39.8,17/9,89,ALTA
+983,30,M,Dor de cabeça forte e enjoo,39.5,18/11,90,ALTA
+984,34,M,Manchas vermelhas pelo corpo,36.2,14/11,94,BAIXA
+985,33,M,Perda de apetite e emagrecimento rápido,38.6,17/7,93,MÉDIA
+986,48,F,Sangramento nasal frequente,39.6,14/7,87,ALTA
+987,51,M,Coceira e alergia na pele,37.2,14/11,92,BAIXA
+988,34,F,Dificuldade para urinar,36.7,14/8,92,BAIXA
+989,52,M,Diarreia e vômito,36.5,18/7,90,ALTA
+990,28,M,Diarreia e vômito,37.8,15/7,86,ALTA
+991,17,M,Febre alta e dor no corpo,36.6,17/11,96,BAIXA
+992,56,M,Perda de apetite e emagrecimento rápido,36.7,12/9,89,ALTA
+993,47,M,Manchas vermelhas pelo corpo,36.5,10/9,100,BAIXA
+994,6,F,Cansaço extremo e fraqueza,38.7,12/10,88,ALTA
+995,88,M,Perda de apetite e emagrecimento rápido,38.5,18/12,87,ALTA
+996,37,F,Diarreia e vômito,38.4,12/12,91,ALTA
+997,68,F,Cansaço extremo e fraqueza,39.7,15/10,90,ALTA
+998,19,M,Dor no peito e formigamento no braço,38.6,15/8,97,MÉDIA
+999,63,F,Perda de apetite e emagrecimento rápido,37.4,12/9,90,ALTA
+1000,70,M,Dificuldade para urinar,38.3,14/6,96,MÉDIA

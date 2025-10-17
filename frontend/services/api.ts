@@ -6,7 +6,7 @@ const baseURL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL || process.env.
 
 console.log('Base URL da API:', baseURL);
 const api = axios.create({
-  baseURL,
+  baseURL: `${baseURL}/api`,
   timeout: 5000,
 });
 

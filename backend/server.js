@@ -28,6 +28,7 @@ app.use("/api/holerite", require("./routes/holerite.routes"));
 app.use("/api/ponto", require("./routes/ponto.routes"));
 app.use("/api/tarefas", require("./routes/tarefa.routes"));
 app.use("/api/user", require("./routes/user.routes"));
+app.use("/api/ml", require("./routes/ml.routes")); 
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
