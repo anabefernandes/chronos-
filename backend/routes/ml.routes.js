@@ -1,5 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/mlcontroller");
+const router = require('express').Router();
+const ctrl = require('../controllers/mlcontroller');
+const path = require('path');
 
 /**
  * @swagger
@@ -52,7 +53,7 @@ const ctrl = require("../controllers/mlcontroller");
  *       400:
  *         description: Campos obrigatórios ausentes
  */
-router.post("/predict", ctrl.predictPrioridade);
+router.post('/predict', ctrl.predictPrioridade);
 
 /**
  * @swagger
@@ -64,6 +65,6 @@ router.post("/predict", ctrl.predictPrioridade);
  *       200:
  *         description: Lista de todas as predições
  */
-router.get("/todasPredicoes", ctrl.todasPredicoes);
+router.get('/todasPredicoes', ctrl.todasPredicoes);
 
 module.exports = router;

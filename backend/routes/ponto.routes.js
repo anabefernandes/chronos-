@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/pontoController");
-const { auth, requireRole } = require("../middlewares/auth");
+const router = require('express').Router();
+const ctrl = require('../controllers/pontoController');
+const { auth, requireRole } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -41,7 +41,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  *       201:
  *         description: Ponto registrado
  */
-router.post("/", auth, ctrl.registrarPonto);
+router.post('/', auth, ctrl.registrarPonto);
 
 /**
  * @swagger
@@ -55,7 +55,7 @@ router.post("/", auth, ctrl.registrarPonto);
  *       200:
  *         description: Lista de pontos
  */
-router.get("/meus", auth, ctrl.meusPontos);
+router.get('/meus', auth, ctrl.meusPontos);
 
 /**
  * @swagger
@@ -69,6 +69,6 @@ router.get("/meus", auth, ctrl.meusPontos);
  *       200:
  *         description: Lista de pontos
  */
-router.get("/todos", auth, requireRole("admin"), ctrl.todosPontos);
+router.get('/todos', auth, requireRole('admin'), ctrl.todosPontos);
 
 module.exports = router;

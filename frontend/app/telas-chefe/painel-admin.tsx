@@ -6,6 +6,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Ponto from '../telas-iniciais/ponto';
 import Escalas from '../telas-iniciais/escalas';
 import Holerite from '../telas-iniciais/holerite';
+import Perfil from '../telas-iniciais/perfil';
 import Dashboard from './dashboard-admin';
 import GerenciarFuncionarios from './gerenciar-funcionarios';
 import CriarTarefas from './criar-tarefas';
@@ -18,7 +19,9 @@ type ScreenKey =
   | 'criar-tarefas'
   | 'escalas'
   | 'holerite'
-  | 'gerenciar-funcionarios';
+  | 'gerenciar-funcionarios'
+  | 'notificacoes'
+  | 'perfil';
 
 export default function PainelAdmin() {
   const { role } = useContext(AuthContext);
@@ -44,6 +47,8 @@ export default function PainelAdmin() {
         return <Holerite />;
       case 'gerenciar-funcionarios':
         return <GerenciarFuncionarios />;
+      case 'perfil':
+        return <Perfil />;
       default:
         return <Dashboard setActiveScreen={handleScreenChange} />;
     }

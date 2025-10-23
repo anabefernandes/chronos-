@@ -11,36 +11,58 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
+// ALTERADO: A interface agora inclui todos os dados do paciente
+export interface PacienteData {
+  nome: string;
+  temperatura: string;
+  sintomas: string;
+  idade: string;
+  saturacao: string;
+}
+
 interface PacienteModalProps {
   visible: boolean;
   onClose: () => void;
-  pacienteInicial?: string;
-  onConfirm: (nome: string, temperatura: string, sintomas: string) => void;
+  pacienteInicial: PacienteData; // ALTERADO: Usa a nova interface
+  onConfirm: (paciente: PacienteData) => void; // ALTERADO: Retorna o objeto completo
 }
 
-export default function PacienteModal({
-  visible,
-  onClose,
-  pacienteInicial = '',
-  onConfirm
-}: PacienteModalProps) {
-  const [nome, setNome] = useState(pacienteInicial);
+export default function PacienteModal({ visible, onClose, pacienteInicial, onConfirm }: PacienteModalProps) {
+  const [nome, setNome] = useState('');
   const [temperatura, setTemperatura] = useState('');
   const [sintomas, setSintomas] = useState('');
+  const [idade, setIdade] = useState(''); // NOVO: Estado para idade
+  const [saturacao, setSaturacao] = useState(''); // NOVO: Estado para saturação
 
+  // Efeito para popular o modal quando um paciente já existe
   useEffect(() => {
-    setNome(pacienteInicial);
-  }, [pacienteInicial]);
+    if (pacienteInicial) {
+      setNome(pacienteInicial.nome === 'Nenhum' ? '' : pacienteInicial.nome);
+      setTemperatura(pacienteInicial.temperatura);
+      setSintomas(pacienteInicial.sintomas);
+      setIdade(pacienteInicial.idade);
+      setSaturacao(pacienteInicial.saturacao);
+    }
+  }, [pacienteInicial, visible]);
 
   const handleConfirm = () => {
     if (!nome) {
-      alert('Insira o nome do paciente ou selecione "Nenhum".');
+      alert('Insira o nome do paciente.');
       return;
     }
-    onConfirm(nome, temperatura, sintomas);
+    // ALTERADO: Chama onConfirm com um objeto completo
+    onConfirm({ nome, temperatura, sintomas, idade, saturacao });
     onClose();
+  };
+
+  const handleClose = () => {
+    // Limpa os campos ao fechar sem confirmar
+    setNome('');
     setTemperatura('');
     setSintomas('');
+    setIdade('');
+    setSaturacao('');
+    onClose();
   };
 
   return (
@@ -50,7 +72,6 @@ export default function PacienteModal({
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Informações do Paciente</Text>
             <ScrollView style={{ paddingHorizontal: 16 }}>
-              
               {/* Nome */}
               <View style={[styles.inputWrapper, { marginTop: 10 }]}>
                 <Text style={styles.inputLabel}>Nome</Text>
@@ -59,6 +80,32 @@ export default function PacienteModal({
                   placeholder="Nome do paciente"
                   value={nome}
                   onChangeText={setNome}
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              {/* NOVO: Campo Idade */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Idade</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ex: 42"
+                  value={idade}
+                  onChangeText={setIdade}
+                  keyboardType="numeric"
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              {/* NOVO: Campo Saturação */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Saturação O₂ (%)</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ex: 98"
+                  value={saturacao}
+                  onChangeText={setSaturacao}
+                  keyboardType="numeric"
                   placeholderTextColor="#999"
                 />
               </View>
@@ -78,10 +125,10 @@ export default function PacienteModal({
 
               {/* Sintomas */}
               <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Sintomas</Text>
+                <Text style={styles.inputLabel}>Sintomas (Queixa Principal)</Text>
                 <TextInput
                   style={[styles.input, { height: 80, paddingTop: 10, textAlignVertical: 'top' }]}
-                  placeholder="Descreva os sintomas"
+                  placeholder="Descreva os sintomas ou a queixa principal"
                   value={sintomas}
                   onChangeText={setSintomas}
                   multiline
@@ -95,7 +142,7 @@ export default function PacienteModal({
                   <Text style={styles.btnText}>Confirmar</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.btnCancelar, { flex: 1, marginLeft: 8 }]} onPress={onClose}>
+                <TouchableOpacity style={[styles.btnCancelar, { flex: 1, marginLeft: 8 }]} onPress={handleClose}>
                   <Text style={styles.cancelText}>Cancelar</Text>
                 </TouchableOpacity>
               </View>

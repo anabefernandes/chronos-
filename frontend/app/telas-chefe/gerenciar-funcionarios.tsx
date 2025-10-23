@@ -40,7 +40,14 @@ export default function GerenciarFuncionarios() {
     carregarUsuarios();
   }, []);
 
-  const filteredUsuarios = usuarios.filter(u => u.nome.toLowerCase().includes(search.toLowerCase()));
+  const filteredUsuarios = usuarios.filter(u => {
+    const searchLower = search.toLowerCase();
+    return (
+      u.nome.toLowerCase().includes(searchLower) ||
+      u.setor.toLowerCase().includes(searchLower) ||
+      u.role.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <View style={{ flex: 1 }}>
@@ -71,7 +78,9 @@ export default function GerenciarFuncionarios() {
         <FlatList
           data={filteredUsuarios}
           keyExtractor={item => item._id}
-          renderItem={({ item }) => <FuncionarioCard funcionario={item} onEdit={handleEdit} onDelete={handleDelete} />}
+          renderItem={({ item }) => (
+            <FuncionarioCard funcionario={item as unknown as Funcionario} onEdit={handleEdit} onDelete={handleDelete} />
+          )}
           contentContainerStyle={{ paddingBottom: 50 }}
         />
 
@@ -97,6 +106,7 @@ export default function GerenciarFuncionarios() {
                       senha: string;
                       role: 'funcionario' | 'chefe';
                       foto?: string;
+                      setor: string;
                     }
                   );
                   Alert.alert('Sucesso', 'Usuário criado!');

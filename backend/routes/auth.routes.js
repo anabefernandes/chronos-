@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/authController");
-const { auth } = require("../middlewares/auth");
+const router = require('express').Router();
+const ctrl = require('../controllers/authController');
+const { auth } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -37,7 +37,7 @@ const { auth } = require("../middlewares/auth");
  *       401:
  *         description: Credenciais inválidas
  */
-router.post("/login", ctrl.login);
+router.post('/login', ctrl.login);
 
 /**
  * @swagger
@@ -53,6 +53,6 @@ router.post("/login", ctrl.login);
  *       401:
  *         description: Token inválido ou ausente
  */
-router.get("/userAuth", auth, ctrl.userAuth);
+router.get('/userAuth', auth, ctrl.userAuth);
 
 module.exports = router;

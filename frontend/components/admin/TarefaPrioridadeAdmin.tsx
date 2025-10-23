@@ -26,11 +26,19 @@ interface Funcionario {
   _id: string;
 }
 
+interface Paciente {
+  nome: string;
+  idade?: string;
+  temperatura?: string;
+  saturacao?: string;
+  sintomas?: string;
+}
+
 interface Tarefa {
   _id: string;
   titulo: string;
   descricao?: string;
-  paciente?: string;
+  paciente?: Paciente | null;
   categorias?: Categoria[];
   prioridade: 'baixa' | 'media' | 'alta';
   dataPrevista?: string;

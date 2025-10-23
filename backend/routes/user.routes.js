@@ -1,7 +1,8 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/userController");
-const { auth, requireRole } = require("../middlewares/auth");
-const upload = require("../middlewares/upload");
+const router = require('express').Router();
+const ctrl = require('../controllers/userController');
+const { auth, requireRole } = require('../middlewares/auth');
+const upload = require('../middlewares/upload');
+const { atualizarMeusDados } = require('../controllers/userController');
 
 /**
  * @swagger
@@ -51,13 +52,7 @@ const upload = require("../middlewares/upload");
  *       403:
  *         description: Permissão negada
  */
-router.post(
-  "/criarUsuario",
-  auth,
-  upload.single("foto"),
-  requireRole("admin"),
-  ctrl.criarUsuario
-);
+router.post('/criarUsuario', auth, requireRole('admin', 'chefe'), ctrl.criarUsuario);
 
 /**
  * @swagger
@@ -73,12 +68,7 @@ router.post(
  *       403:
  *         description: Permissão negada
  */
-router.get(
-  "/listarFuncionarios",
-  auth,
-  requireRole("admin"),
-  ctrl.listarFuncionarios
-);
+router.get('/listarFuncionarios', auth, requireRole('admin', 'chefe'), ctrl.listarFuncionarios);
 
 /**
  * @swagger
@@ -94,7 +84,7 @@ router.get(
  *       403:
  *         description: Permissão negada
  */
-router.get("/listarChefe", auth, requireRole("admin"), ctrl.listarChefe);
+router.get('/listarChefe', auth, requireRole('admin', 'chefe'), ctrl.listarChefe);
 
 /**
  * @swagger
@@ -139,13 +129,13 @@ router.get("/listarChefe", auth, requireRole("admin"), ctrl.listarChefe);
  *       403:
  *         description: Permissão negada
  */
-router.put(
-  "/atualizarUsuario/:id",
-  auth,
-  upload.single("foto"),
-  requireRole("admin"),
-  ctrl.atualizarUsuario
-);
+router.put('/atualizarUsuario/:id', auth, requireRole('admin', 'chefe'), ctrl.atualizarUsuario);
+
+// Atualizar dados do próprio usuário logado
+router.put('/atualizarMeusDados', auth, ctrl.atualizarMeusDados);
+
+// Atualizar apenas foto do usuário
+router.put('/atualizarMinhaFoto', auth, upload.single('foto'), ctrl.atualizarMinhaFotoUsuario);
 
 /**
  * @swagger
@@ -170,11 +160,6 @@ router.put(
  *       403:
  *         description: Permissão negada
  */
-router.delete(
-  "/excluirUsuario/:id",
-  auth,
-  requireRole("admin"),
-  ctrl.excluirUsuario
-);
+router.delete('/excluirUsuario/:id', auth, requireRole('admin', 'chefe'), ctrl.excluirUsuario);
 
 module.exports = router;

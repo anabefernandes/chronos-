@@ -1,7 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Modal, TouchableWithoutFeedback, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  Modal,
+  TouchableWithoutFeedback,
+  Image
+} from 'react-native';
 
 export interface Categoria {
   nome: string;
@@ -215,11 +224,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     marginRight: 8,
-    marginBottom: 14 
+    marginBottom: 14
   },
-  tagText: { 
-    color: '#3C188F', 
-    fontSize: 14 
+  tagText: {
+    color: '#3C188F',
+    fontSize: 14
   },
   addTagButton: {
     borderWidth: 1.5,
@@ -233,9 +242,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row'
   },
-  addTagText: { 
-    color: '#3C188F', 
-    fontSize: 14 
+  addTagText: {
+    color: '#3C188F',
+    fontSize: 14
   },
   modalOverlay: {
     flex: 1,
@@ -257,9 +266,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center'
   },
-  inputWrapper: { 
-    marginBottom: 12, 
-    position: 'relative' 
+  inputWrapper: {
+    marginBottom: 12,
+    position: 'relative'
   },
   inputLabel: {
     position: 'absolute',
@@ -282,10 +291,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#fff'
   },
-  buttonsRow: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginTop: 8 
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8
   },
   btnConfirmar: {
     backgroundColor: '#3C188F',

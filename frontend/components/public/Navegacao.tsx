@@ -45,7 +45,8 @@ const Navegacao: React.FC<NavegacaoProps> = ({ activeScreen, onScreenChange }) =
               onPress={() => onScreenChange(item.key)}
               activeOpacity={1}
             >
-              <Image source={isActive ? activeIconsUser[item.key] : icons[item.key]} style={styles.icon} />
+              <Image source={isActive ? (activeIconsUser as any)[item.key] : (icons as any)[item.key]} style={styles.icon} />
+
               <Text style={[styles.activeMenuText, isActive && { color: '#fff' }]}>{item.label}</Text>
             </TouchableOpacity>
           );

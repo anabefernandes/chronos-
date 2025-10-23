@@ -6,8 +6,8 @@ const baseURL = Constants.expoConfig?.extra?.EXPO_PUBLIC_API_URL || process.env.
 
 console.log('Base URL da API:', baseURL);
 const api = axios.create({
-  baseURL: `${baseURL}/api`,
-  timeout: 5000,
+  baseURL: baseURL,
+  timeout: 5000
 });
 
 // Interceptor para adicionar o token em todas as requisições

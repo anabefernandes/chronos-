@@ -1,5 +1,15 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, 
-KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from 'react-native';
 import { useFonts, Poppins_400Regular, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EllipseHeader from '../../components/public/LogoHeader';
@@ -7,13 +17,12 @@ import Footer from '../../components/public/FrasesFooter';
 import { AuthContext } from '../../contexts/AuthContext';
 import React, { useState, useContext } from 'react';
 import { useRouter } from 'expo-router';
-import axios from 'axios';
 import api from '../../services/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const { setRole, setNome } = useContext(AuthContext);
+  const { setRole, setNome, setUserId, setFoto, setSetor } = useContext(AuthContext);
   const router = useRouter();
 
   const [fontsLoaded] = useFonts({
@@ -21,36 +30,42 @@ export default function Login() {
     Poppins_600SemiBold
   });
 
-  if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: '#fff' }} />;
-  }
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: '#fff' }} />;
 
   const handleLogin = async () => {
     try {
-      const res = await api.post('/auth/login', {
-        email,
-        senha
-      });
-
+      const res = await api.post('/auth/login', { email, senha });
       const token = res.data.token;
-      const roleBackend = res.data.user.role;
-      const nome = res.data.user.nome;
+      const roleBackend = res.data.user?.role;
+      const nome = res.data.user?.nome || 'NOVO USUÁRIO';
+      const userId = res.data.user?.id;
+      const setor = res.data.user?.setor || 'Setor não informado';
+      const foto = res.data.user?.foto ?? '';
 
-      if (!token || !roleBackend) {
+      if (!token || !roleBackend || !userId) {
         Alert.alert('Erro', 'Resposta inválida do servidor.');
         console.log('Resposta inválida do backend:', res.data);
         return;
       }
 
       const role = roleBackend.toLowerCase();
-      console.log('Role recebido do backend:', role);
 
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('role', role);
-
+      // Atualiza contexto
+      setUserId(userId);
       setRole(role);
       setNome(nome);
+      setFoto(foto);
+      setSetor(setor);
 
+      // Salva no AsyncStorage
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('userId', userId);
+      await AsyncStorage.setItem('role', role);
+      await AsyncStorage.setItem('nome', nome);
+      await AsyncStorage.setItem('foto', foto);
+      await AsyncStorage.setItem('setor', setor);
+
+      // Redireciona
       if (role === 'chefe' || role === 'admin') {
         router.replace('/telas-chefe/painel-admin');
       } else {

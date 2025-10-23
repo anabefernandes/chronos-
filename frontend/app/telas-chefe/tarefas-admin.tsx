@@ -17,11 +17,19 @@ interface Categoria {
   icone: string;
 }
 
+interface Paciente {
+  nome: string;
+  idade?: string;
+  temperatura?: string;
+  saturacao?: string;
+  sintomas?: string;
+}
+
 interface Tarefa {
   _id: string;
   titulo: string;
   descricao?: string;
-  paciente?: string;
+  paciente?: Paciente | null; 
   categorias?: Categoria[];
   prioridade: 'baixa' | 'media' | 'alta';
   dataPrevista?: string;
@@ -46,6 +54,7 @@ export default function TarefasAdmin() {
 
         const tarefasFormatadas = response.data.map((t: any) => ({
           ...t,
+          paciente: t.paciente || null,
           categorias:
             t.categorias?.map((c: any) => {
               if (typeof c === 'string') {

@@ -1,5 +1,21 @@
-node_modules
+# Node
+node_modules/
+npm-debug.log*
 .env
 .DS_Store
-npm-debug.log*
 
+# Python
+__pycache__/
+*.pyc
+ml.venv/
+
+# React Native / Expo
+frontend/.expo/
+*.expo
+*.expo-shared/
+
+# Uploads temporários
+backend/uploads/
+
+# Logs e arquivos temporários
+*.log

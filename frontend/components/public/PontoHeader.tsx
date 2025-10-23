@@ -1,8 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
 
@@ -12,18 +11,8 @@ interface PontoHeaderProps {
 }
 
 export default function PontoHeader({ horario: backendHorario, data: backendData }: PontoHeaderProps) {
-  const { nome, foto } = useContext(AuthContext);
-
-  const defaultUser = {
-    nome: nome || 'NOVO USUÁRIO',
-    setor: 'setor',
-    foto: foto || undefined
-  };
-
-  const getUserImage = () => {
-    if (defaultUser.foto) return { uri: defaultUser.foto };
-    return require('../../assets/images/telas-public/sem_foto.png');
-  };
+  const { nome, setor, getFoto } = useContext(AuthContext);
+  const fotoURL = getFoto();
 
   const now = new Date();
   const [horario, setHorario] = useState<string>(backendHorario || now.toLocaleTimeString());
@@ -37,23 +26,21 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
       })
   );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const timer = setInterval(() => {
-        const now = new Date();
-        setHorario(now.toLocaleTimeString());
-        setData(
-          now.toLocaleDateString('pt-BR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })
-        );
-      }, 1000);
-      return () => clearInterval(timer);
-    }, [])
-  );
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setHorario(now.toLocaleTimeString());
+      setData(
+        now.toLocaleDateString('pt-BR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+      );
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -69,9 +56,14 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
       </LinearGradient>
 
       <View style={styles.content}>
-        <Image source={getUserImage()} style={styles.foto} />
-        <Text style={styles.nome}>{defaultUser.nome}</Text>
-        <Text style={styles.setor}>{defaultUser.setor}</Text>
+        <Image source={fotoURL} style={styles.foto} />
+
+        <Text style={styles.nome}>{nome || 'NOVO USUÁRIO'}</Text>
+
+        <View style={styles.setorContainer}>
+          <Image source={require('../../assets/images/telas-admin/icone_setor.png')} style={styles.setorIcon} />
+          <Text style={styles.setor}>{setor || 'Setor não informado'}</Text>
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.horario}>{horario}</Text>
@@ -83,15 +75,15 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    width: '100%', 
-    alignItems: 'center' 
+  container: {
+    width: '100%',
+    alignItems: 'center'
   },
   topBackground: {
-    height: 260,
+    height: 270,
     width: '100%',
-    borderBottomLeftRadius: 110,
-    borderBottomRightRadius: 110,
+    borderBottomLeftRadius: 80,
+    borderBottomRightRadius: 80,
     paddingHorizontal: 20,
     paddingTop: 50
   },
@@ -112,15 +104,25 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#fff'
   },
-  nome: { 
-    fontSize: 18, 
-    fontWeight: '600', 
-    color: '#fff', 
-    marginTop: 8 
+  nome: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: 8
   },
-  setor: { 
-    fontSize: 14, 
-    color: '#E0E0E0' 
+  setorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4
+  },
+  setorIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6
+  },
+  setor: {
+    fontSize: 14,
+    color: '#E0E0E0'
   },
   card: {
     backgroundColor: '#fff',
@@ -136,14 +138,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     minHeight: 100
   },
-  horario: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    color: '#000' 
+  horario: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000'
   },
-  data: { 
-    fontSize: 14, 
-    color: '#666', 
-    marginTop: 4 
+  data: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4
   }
 });

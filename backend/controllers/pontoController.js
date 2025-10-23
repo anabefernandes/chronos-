@@ -1,5 +1,5 @@
-const Ponto = require("../models/Ponto");
-const Holerite = require("../models/Holerite");
+const Ponto = require('../models/Ponto');
+const Holerite = require('../models/Holerite');
 
 //função p calcular horas de um dia
 function calcularHorasDoDiaComFlag(pontosDoDia) {
@@ -10,27 +10,27 @@ function calcularHorasDoDiaComFlag(pontosDoDia) {
   let almocoInicio = null;
   let almocoFim = null;
 
-  pontosDoDia.forEach((p) => {
+  pontosDoDia.forEach(p => {
     const horario = new Date(p.horario);
 
     switch (p.status) {
-      case "entrada":
+      case 'entrada':
         isWorking = true;
         entrada = horario;
         break;
-      case "almoco":
+      case 'almoco':
         if (isWorking && entrada) {
           almocoInicio = horario;
           totalHoras += (almocoInicio - entrada) / (1000 * 60 * 60);
           isWorking = false;
         }
         break;
-      case "retorno":
+      case 'retorno':
         almocoFim = horario;
         entrada = almocoFim;
         isWorking = true;
         break;
-      case "saida":
+      case 'saida':
         if (isWorking && entrada) {
           totalHoras += (horario - entrada) / (1000 * 60 * 60);
           isWorking = false;
@@ -54,13 +54,13 @@ exports.registrarPonto = async (req, res, next) => {
     const funcionarioId = req.user.id;
 
     if (!status) {
-      return res.status(400).json({ msg: "Status é obrigatório" });
+      return res.status(400).json({ msg: 'Status é obrigatório' });
     }
 
     const ponto = await Ponto.create({
       funcionario: funcionarioId,
       status,
-      localizacao,
+      localizacao
     });
 
     const data = new Date(ponto.horario);
@@ -70,16 +70,16 @@ exports.registrarPonto = async (req, res, next) => {
     let holerite = await Holerite.findOne({
       funcionario: funcionarioId,
       periodoInicio: primeiroDia,
-      periodoFim: ultimoDia,
+      periodoFim: ultimoDia
     });
 
     const pontos = await Ponto.find({
       funcionario: funcionarioId,
-      horario: { $gte: primeiroDia, $lte: ultimoDia },
+      horario: { $gte: primeiroDia, $lte: ultimoDia }
     }).sort({ horario: 1 });
 
     const dias = {};
-    pontos.forEach((p) => {
+    pontos.forEach(p => {
       const diaStr = new Date(p.horario).toISOString().slice(0, 10);
       if (!dias[diaStr]) dias[diaStr] = [];
       dias[diaStr].push(p);
@@ -95,13 +95,11 @@ exports.registrarPonto = async (req, res, next) => {
 
       detalhesDias.push({
         data: new Date(diaStr),
-        entrada:
-          pontosDoDia.find((p) => p.status === "entrada")?.horario || null,
-        almoco: pontosDoDia.find((p) => p.status === "almoco")?.horario || null,
-        retorno:
-          pontosDoDia.find((p) => p.status === "retorno")?.horario || null,
-        saida: pontosDoDia.find((p) => p.status === "saida")?.horario || null,
-        horasTrabalhadas: horas,
+        entrada: pontosDoDia.find(p => p.status === 'entrada')?.horario || null,
+        almoco: pontosDoDia.find(p => p.status === 'almoco')?.horario || null,
+        retorno: pontosDoDia.find(p => p.status === 'retorno')?.horario || null,
+        saida: pontosDoDia.find(p => p.status === 'saida')?.horario || null,
+        horasTrabalhadas: horas
       });
     }
 
@@ -123,13 +121,11 @@ exports.registrarPonto = async (req, res, next) => {
         descontos,
         totalHoras,
         salarioLiquido,
-        detalhesDias,
+        detalhesDias
       });
     }
 
-    res
-      .status(201)
-      .json({ msg: "Ponto registrado e holerite atualizado", ponto });
+    res.status(201).json({ msg: 'Ponto registrado e holerite atualizado', ponto });
   } catch (err) {
     next(err);
   }
@@ -140,7 +136,7 @@ exports.meusPontos = async (req, res, next) => {
   try {
     const funcionarioId = req.user.id;
     const pontos = await Ponto.find({ funcionario: funcionarioId }).sort({
-      horario: -1,
+      horario: -1
     });
     res.json(pontos);
   } catch (err) {
@@ -151,9 +147,7 @@ exports.meusPontos = async (req, res, next) => {
 // listando pontos de todos os func (apenas admin)
 exports.todosPontos = async (req, res, next) => {
   try {
-    const pontos = await Ponto.find()
-      .populate("funcionario", "nome email")
-      .sort({ horario: -1 });
+    const pontos = await Ponto.find().populate('funcionario', 'nome email').sort({ horario: -1 });
     res.json(pontos);
   } catch (err) {
     next(err);

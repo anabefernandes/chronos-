@@ -2,13 +2,26 @@ import React, { useRef, useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image, Animated, Dimensions } from 'react-native';
 import { icons, activeIconsAdmin } from '../../assets/images/navegacao';
 
+type MenuKey =
+  | 'dashboard'
+  | 'ponto'
+  | 'tarefas'
+  | 'criar-tarefas'
+  | 'escalas'
+  | 'holerite'
+  | 'gerenciar-funcionarios'
+  | 'perfil'
+  | 'notificacoes'
+  | '';
+
+
 interface NavegacaoAdminProps {
-  activeScreen: string;
-  onScreenChange: (screen: string) => void;
+  activeScreen: MenuKey | '';
+  onScreenChange: (screen: MenuKey) => void;
 }
 
 const NavegacaoAdmin: React.FC<NavegacaoAdminProps> = ({ activeScreen, onScreenChange }) => {
-  const menuItems = [
+  const menuItems: { key: MenuKey; label: string }[] = [
     { key: 'ponto', label: 'Ponto' },
     { key: 'tarefas', label: 'Tarefas' },
     { key: 'dashboard', label: 'Dashboard' },
@@ -78,7 +91,14 @@ const NavegacaoAdmin: React.FC<NavegacaoAdminProps> = ({ activeScreen, onScreenC
               onPress={() => onScreenChange(item.key)}
               activeOpacity={1}
             >
-              <Image source={isActive ? activeIconsAdmin[item.key] : icons[item.key]} style={styles.icon} />
+              <Image
+                source={
+                  isActive
+                    ? activeIconsAdmin[item.key as keyof typeof activeIconsAdmin]
+                    : icons[item.key as keyof typeof icons]
+                }
+                style={styles.icon}
+              />
               <Text style={[styles.label, isActive && { color: '#377ACF' }]}>{item.label}</Text>
             </TouchableOpacity>
           );

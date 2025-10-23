@@ -17,20 +17,37 @@ export interface Funcionario {
   observacao?: string;
   tarefas?: string;
   escala?: string;
+  setor: string;
 }
 
 interface FuncionarioCardProps {
   funcionario: Funcionario;
   onEdit?: (funcionario: Funcionario) => void;
   onDelete?: (id: string) => void;
+  onSelect?: (funcionario: Funcionario) => void; // Seleção opcional
+  showActions?: boolean; // Controla se mostra editar/excluir
 }
 
-export default function FuncionarioCard({ funcionario, onEdit, onDelete }: FuncionarioCardProps) {
+export default function FuncionarioCard({
+  funcionario,
+  onEdit,
+  onDelete,
+  onSelect,
+  showActions = true
+}: FuncionarioCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const toggleExpand = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded(!expanded);
+  };
+
+  const handlePress = () => {
+    if (onSelect) {
+      onSelect(funcionario);
+    } else {
+      toggleExpand();
+    }
   };
 
   const statusColorMap = {
@@ -39,45 +56,56 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
     Folga: '#B9D7F0'
   };
 
-  // Função para pegar a URL da imagem
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '');
+  const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
 
-  const getUserImage = () => {
-    if (!funcionario.foto) return require('../../assets/images/telas-public/sem_foto.png');
+  const getRoleIcon = () => {
+    if (funcionario.role === 'chefe') return require('../../assets/images/telas-admin/icone_chefe.png');
+    return require('../../assets/images/telas-admin/icone_funcionario.png');
+  };
 
-    if (funcionario.foto.startsWith('http')) return { uri: funcionario.foto };
+  const getUserImage = (foto?: string) => {
+    if (!foto || foto.trim() === '') return require('../../assets/images/telas-public/sem_foto.png');
+    if (foto.includes('sem_foto.png')) return require('../../assets/images/telas-public/sem_foto.png');
 
-    // Se vier do backend como "/uploads/arquivo.png", converta em URL completa
-    if (funcionario.foto.startsWith('/uploads')) {
-      if (!baseUrl) return require('../../assets/images/telas-public/sem_foto.png');
-      return { uri: `${baseUrl}${funcionario.foto}` };
-    }
-
-    return require('../../assets/images/telas-public/sem_foto.png');
+    let baseURL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+    if (baseURL?.endsWith('/api')) baseURL = baseURL.replace(/\/api$/, '');
+    const cleanFoto = foto.replace(/^\/+/, '');
+    return { uri: `${baseURL}/${cleanFoto}` };
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={toggleExpand} style={[styles.card, expanded && styles.cardExpanded]}>
+    <TouchableOpacity activeOpacity={0.9} onPress={handlePress} style={[styles.card, expanded && styles.cardExpanded]}>
       {/* Cabeçalho */}
       <View style={styles.header}>
-        <Image source={getUserImage()} style={styles.foto} />
+        <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={styles.nome}>{funcionario.nome || 'NOVO USUÁRIO'}</Text>
-          <Text style={styles.cargo}>{funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
+
+          <View style={styles.infoRow}>
+            <Image source={getRoleIcon()} style={styles.infoIcon} />
+            <Text style={styles.infoText}>{funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Image source={setorIcon} style={styles.infoIcon} />
+            <Text style={styles.infoText}>{funcionario.setor}</Text>
+          </View>
         </View>
 
-        <View style={styles.actionIcons}>
-          {onEdit && (
-            <TouchableOpacity onPress={() => onEdit(funcionario)}>
-              <Image source={require('../../assets/images/dashboard/icone_editar.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-          )}
-          {onDelete && (
-            <TouchableOpacity onPress={() => onDelete(funcionario._id)}>
-              <Image source={require('../../assets/images/dashboard/icone_excluir.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-          )}
-        </View>
+        {showActions && (
+          <View style={styles.actionIcons}>
+            {onEdit && (
+              <TouchableOpacity onPress={() => onEdit(funcionario)}>
+                <Image source={require('../../assets/images/telas-admin/icone_editar.png')} style={styles.iconImage} />
+              </TouchableOpacity>
+            )}
+            {onDelete && (
+              <TouchableOpacity onPress={() => onDelete(funcionario._id)}>
+                <Image source={require('../../assets/images/telas-admin/icone_excluir.png')} style={styles.iconImage} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         <View style={[styles.statusBox, { backgroundColor: statusColorMap[funcionario.status || 'Ativo'] }]}>
           <Text style={styles.statusText}>{funcionario.status || 'Ativo'}</Text>
@@ -85,7 +113,7 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete }: Funci
       </View>
 
       {/* Conteúdo expandido */}
-      {expanded && (
+      {!onSelect && expanded && (
         <View style={styles.expandedContainer}>
           <View style={styles.row}>
             <View style={styles.infoBox}>
@@ -141,9 +169,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold'
   },
-  cargo: {
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2
+  },
+  infoIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 6,
+    resizeMode: 'contain'
+  },
+  infoText: {
     fontSize: 14,
-    color: '#555'
+    color: '#131212ff'
   },
   statusBox: {
     minWidth: 70,

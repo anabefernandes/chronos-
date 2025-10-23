@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/holeriteController");
-const { auth, requireRole } = require("../middlewares/auth");
+const router = require('express').Router();
+const ctrl = require('../controllers/holeriteController');
+const { auth, requireRole } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -115,12 +115,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  *                 type: number
  */
 
-router.post(
-  "/criarOuEditarHolerite",
-  auth,
-  requireRole("admin"),
-  ctrl.criarOuEditarHolerite
-);
+router.post('/criarOuEditarHolerite', auth, requireRole('admin'), ctrl.criarOuEditarHolerite);
 
 /**
  * @swagger
@@ -136,7 +131,7 @@ router.post(
  *       401:
  *         description: Token inválido ou ausente
  */
-router.get("/meuHolerite", auth, ctrl.meuHolerite);
+router.get('/meuHolerite', auth, ctrl.meuHolerite);
 
 /**
  * @swagger
@@ -152,6 +147,6 @@ router.get("/meuHolerite", auth, ctrl.meuHolerite);
  *       403:
  *         description: Permissão negada
  */
-router.get("/todosHolerites", auth, requireRole("admin"), ctrl.todosHolerites);
+router.get('/todosHolerites', auth, requireRole('admin'), ctrl.todosHolerites);
 
 module.exports = router;

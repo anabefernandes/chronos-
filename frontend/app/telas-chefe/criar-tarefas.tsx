@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Image, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert,
+  Image,
+  Modal,
+  ActivityIndicator
+} from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -8,32 +19,44 @@ import Navbar from '../../components/public/Navbar';
 import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
 import { Funcionario } from '../../components/admin/FuncionarioCard';
 import CategoriaSelector from '../../components/admin/CategoriaSelector';
-import PacienteModal from '../../components/admin/PacienteModal';
+import PacienteModal, { PacienteData } from '../../components/admin/PacienteModal';
+import { useML } from '../../hooks/useML';
 
 export default function CriarTarefas() {
   const { usuarios, carregarUsuarios } = useContext(AuthContext);
+  const { calcularPrioridade, loading: loadingML } = useML();
+  const roboImg = require('../../assets/images/telas-admin/chatbot.png');
+
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [modalFuncionarios, setModalFuncionarios] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [data, setData] = useState(new Date());
   const [mostrarSeletorData, setMostrarSeletorData] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
   const [categorias, setCategorias] = useState<{ nome: string; cor?: string; icone?: string }[]>([]);
   const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<
     { nome: string; cor?: string; icone?: string }[]
   >([]);
-  const [prioridade, setPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '');
 
-  // Estados do paciente
+  const [prioridade, setPrioridade] = useState<'baixa' | 'media' | 'alta'>('media');
+  const [prioridadeSugerida, setPrioridadeSugerida] = useState<'baixa' | 'media' | 'alta' | null>(null);
+
   const [modalPaciente, setModalPaciente] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState({
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<PacienteData>({
     nome: 'Nenhum',
     temperatura: '',
-    sintomas: ''
+    sintomas: '',
+    idade: '',
+    saturacao: ''
   });
 
-  const IconRemover = require('../../assets/images/dashboard/icone_excluir.png');
+  const IconRemover = require('../../assets/images/telas-admin/icone_excluir.png');
+
+  useEffect(() => {
+    carregarUsuarios();
+  }, []);
 
   const getUserImage = (funcionario: Funcionario) => {
     if (!funcionario.foto) return require('../../assets/images/telas-public/sem_foto.png');
@@ -46,17 +69,8 @@ export default function CriarTarefas() {
       return { uri: funcionario.foto };
     }
 
-    if (funcionario.foto.startsWith('/uploads')) {
-      if (!baseUrl) return require('../../assets/images/telas-public/sem_foto.png');
-      return { uri: `${baseUrl}${funcionario.foto}` };
-    }
-
     return require('../../assets/images/telas-public/sem_foto.png');
   };
-
-  useEffect(() => {
-    carregarUsuarios();
-  }, []);
 
   const handleCreate = async () => {
     if (!funcionarioSelecionado || !titulo) {
@@ -79,14 +93,6 @@ export default function CriarTarefas() {
         prioridade
       });
       Alert.alert('Sucesso', 'Tarefa criada com sucesso!');
-
-      // reset
-      setFuncionarioSelecionado(null);
-      setTitulo('');
-      setDescricao('');
-      setCategoriasSelecionadas([]);
-      setCategorias([]);
-      setPacienteSelecionado({ nome: 'Nenhum', temperatura: '', sintomas: '' });
     } catch (err: any) {
       Alert.alert('Erro', err.response?.data?.msg || 'Erro ao criar tarefa');
     }
@@ -95,6 +101,26 @@ export default function CriarTarefas() {
   const confirmarData = (selectedDate: Date) => {
     setData(selectedDate);
     setMostrarSeletorData(false);
+  };
+
+  const handleSelectPrioridade = (p: 'baixa' | 'media' | 'alta') => {
+    setPrioridade(p);
+    setPrioridadeSugerida(null);
+  };
+
+  const handlePacienteConfirm = async (pacienteAtualizado: PacienteData) => {
+    setPacienteSelecionado(pacienteAtualizado);
+
+    const prioridadeML = await calcularPrioridade(pacienteAtualizado);
+    if (prioridadeML) {
+      setPrioridade(prioridadeML);
+      setPrioridadeSugerida(prioridadeML);
+    } else {
+      setPrioridadeSugerida(null);
+      Alert.alert('Atenção', 'Não foi possível obter a sugestão de prioridade. Por favor, selecione manualmente.');
+    }
+
+    setModalPaciente(false);
   };
 
   const renderFuncionarioSelecionado = () => {
@@ -160,9 +186,7 @@ export default function CriarTarefas() {
           <TouchableOpacity style={styles.input} onPress={() => setModalPaciente(true)}>
             <Text style={{ color: pacienteSelecionado.nome === 'Nenhum' ? '#999' : '#000' }}>
               {pacienteSelecionado.nome !== 'Nenhum'
-                ? `${pacienteSelecionado.nome}${
-                    pacienteSelecionado.temperatura ? ' - ' + pacienteSelecionado.temperatura + '°C' : ''
-                  }`
+                ? `${pacienteSelecionado.nome} (${pacienteSelecionado.idade || '?'} anos)`
                 : 'Nenhum'}
             </Text>
           </TouchableOpacity>
@@ -210,34 +234,47 @@ export default function CriarTarefas() {
         {/* Prioridade */}
         <View style={styles.inputWrapper}>
           <Text style={styles.sectionTitle}>Selecione uma Prioridade:</Text>
+          {loadingML && <ActivityIndicator size="small" color="#3C188F" style={{ marginVertical: 10 }} />}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12 }}>
-            {['baixa', 'media', 'alta'].map(p => {
+            {(['baixa', 'media', 'alta'] as const).map(p => {
               const cores: Record<string, string> = { baixa: '#2ECC71', media: '#F1C40F', alta: '#E74C3C' };
               const selecionado = prioridade === p;
+              const sugerido = prioridadeSugerida === p;
+
               return (
-                <TouchableOpacity
-                  key={p}
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 20,
-                    borderRadius: 20,
-                    borderWidth: selecionado ? 2 : 1,
-                    borderColor: selecionado ? cores[p] : '#ccc',
-                    backgroundColor: selecionado ? cores[p] + '33' : '#fff',
-                    marginHorizontal: 6
-                  }}
-                  onPress={() => setPrioridade(p as 'baixa' | 'media' | 'alta')}
-                >
-                  <Text
+                <View key={p} style={{ alignItems: 'center' }}>
+                  <View key={p} style={{ alignItems: 'center', flexDirection: 'row', marginBottom: 4 }}>
+                    {sugerido && (
+                      <>
+                        <Text style={{ color: cores[p], fontSize: 12, fontWeight: 'bold' }}>Sugestão IA</Text>
+                        <Image source={roboImg} style={{ width: 14, height: 14, marginLeft: 4 }} />
+                      </>
+                    )}
+                  </View>
+                  <TouchableOpacity
                     style={{
-                      color: selecionado ? cores[p] : '#555',
-                      textTransform: 'capitalize',
-                      fontWeight: selecionado ? '700' : '500'
+                      paddingVertical: 8,
+                      paddingHorizontal: 20,
+                      borderRadius: 20,
+                      borderWidth: selecionado ? 2 : 1,
+                      borderColor: selecionado ? cores[p] : '#ccc',
+                      backgroundColor: selecionado ? cores[p] + '33' : '#fff',
+                      marginHorizontal: 6,
+                      marginTop: sugerido ? 0 : 18
                     }}
+                    onPress={() => handleSelectPrioridade(p)}
                   >
-                    {p}
-                  </Text>
-                </TouchableOpacity>
+                    <Text
+                      style={{
+                        color: selecionado ? cores[p] : '#555',
+                        textTransform: 'capitalize',
+                        fontWeight: selecionado ? '700' : '500'
+                      }}
+                    >
+                      {p}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               );
             })}
           </View>
@@ -259,20 +296,38 @@ export default function CriarTarefas() {
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ maxHeight: 400, paddingHorizontal:12 }}>
-              {usuarios.map(u => (
-                <FuncionarioCardSelect
-                  key={u._id}
-                  funcionario={{
-                    ...u,
-                    role: u.role === ('chefia' as any) ? 'chefe' : u.role
-                  }}
-                  onSelect={f => {
-                    setFuncionarioSelecionado(f);
-                    setModalFuncionarios(false);
-                  }}
+
+            {/* Barra de pesquisa */}
+            <View style={styles.searchRow}>
+              <View style={styles.searchContainer}>
+                <Image source={require('../../assets/images/telas-admin/icone_lupa.png')} style={styles.searchIcon} />
+                <TextInput
+                  placeholder="Buscar funcionário..."
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  style={styles.searchInput}
+                  placeholderTextColor="#777"
                 />
-              ))}
+              </View>
+            </View>
+
+            {/* Lista de funcionários */}
+            <ScrollView style={{ maxHeight: 400, minHeight: 200, paddingHorizontal: 12, top: -12 }}>
+              {usuarios
+                .filter(u => u.nome.toLowerCase().includes(searchText.toLowerCase()))
+                .map(u => (
+                  <FuncionarioCardSelect
+                    key={u._id}
+                    funcionario={{
+                      ...u,
+                      role: u.role === 'admin' || u.role === 'chefe' ? 'chefe' : 'funcionario'
+                    }}
+                    onSelect={f => {
+                      setFuncionarioSelecionado(f);
+                      setModalFuncionarios(false);
+                    }}
+                  />
+                ))}
             </ScrollView>
           </View>
         </View>
@@ -282,10 +337,8 @@ export default function CriarTarefas() {
       <PacienteModal
         visible={modalPaciente}
         onClose={() => setModalPaciente(false)}
-        pacienteInicial={pacienteSelecionado.nome !== 'Nenhum' ? pacienteSelecionado.nome : ''}
-        onConfirm={(nome, temperatura, sintomas) => {
-          setPacienteSelecionado({ nome, temperatura, sintomas });
-        }}
+        pacienteInicial={pacienteSelecionado}
+        onConfirm={handlePacienteConfirm}
       />
     </View>
   );
@@ -461,5 +514,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     marginVertical: 12,
     borderRadius: 1
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#377ACF',
+    borderRadius: 30,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: 'transparent'
+  },
+  searchIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+    tintColor: '#377ACF'
+  },
+  searchInput: {
+    flex: 1,
+    height: 30,
+    fontSize: 14,
+    fontFamily: 'Poppins_400Regular'
   }
 });

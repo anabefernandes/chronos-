@@ -2,7 +2,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Pasta de uploads
 const dir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 

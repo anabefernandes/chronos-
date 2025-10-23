@@ -10,11 +10,18 @@ interface Categoria {
   icone: string;
 }
 
+interface Paciente {
+  nome: string;
+  idade?: string;
+  temperatura?: string;
+  saturacao?: string;
+  sintomas?: string;
+}
 interface Tarefa {
   _id: string;
   titulo: string;
   descricao?: string;
-  paciente?: string;
+  paciente?: Paciente | null;
   categorias?: Categoria[];
   prioridade: 'baixa' | 'media' | 'alta';
   dataPrevista?: string;
@@ -101,8 +108,8 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
               key={t._id}
               titulo={t.titulo}
               descricao={t.descricao}
-              paciente={t.paciente}
-              categorias={t.categorias || []} // ✅ garante array
+              paciente={t.paciente} // agora é um objeto
+              categorias={t.categorias || []}
               dataPrevista={t.dataPrevista}
               concluida={false}
               onToggleConcluida={() => marcarConcluida(t._id)}
@@ -176,11 +183,11 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
                 key={t._id}
                 titulo={t.titulo}
                 descricao={t.descricao}
-                paciente={t.paciente}
-                categorias={t.categorias || []} // ✅ garante array
+                paciente={t.paciente} // agora é um objeto
+                categorias={t.categorias || []}
                 dataPrevista={t.dataPrevista}
-                concluida={true}
-                onToggleConcluida={() => {}}
+                concluida={false}
+                onToggleConcluida={() => marcarConcluida(t._id)}
               />
             ))}
             {tarefasConcluidas.length > 3 && (

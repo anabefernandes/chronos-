@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/tarefaController");
-const { auth, requireRole } = require("../middlewares/auth");
+const router = require('express').Router();
+const ctrl = require('../controllers/tarefaController');
+const { auth, requireRole } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -56,9 +56,9 @@ const { auth, requireRole } = require("../middlewares/auth");
  *       403:
  *         description: Permissão negada
  */
-router.post("/", auth, requireRole("chefe", "admin"), ctrl.criarTarefa);
+router.post('/', auth, requireRole('chefe', 'admin'), ctrl.criarTarefa);
 
-router.get("/", auth, requireRole("chefe", "admin"), ctrl.todasTarefas);
+router.get('/', auth, requireRole('chefe', 'admin'), ctrl.todasTarefas);
 /**
  * @swagger
  * /tarefas/funcionario/{funcionarioId}:
@@ -80,12 +80,7 @@ router.get("/", auth, requireRole("chefe", "admin"), ctrl.todasTarefas);
  *       403:
  *         description: Permissão negada
  */
-router.get(
-  "/funcionario/:funcionarioId",
-  auth,
-  requireRole("chefe", "admin"),
-  ctrl.tarefasFuncionario
-);
+router.get('/funcionario/:funcionarioId', auth, requireRole('chefe', 'admin'), ctrl.tarefasFuncionario);
 
 /**
  * @swagger
@@ -130,7 +125,7 @@ router.get(
  *       404:
  *         description: Tarefa não encontrada
  */
-router.put("/:id", auth, requireRole("chefe", "admin"), ctrl.atualizarTarefa);
+router.put('/:id', auth, requireRole('chefe', 'admin'), ctrl.atualizarTarefa);
 
 /**
  * @swagger
@@ -153,7 +148,7 @@ router.put("/:id", auth, requireRole("chefe", "admin"), ctrl.atualizarTarefa);
  *       404:
  *         description: Tarefa não encontrada
  */
-router.delete("/:id", auth, requireRole("chefe", "admin"), ctrl.deletarTarefa);
+router.delete('/:id', auth, requireRole('chefe', 'admin'), ctrl.deletarTarefa);
 
 /**
  * @swagger
@@ -169,6 +164,6 @@ router.delete("/:id", auth, requireRole("chefe", "admin"), ctrl.deletarTarefa);
  *       401:
  *         description: Token inválido ou ausente
  */
-router.get("/minhas", auth, ctrl.minhasTarefas);
+router.get('/minhas', auth, ctrl.minhasTarefas);
 
 module.exports = router;

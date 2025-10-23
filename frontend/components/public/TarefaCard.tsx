@@ -4,10 +4,18 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Categoria } from '../admin/CategoriaSelector';
 
+interface Paciente {
+  nome: string;
+  idade?: string;
+  temperatura?: string;
+  saturacao?: string;
+  sintomas?: string;
+}
+
 interface TarefaCardProps {
   titulo: string;
   descricao?: string;
-  paciente?: string;
+  paciente?: Paciente | null;
   categorias?: Categoria[];
   dataPrevista?: string;
   concluida?: boolean;
@@ -29,16 +37,8 @@ const TarefaCard: React.FC<TarefaCardProps> = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.3,
-        duration: 120,
-        useNativeDriver: true
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 120,
-        useNativeDriver: true
-      })
+      Animated.timing(scaleAnim, { toValue: 1.3, duration: 120, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 120, useNativeDriver: true })
     ]).start();
 
     if (onToggleConcluida) {
@@ -64,7 +64,18 @@ const TarefaCard: React.FC<TarefaCardProps> = ({
 
       <Text style={styles.titulo}>{titulo}</Text>
       {descricao ? <Text style={styles.descricao}>{descricao}</Text> : null}
-      {paciente ? <Text style={styles.paciente}>Paciente: {paciente}</Text> : null}
+
+      {/* Informações do paciente */}
+      {paciente && (
+        <View style={{ marginTop: 6 }}>
+          <Text style={styles.paciente}>
+            Paciente: {paciente.nome} {paciente.idade ? `(${paciente.idade} anos)` : ''}
+          </Text>
+          {paciente.sintomas && <Text style={styles.paciente}>Sintomas: {paciente.sintomas}</Text>}
+          {paciente.temperatura && <Text style={styles.paciente}>Temperatura: {paciente.temperatura}°C</Text>}
+          {paciente.saturacao && <Text style={styles.paciente}>Saturação: {paciente.saturacao}%</Text>}
+        </View>
+      )}
 
       {(dataPrevista || (categorias && categorias.length > 0)) && (
         <View style={styles.rowBottom}>
@@ -138,43 +149,43 @@ const styles = StyleSheet.create({
     marginBottom: 4, 
     color: '#1B0A43' 
   },
-  descricao: { 
-    fontSize: 14, 
-    marginBottom: 4, 
-    color: '#222' 
+  descricao: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#222'
   },
-  paciente: { 
-    fontSize: 14, 
-    marginBottom: 4, 
-    color: '#555' 
+  paciente: {
+    fontSize: 14,
+    marginBottom: 2,
+    color: '#555'
   },
-  rowBottom: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginTop: 8 
+  rowBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8
   },
-  dataContainer: { 
-    flexDirection: 'row', 
+  dataContainer: {
+    flexDirection: 'row',
     alignItems: 'center'
-   },
-  dataText: { 
-    fontSize: 12, 
-    color: '#555', 
-    marginLeft: 4 
   },
-  categoriasContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
+  dataText: {
+    fontSize: 12,
+    color: '#555',
+    marginLeft: 4
   },
-  tag: { 
-    borderRadius: 28, 
-    paddingHorizontal: 12, 
-    paddingVertical: 6, 
-    marginLeft: 6 
+  categoriasContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
-  tagText: { 
-    color: '#fff', 
-    fontSize: 12, 
-    fontWeight: '600' 
+  tag: {
+    borderRadius: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginLeft: 6
+  },
+  tagText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600'
   }
 });

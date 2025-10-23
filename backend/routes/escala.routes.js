@@ -1,6 +1,6 @@
-const router = require("express").Router();
-const ctrl = require("../controllers/escalaController");
-const { auth, requireRole } = require("../middlewares/auth");
+const router = require('express').Router();
+const ctrl = require('../controllers/escalaController');
+const { auth, requireRole } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -51,12 +51,7 @@ const { auth, requireRole } = require("../middlewares/auth");
  *       403:
  *         description: Permissão negada
  */
-router.post(
-  "/criarOuEditarEscala",
-  auth,
-  requireRole("chefe", "admin"),
-  ctrl.criarOuEditarEscala
-);
+router.post('/criarOuEditarEscala', auth, requireRole('chefe', 'admin'), ctrl.criarOuEditarEscala);
 
 /**
  * @swagger
@@ -72,7 +67,7 @@ router.post(
  *       401:
  *         description: Token inválido ou ausente
  */
-router.get("/minhasEscalas", auth, ctrl.minhasEscalas);
+router.get('/minhasEscalas', auth, ctrl.minhasEscalas);
 
 /**
  * @swagger
@@ -88,6 +83,6 @@ router.get("/minhasEscalas", auth, ctrl.minhasEscalas);
  *       403:
  *         description: Permissão negada
  */
-router.get("/todasEscalas", auth, requireRole("admin"), ctrl.todasEscalas);
+router.get('/todasEscalas', auth, requireRole('admin'), ctrl.todasEscalas);
 
 module.exports = router;

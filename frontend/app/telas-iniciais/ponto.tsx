@@ -69,9 +69,7 @@ export default function Ponto() {
     try {
       const res = await api.get('/ponto/meus');
       const hoje = new Date().toISOString().slice(0, 10);
-      const pontosHoje = res.data.filter(
-        (p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje
-      );
+      const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
       setPontos(pontosHoje);
     } catch (err) {
       console.log('Erro ao buscar pontos:', err);
@@ -133,9 +131,7 @@ export default function Ponto() {
                   style={[
                     styles.circleCarrossel,
                     {
-                      backgroundColor: isRegistered(status.value)
-                        ? colors[status.value]
-                        : '#fff',
+                      backgroundColor: isRegistered(status.value) ? colors[status.value] : '#fff',
                       borderColor: colors[status.value],
                       borderWidth: 2
                     }
@@ -153,10 +149,7 @@ export default function Ponto() {
         {slides.map((_, index) => (
           <View
             key={index}
-            style={[
-              styles.dot,
-              { backgroundColor: currentSlide === index ? '#3C188F' : '#777779ff' }
-            ]}
+            style={[styles.dot, { backgroundColor: currentSlide === index ? '#3C188F' : '#777779ff' }]}
           />
         ))}
       </View>
@@ -167,19 +160,13 @@ export default function Ponto() {
         {statusDoDia.map((status: StatusDoDia, index: number) => {
           const ponto = pontos.find(p => p.status === status.value);
           const isFirstAndEmpty = index === 0 && pontos.length === 0;
-          const color = ponto
-            ? colors[status.value]
-            : isFirstAndEmpty
-            ? '#3C188F'
-            : '#9e9e9eff';
+          const color = ponto ? colors[status.value] : isFirstAndEmpty ? '#3C188F' : '#9e9e9eff';
           const dateText = ponto
             ? new Date(ponto.horario).toLocaleDateString('pt-BR').replace(/\//g, '-')
             : isFirstAndEmpty
             ? 'sem registros'
             : '--/--/----';
-          const timeText = ponto
-            ? new Date(ponto.horario).toLocaleTimeString('pt-BR')
-            : '--:--';
+          const timeText = ponto ? new Date(ponto.horario).toLocaleTimeString('pt-BR') : '--:--';
 
           return (
             <View key={status.value} style={styles.timelineItem}>

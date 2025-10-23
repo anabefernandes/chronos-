@@ -6,12 +6,7 @@ interface ActionItem {
   label?: string;
 }
 
-const actions: ActionItem[] = [
-  { key: 'holerite' },
-  { key: 'tarefas'  },
-  { key: 'escalas'  },
-  { key: 'equipe'   }
-];
+const actions: ActionItem[] = [{ key: 'holerite' }, { key: 'tarefas' }, { key: 'escalas' }, { key: 'equipe' }];
 
 const screenWidth = Dimensions.get('window').width;
 const slideWidth = screenWidth;

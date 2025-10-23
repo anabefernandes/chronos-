@@ -3,11 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Categoria } from '../admin/CategoriaSelector';
 
+interface Paciente {
+  nome: string;
+  idade?: string;
+  temperatura?: string;
+  saturacao?: string;
+  sintomas?: string;
+}
+
 interface TarefaCardAdminProps {
   titulo: string;
   descricao?: string;
-  paciente?: string;
-  funcionario?: { nome: string; foto?: string; setor?: string }; //setor
+  paciente?: Paciente | null; // agora aceita objeto paciente
+  funcionario?: { nome: string; foto?: string; setor?: string };
   categorias?: Categoria[];
   dataPrevista?: string;
   concluida?: boolean;
@@ -39,16 +47,19 @@ const TarefaCardAdmin: React.FC<TarefaCardAdminProps> = ({
             </View>
           </View>
 
-          {/* Botões de ação no canto oposto */}
+          {/* Botões de ação */}
           <View style={styles.actionsContainer}>
             {onEditar && (
               <TouchableOpacity onPress={onEditar}>
-                <Image source={require('../../assets/images/dashboard/icone_editar.png')} style={styles.actionIcon} />
+                <Image source={require('../../assets/images/telas-admin/icone_editar.png')} style={styles.actionIcon} />
               </TouchableOpacity>
             )}
             {onDeletar && (
               <TouchableOpacity onPress={onDeletar}>
-                <Image source={require('../../assets/images/dashboard/icone_excluir.png')} style={styles.actionIcon} />
+                <Image
+                  source={require('../../assets/images/telas-admin/icone_excluir.png')}
+                  style={styles.actionIcon}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -58,8 +69,32 @@ const TarefaCardAdmin: React.FC<TarefaCardAdminProps> = ({
       {/* Conteúdo da tarefa */}
       <Text style={styles.titulo}>{titulo}</Text>
       {descricao && <Text style={styles.descricao}>{descricao}</Text>}
-      {paciente && <Text style={styles.paciente}>Paciente: {paciente}</Text>}
 
+      <View style={styles.pacienteCard}>
+        {paciente ? (
+          <>
+            <Text style={styles.pacienteNome}>{paciente.nome}</Text>
+            {paciente.idade && <Text style={styles.pacienteInfo}>Idade: {paciente.idade} anos</Text>}
+            {paciente.temperatura && (
+              <View style={styles.pacienteInfoRow}>
+                <FontAwesome5 name="thermometer-half" size={12} color="#555" />
+                <Text style={styles.pacienteInfo}> {paciente.temperatura}°C</Text>
+              </View>
+            )}
+            {paciente.saturacao && (
+              <View style={styles.pacienteInfoRow}>
+                <FontAwesome5 name="lungs" size={12} color="#555" />
+                <Text style={styles.pacienteInfo}> {paciente.saturacao}%</Text>
+              </View>
+            )}
+            {paciente.sintomas && <Text style={styles.pacienteInfo}>Sintomas: {paciente.sintomas}</Text>}
+          </>
+        ) : (
+          <Text style={styles.pacienteNenhum}>Nenhum paciente vinculado</Text>
+        )}
+      </View>
+
+      {/* Data prevista */}
       {dataPrevista && (
         <View style={styles.dataContainer}>
           <FontAwesome5 name="calendar-alt" size={14} color="#555" />
@@ -98,83 +133,109 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#F9FAFF'
   },
-  cardConcluida: { 
-    opacity: 0.6 
+  cardConcluida: {
+    opacity: 0.6
   },
-  topContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 8 
+  topContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
   },
-  funcionarioContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center' 
+  funcionarioContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
-  foto: { 
-    width: 32, 
-    height: 32, 
-    borderRadius: 16, 
-    marginRight: 8 
+  foto: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8
   },
-  funcionarioNome: { 
-    fontSize: 14, 
-    fontWeight: '500', 
-    color: '#3C188F' 
+  funcionarioNome: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#3C188F'
   },
-  funcionarioSetor: { 
-    fontSize: 12, 
+  funcionarioSetor: {
+    fontSize: 12,
     color: '#555'
   },
-  titulo: { 
-    fontSize: 16, 
-    fontWeight: '600', 
-    marginBottom: 4, 
-    color: '#1B0A43' 
+  titulo: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+    color: '#1B0A43'
   },
-  descricao: { 
-    fontSize: 14, 
-    marginBottom: 4, 
-    color: '#222' 
+  descricao: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#222'
   },
-  paciente: { 
-    fontSize: 14, 
-    marginBottom: 4, 
-    color: '#555' 
+  paciente: {
+    fontSize: 14,
+    marginBottom: 2,
+    color: '#555'
   },
-  dataContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginTop: 8 
+  dataContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8
   },
   dataText: {
-     fontSize: 12, 
-     color: '#555', 
-     marginLeft: 4 
-    },
-  categoriasContainer: { 
-    flexDirection: 'row', 
-    marginTop: 8, 
-    flexWrap: 'wrap' 
+    fontSize: 12,
+    color: '#555',
+    marginLeft: 4
   },
-  tag: { 
-    borderRadius: 28, 
-    paddingHorizontal: 12, 
-    paddingVertical: 6, 
-    marginRight: 6, 
-    marginTop: 4 
+  categoriasContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
+    flexWrap: 'wrap'
   },
-  tagText: { 
-    color: '#fff', 
-    fontSize: 12, 
-    fontWeight: '600' 
+  tag: {
+    borderRadius: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 6,
+    marginTop: 4
   },
-  actionsContainer: { 
-    flexDirection: 'row' 
+  tagText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600'
   },
-  actionIcon: { 
-    width: 24, 
-    height: 24, 
-    marginLeft: 8 
+  actionsContainer: {
+    flexDirection: 'row'
+  },
+  actionIcon: {
+    width: 24,
+    height: 24,
+    marginLeft: 8
+  },
+  pacienteCard: {
+    backgroundColor: '#E8F0FE',
+    padding: 10,
+    borderRadius: 12,
+    marginTop: 6
+  },
+  pacienteNome: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#1B0A43',
+    marginBottom: 2
+  },
+  pacienteInfo: {
+    fontSize: 12,
+    color: '#555'
+  },
+  pacienteInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2
+  },
+  pacienteNenhum: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic'
   }
 });
