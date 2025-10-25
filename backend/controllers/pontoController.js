@@ -1,7 +1,7 @@
 const Ponto = require('../models/Ponto');
 const Holerite = require('../models/Holerite');
 
-//função p calcular horas de um dia
+//FUNÇAO p calcular horas de um dia
 function calcularHorasDoDiaComFlag(pontosDoDia) {
   let isWorking = false;
   let entrada = null;
@@ -47,6 +47,19 @@ function calcularHorasDoDiaComFlag(pontosDoDia) {
   return totalHoras;
 }
 
+function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 //registra ponto e atualiza o holerite
 exports.registrarPonto = async (req, res, next) => {
   try {
@@ -55,6 +68,30 @@ exports.registrarPonto = async (req, res, next) => {
 
     if (!status) {
       return res.status(400).json({ msg: 'Status é obrigatório' });
+    }
+
+    if (!localizacao || !localizacao.latitude || !localizacao.longitude) {
+      return res.status(400).json({ msg: 'Localização é obrigatória' });
+    }
+
+    //DEFINIR COORDENADAS AQUI
+    const LOCAL_TRABALHO = {
+      latitude: -24.024736511022894,
+      longitude: -46.488954928836364
+    };
+    const RAIO_PERMITIDO = 50; //DEFINIR METROS
+
+    const distancia = calcularDistancia(
+      localizacao.latitude,
+      localizacao.longitude,
+      LOCAL_TRABALHO.latitude,
+      LOCAL_TRABALHO.longitude
+    );
+
+    if (distancia > RAIO_PERMITIDO) {
+      return res.status(403).json({
+        msg: `Você está fora do local permitido para registrar o ponto. Distância: ${Math.round(distancia)}m`
+      });
     }
 
     const ponto = await Ponto.create({
@@ -103,7 +140,7 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    const valorHora = holerite ? holerite.valorHora : 20; // default se ainda não setado
+    const valorHora = holerite ? holerite.valorHora : 20;
     const descontos = holerite ? holerite.descontos : 0;
     const salarioLiquido = totalHoras * valorHora - descontos;
 
@@ -131,7 +168,7 @@ exports.registrarPonto = async (req, res, next) => {
   }
 };
 
-// hist de pontos do funcionário logado
+// Hist de pontos do funcionário logado
 exports.meusPontos = async (req, res, next) => {
   try {
     const funcionarioId = req.user.id;
@@ -144,7 +181,7 @@ exports.meusPontos = async (req, res, next) => {
   }
 };
 
-// listando pontos de todos os func (apenas admin)
+// Listando pontos de todos os func (apenas admin)
 exports.todosPontos = async (req, res, next) => {
   try {
     const pontos = await Ponto.find().populate('funcionario', 'nome email').sort({ horario: -1 });

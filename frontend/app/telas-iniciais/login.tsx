@@ -34,7 +34,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await api.post('/auth/login', { email, senha });
+      const res = await api.post('/api/auth/login', { email, senha });
       const token = res.data.token;
       const roleBackend = res.data.user?.role;
       const nome = res.data.user?.nome || 'NOVO USUÁRIO';
