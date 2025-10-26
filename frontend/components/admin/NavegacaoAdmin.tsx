@@ -14,7 +14,6 @@ type MenuKey =
   | 'notificacoes'
   | '';
 
-
 interface NavegacaoAdminProps {
   activeScreen: MenuKey | '';
   onScreenChange: (screen: MenuKey) => void;
@@ -108,6 +107,7 @@ const NavegacaoAdmin: React.FC<NavegacaoAdminProps> = ({ activeScreen, onScreenC
   );
 };
 export default NavegacaoAdmin;
+
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
@@ -162,6 +162,15 @@ const styles = StyleSheet.create({
   dashboardActive: {
     backgroundColor: '#0674d4ff'
   },
-  icon: { width: 28, height: 28, marginBottom: 3 },
-  label: { color: '#767272ff', fontSize: 12, marginTop: 2, fontWeight: 'bold' }
+  icon: {
+    width: 28,
+    height: 28,
+    marginBottom: 3
+  },
+  label: {
+    color: '#767272ff',
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: 'bold'
+  }
 });

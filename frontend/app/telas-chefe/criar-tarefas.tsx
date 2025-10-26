@@ -58,7 +58,7 @@ export default function CriarTarefas() {
     carregarUsuarios();
   }, []);
 
- const getUserImage = (foto?: string) => {
+  const getUserImage = (foto?: string) => {
     if (!foto || foto.trim() === '') return require('../../assets/images/telas-public/sem_foto.png');
     if (foto.includes('sem_foto.png')) return require('../../assets/images/telas-public/sem_foto.png');
 
@@ -137,7 +137,7 @@ export default function CriarTarefas() {
     return (
       <View style={styles.cardFuncionarioSelect}>
         <View style={styles.rowFuncionario}>
-         <Image source={getUserImage(funcionarioSelecionado?.foto)} style={styles.foto} />
+          <Image source={getUserImage(funcionarioSelecionado?.foto)} style={styles.foto} />
 
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.nomeFuncionario}>{funcionarioSelecionado.nome}</Text>
@@ -162,6 +162,7 @@ export default function CriarTarefas() {
       </View>
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
       <Navbar />
@@ -560,50 +561,50 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_400Regular'
   },
   cardFuncionarioSelect: {
-  backgroundColor: '#fff',
-  borderRadius: 10,
-  padding: 12,
-  marginBottom: 16,
-  shadowColor: '#000',
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: 1 },
-  shadowRadius: 2,
-  elevation: 2,
-  borderColor: '#3c188f3e',
-  borderWidth: 1
-},
-rowFuncionario: {
-  flexDirection: 'row',
-  alignItems: 'center'
-},
-fotoFuncionario: {
-  width: 50,
-  height: 50,
-  borderRadius: 25
-},
-nomeFuncionario: {
-  fontSize: 16,
-  fontFamily: 'Poppins_600SemiBold',
-  color: '#222'
-},
-infoRowFuncionario: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginTop: 4
-},
-infoIconFuncionario: {
-  width: 16,
-  height: 16,
-  marginRight: 4
-},
-infoTextFuncionario: {
-  fontSize: 14,
-  color: '#333',
-  fontFamily: 'Poppins_400Regular'
-},
-foto: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
+    borderColor: '#3c188f3e',
+    borderWidth: 1
+  },
+  rowFuncionario: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  fotoFuncionario: {
     width: 50,
     height: 50,
     borderRadius: 25
   },
+  nomeFuncionario: {
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    color: '#222'
+  },
+  infoRowFuncionario: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4
+  },
+  infoIconFuncionario: {
+    width: 16,
+    height: 16,
+    marginRight: 4
+  },
+  infoTextFuncionario: {
+    fontSize: 14,
+    color: '#333',
+    fontFamily: 'Poppins_400Regular'
+  },
+  foto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25
+  }
 });

@@ -24,8 +24,8 @@ interface FuncionarioCardProps {
   funcionario: Funcionario;
   onEdit?: (funcionario: Funcionario) => void;
   onDelete?: (id: string) => void;
-  onSelect?: (funcionario: Funcionario) => void; // Seleção opcional
-  showActions?: boolean; // Controla se mostra editar/excluir
+  onSelect?: (funcionario: Funcionario) => void;
+  showActions?: boolean;
 }
 
 export default function FuncionarioCard({
@@ -75,7 +75,6 @@ export default function FuncionarioCard({
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={handlePress} style={[styles.card, expanded && styles.cardExpanded]}>
-      {/* Cabeçalho */}
       <View style={styles.header}>
         <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
         <View style={{ flex: 1, marginLeft: 12 }}>
@@ -112,7 +111,6 @@ export default function FuncionarioCard({
         </View>
       </View>
 
-      {/* Conteúdo expandido */}
       {!onSelect && expanded && (
         <View style={styles.expandedContainer}>
           <View style={styles.row}>

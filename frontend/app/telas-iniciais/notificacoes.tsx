@@ -4,7 +4,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
-import { listarNotificacoes, marcarNotificacaoComoLida, marcarTodasNotificacoesComoLidas } from '../../services/userService';
+import {
+  listarNotificacoes,
+  marcarNotificacaoComoLida,
+  marcarTodasNotificacoesComoLidas
+} from '../../services/userService';
 
 export default function Notificacoes() {
   const router = useRouter();
@@ -52,7 +56,7 @@ export default function Notificacoes() {
   };
 
   const renderNotificacao = ({ item }: any) => {
-    const isTarefa = item.tipo === 'tarefa'; // Exemplo para diferenciar tipos
+    const isTarefa = item.tipo === 'tarefa';
     return (
       <TouchableOpacity
         style={[styles.notificacaoCard, item.lida ? styles.lida : styles.naoLida]}
@@ -91,7 +95,7 @@ export default function Notificacoes() {
         ) : (
           <FlatList
             data={notificacoes}
-            keyExtractor={(item) => item._id}
+            keyExtractor={item => item._id}
             contentContainerStyle={{ paddingBottom: 20 }}
             renderItem={renderNotificacao}
           />
@@ -102,7 +106,10 @@ export default function Notificacoes() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9F9F9' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9F9F9'
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -117,8 +124,14 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 }
   },
-  backButton: { marginRight: 10 },
-  headerTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
+  backButton: {
+    marginRight: 10
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold'
+  },
   lerTodasButton: {
     marginLeft: 'auto',
     backgroundColor: '#fff',
@@ -126,9 +139,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20
   },
-  lerTodasText: { color: '#3e39a0fa', fontWeight: '600', fontSize: 12 },
-  content: { flex: 1, padding: 20 },
-  vazioTexto: { color: '#999', fontSize: 16, textAlign: 'center', marginTop: 50 },
+  lerTodasText: {
+    color: '#3e39a0fa',
+    fontWeight: '600',
+    fontSize: 12
+  },
+  content: {
+    flex: 1,
+    padding: 20
+  },
+  vazioTexto: {
+    color: '#999',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 50
+  },
   notificacaoCard: {
     padding: 16,
     borderRadius: 16,
@@ -139,11 +164,37 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }
   },
-  notificacaoRow: { flexDirection: 'row', alignItems: 'flex-start' },
-  bolinha: { width: 12, height: 12, borderRadius: 6, marginRight: 10, marginTop: 6 },
-  naoLida: { backgroundColor: '#e3eaff' },
-  lida: { backgroundColor: '#f5f5f5' },
-  titulo: { fontWeight: 'bold', fontSize: 16, color: '#333' },
-  descricao: { marginTop: 6, fontSize: 14, color: '#555' },
-  data: { marginTop: 8, fontSize: 12, color: '#888', textAlign: 'right' }
+  notificacaoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start'
+  },
+  bolinha: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 10,
+    marginTop: 6
+  },
+  naoLida: {
+    backgroundColor: '#e3eaff'
+  },
+  lida: {
+    backgroundColor: '#f5f5f5'
+  },
+  titulo: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#333'
+  },
+  descricao: {
+    marginTop: 6,
+    fontSize: 14,
+    color: '#555'
+  },
+  data: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'right'
+  }
 });

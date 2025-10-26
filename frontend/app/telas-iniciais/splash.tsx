@@ -20,7 +20,6 @@ export default function Splash() {
     Poppins_400Regular
   });
 
-  // Logo girando
   useEffect(() => {
     Animated.loop(
       Animated.timing(spinValue, {
@@ -38,7 +37,6 @@ export default function Splash() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Pontinhos
   useEffect(() => {
     const interval = setInterval(() => {
       setDots(prev => (prev.length < 3 ? prev + '.' : ''));
@@ -46,7 +44,6 @@ export default function Splash() {
     return () => clearInterval(interval);
   }, []);
 
-  // Gradiente
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -108,7 +105,6 @@ export default function Splash() {
   );
 }
 
-// LinearGradient
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const styles = StyleSheet.create({

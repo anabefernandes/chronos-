@@ -26,7 +26,6 @@ export default function Navbar() {
 
     carregarNotificacoes();
 
-    // Atualiza a cada 10 segundos
     const interval = setInterval(carregarNotificacoes, 10000);
     return () => clearInterval(interval);
   }, [userId]);
@@ -71,18 +70,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomLeftRadius: 26,
     borderBottomRightRadius: 26,
-    paddingTop: 30,
+    paddingTop: 30
   },
   logo: {
     width: 160,
-    height: 60,
+    height: 60
   },
   icons: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   iconWrapper: {
-    marginLeft: 20,
+    marginLeft: 20
   },
   badge: {
     position: 'absolute',
@@ -93,11 +92,11 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   badgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold'
+  }
 });

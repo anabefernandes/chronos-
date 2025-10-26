@@ -32,7 +32,6 @@ export default function PerfilFuncionario() {
   const spinAnim = useRef(new Animated.Value(0)).current;
   const { showToast } = useToast();
 
-  // campos editáveis
   const [email, setEmail] = useState('');
   const [editandoEmail, setEditandoEmail] = useState(false);
 
@@ -74,7 +73,7 @@ export default function PerfilFuncionario() {
       return;
     }
 
-    showToast('Selecionando imagem...', 'success'); // feedback instantâneo
+    showToast('Selecionando imagem...', 'success');
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -147,7 +146,7 @@ export default function PerfilFuncionario() {
   const removerFoto = async () => {
     if (!userId) return;
 
-    showToast('Removendo foto...', 'success'); // feedback instantâneo
+    showToast('Removendo foto...', 'success');
 
     try {
       const token = await AsyncStorage.getItem('token');
@@ -299,14 +298,12 @@ export default function PerfilFuncionario() {
       </LinearGradient>
 
       <View style={styles.options}>
-        {/* Minha Escala */}
         <TouchableOpacity style={styles.option}>
           <Ionicons name="calendar-outline" size={20} color="#3C188F" />
           <Text style={styles.optionText}>Minha Escala</Text>
           <Ionicons name="chevron-forward" size={18} color="#3C188F" />
         </TouchableOpacity>
 
-        {/* Alterar e-mail */}
         <TouchableOpacity
           style={styles.option}
           onPress={() => (editandoEmail ? salvarEmail() : setEditandoEmail(true))}
@@ -327,7 +324,6 @@ export default function PerfilFuncionario() {
           <Ionicons name="chevron-forward" size={18} color="#3C188F" />
         </TouchableOpacity>
 
-        {/* Alterar senha */}
         <TouchableOpacity style={styles.option} onPress={() => setModalSenha(true)}>
           <Ionicons name="lock-closed-outline" size={20} color="#3C188F" />
           <Text style={styles.optionText}>Alterar Senha</Text>
@@ -341,7 +337,6 @@ export default function PerfilFuncionario() {
         </TouchableOpacity>
       </View>
 
-      {/* Modal de senha */}
       <Modal visible={modalSenha} transparent animationType="slide">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>

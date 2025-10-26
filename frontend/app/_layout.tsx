@@ -1,7 +1,7 @@
 import { Slot } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { AuthProvider } from '../../frontend/contexts/AuthContext';
-import { ToastProvider } from '../../frontend/contexts/ToastContext'; // ajuste o caminho
+import { ToastProvider } from '../../frontend/contexts/ToastContext';
 
 export default function RootLayout() {
   return (

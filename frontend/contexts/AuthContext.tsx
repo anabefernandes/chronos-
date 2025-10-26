@@ -24,7 +24,7 @@ interface AuthContextType {
   setFoto: (foto: string) => void;
   setSetor: (setor: string) => void;
   carregarUsuarios: () => void;
-  getFoto: () => any; 
+  getFoto: () => any;
 }
 
 export const AuthContext = createContext<AuthContextType>({

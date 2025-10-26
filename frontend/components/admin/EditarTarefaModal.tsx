@@ -51,7 +51,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
     tarefa.paciente || { nome: 'Nenhum', temperatura: '', sintomas: '', idade: '', saturacao: '' }
   );
 
-  // --- NOVO useEffect para atualizar os estados quando a tarefa mudar ---
   useEffect(() => {
     if (tarefa) {
       setTitulo(tarefa.titulo || '');
@@ -66,7 +65,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
       setPrioridadeSugerida(null);
     }
   }, [tarefa]);
-  // ------------------------------------------------------------
 
   useEffect(() => {
     carregarUsuarios();
@@ -180,7 +178,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
 
           {renderFuncionarioSelecionado()}
 
-          {/* Título */}
           <View style={styles.inputWrapper}>
             <Text style={styles.inputLabel}>Título da tarefa</Text>
             <TextInput
@@ -192,7 +189,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
             />
           </View>
 
-          {/* Descrição */}
           <View style={styles.inputWrapper}>
             <Text style={styles.inputLabel}>Descrição da tarefa</Text>
             <TextInput
@@ -205,7 +201,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
             />
           </View>
 
-          {/* Paciente */}
           <View style={styles.inputWrapper}>
             <Text style={styles.inputLabel}>Paciente vinculado</Text>
             <TouchableOpacity style={styles.input} onPress={() => setModalPaciente(true)}>
@@ -217,7 +212,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
             </TouchableOpacity>
           </View>
 
-          {/* Data/Hora */}
           <View style={styles.inputWrapper}>
             <Text style={styles.inputLabel}>Data/Hora</Text>
             <TouchableOpacity style={styles.inputDataHora} onPress={() => setMostrarSeletorData(true)}>
@@ -246,7 +240,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
             />
           </View>
 
-          {/* Categorias */}
           <View style={styles.separator} />
           <CategoriaSelector
             categorias={categorias}
@@ -256,7 +249,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
           />
           <View style={styles.separator} />
 
-          {/* Prioridade */}
           <View style={styles.inputWrapper}>
             <Text style={styles.sectionTitle}>Selecione uma Prioridade:</Text>
             {loadingML && <ActivityIndicator size="small" color="#3C188F" style={{ marginVertical: 10 }} />}
@@ -310,7 +302,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
           <View style={{ height: 40 }} />
         </ScrollView>
 
-        {/* Modal Funcionário */}
         <Modal visible={modalFuncionarios} animationType="slide" transparent>
           <View style={styles.modalOverlay}>
             <View style={styles.modalBox}>
@@ -324,7 +315,7 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
                 {usuarios.map(u => (
                   <FuncionarioCardSelect
                     key={u._id}
-                    funcionario={u as any} 
+                    funcionario={u as any}
                     onSelect={f => {
                       setFuncionarioSelecionado(f);
                       setModalFuncionarios(false);
@@ -336,7 +327,6 @@ const EditarTarefaModal: React.FC<EditarTarefaModalProps> = ({ visible, onClose,
           </View>
         </Modal>
 
-        {/* Modal Paciente */}
         <PacienteModal
           visible={modalPaciente}
           onClose={() => setModalPaciente(false)}

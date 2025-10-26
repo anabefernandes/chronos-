@@ -49,11 +49,7 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.card, expanded && styles.cardExpanded]}
-      activeOpacity={0.8}
-      onPress={handlePress} // Seleciona o funcionário
-    >
+    <TouchableOpacity style={[styles.card, expanded && styles.cardExpanded]} activeOpacity={0.8} onPress={handlePress}>
       <View style={styles.row}>
         <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
         <View style={{ flex: 1, marginLeft: 12 }}>
@@ -74,7 +70,6 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
           <Text style={styles.statusText}>{funcionario.status || 'Ativo'}</Text>
         </View>
 
-        {/* Botão de olho para expandir */}
         <TouchableOpacity onPress={toggleExpand} style={{ marginLeft: 8 }}>
           <Image
             source={

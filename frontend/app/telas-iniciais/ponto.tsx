@@ -17,7 +17,6 @@ import PontoHeader from '../../components/public/PontoHeader';
 
 const { width } = Dimensions.get('window');
 
-// Tipagens ---------------------
 interface Ponto {
   _id: string;
   status: string;
@@ -29,7 +28,6 @@ interface StatusDoDia {
   value: string;
 }
 
-// Constantes -------------------
 const statusDoDia: StatusDoDia[] = [
   { label: 'Entrada', value: 'entrada' },
   { label: 'Almoço', value: 'almoco' },
@@ -44,9 +42,9 @@ const colors: Record<string, string> = {
   saida: '#AB3838'
 };
 
-// SUBSTITUIR PELAS COORDENADAS!! 
+// SUBSTITUIR PELAS COORDENADAS!!
 const LOCAL_FIXO = {
-latitude: -24.024736511022894,
+  latitude: -24.024736511022894,
   longitude: -46.488954928836364
 };
 const RAIO_PERMITIDO = 50; //DEFINIR AQUI OS METROS
@@ -58,16 +56,12 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   const Δφ = (lat2 - lat1) * (Math.PI / 180);
   const Δλ = (lon2 - lon1) * (Math.PI / 180);
 
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) *
-    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
 }
 
-// Componente -------------------
 export default function Ponto() {
   const [user, setUser] = useState<any>(null);
   const [pontos, setPontos] = useState<Ponto[]>([]);
@@ -85,7 +79,7 @@ export default function Ponto() {
     const location = await Location.getCurrentPositionAsync({});
     const coords = {
       latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
+      longitude: location.coords.longitude
     };
     setLocalizacao(coords);
     return coords;
@@ -150,7 +144,6 @@ export default function Ponto() {
     }
   };
 
-  // Divide os botões do carrossel em grupos de 2
   const slides: StatusDoDia[][] = [];
   for (let i = 0; i < statusDoDia.length; i += 2) {
     slides.push(statusDoDia.slice(i, i + 2));
@@ -165,7 +158,6 @@ export default function Ponto() {
     <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
       <PontoHeader horario={undefined} data={undefined} />
 
-      {/* Carrossel de botões */}
       <FlatList
         ref={flatListRef}
         horizontal
@@ -200,7 +192,6 @@ export default function Ponto() {
         )}
       />
 
-      {/* Bolinhas do slide */}
       <View style={styles.pagination}>
         {slides.map((_, index) => (
           <View
@@ -210,7 +201,6 @@ export default function Ponto() {
         ))}
       </View>
 
-      {/* Linha do tempo */}
       <Text style={styles.titulo}>Registros do dia</Text>
       <View style={styles.timeline}>
         {statusDoDia.map((status: StatusDoDia, index: number) => {

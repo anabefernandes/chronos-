@@ -74,7 +74,6 @@ export default function GerenciarFuncionarios() {
           </TouchableOpacity>
         </View>
 
-        {/* Lista de funcionários */}
         <FlatList
           data={filteredUsuarios}
           keyExtractor={item => item._id}
@@ -84,7 +83,6 @@ export default function GerenciarFuncionarios() {
           contentContainerStyle={{ paddingBottom: 50 }}
         />
 
-        {/* Formulário de adicionar/editar */}
         {showForm && (
           <FormAdicionarFuncionario
             onClose={() => {
@@ -94,11 +92,9 @@ export default function GerenciarFuncionarios() {
             onAdd={async dados => {
               try {
                 if (editingFuncionario) {
-                  // Atualiza
                   await atualizarUsuario(editingFuncionario._id, dados);
                   Alert.alert('Sucesso', 'Usuário atualizado!');
                 } else {
-                  // Cria
                   await criarUsuario(
                     dados as {
                       nome: string;
@@ -114,7 +110,7 @@ export default function GerenciarFuncionarios() {
 
                 setShowForm(false);
                 setEditingFuncionario(null);
-                await carregarUsuarios(); // garante que os usuários criados apareçam
+                await carregarUsuarios();
               } catch (err: any) {
                 Alert.alert('Erro', err?.response?.data?.msg || err.message || 'Erro ao salvar usuário');
               }

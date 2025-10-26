@@ -29,7 +29,7 @@ interface Tarefa {
   _id: string;
   titulo: string;
   descricao?: string;
-  paciente?: Paciente | null; 
+  paciente?: Paciente | null;
   categorias?: Categoria[];
   prioridade: 'baixa' | 'media' | 'alta';
   dataPrevista?: string;
@@ -42,7 +42,6 @@ export default function TarefasAdmin() {
   const [usuarioLogadoId, setUsuarioLogadoId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    // Pega o ID do usuário logado pelo nome
     const usuario = usuarios.find(u => u.nome === nome);
     setUsuarioLogadoId(usuario?._id);
   }, [nome, usuarios]);

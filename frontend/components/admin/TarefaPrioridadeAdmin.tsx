@@ -382,7 +382,6 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
         />
       )}
 
-      {/* Animação de sucesso ao concluir */}
       {animacao && (
         <View style={[styles.successOverlay, { bottom: 60 }]} pointerEvents="box-none">
           <LottieView

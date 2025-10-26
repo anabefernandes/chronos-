@@ -31,7 +31,7 @@ interface TarefaCardFuncionarioProps {
   categorias?: Categoria[];
   dataPrevista?: string;
   concluida?: boolean;
-  onToggleConcluida?: () => void; 
+  onToggleConcluida?: () => void;
 }
 
 const TarefaCardFuncionario: React.FC<TarefaCardFuncionarioProps> = ({
