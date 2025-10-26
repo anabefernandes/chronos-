@@ -165,5 +165,6 @@ router.delete('/:id', auth, requireRole('chefe', 'admin'), ctrl.deletarTarefa);
  *         description: Token inválido ou ausente
  */
 router.get('/minhas', auth, ctrl.minhasTarefas);
+router.put('/minha/:id', auth, ctrl.atualizarStatusProprio);
 
 module.exports = router;

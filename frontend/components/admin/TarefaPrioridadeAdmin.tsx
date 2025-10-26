@@ -8,24 +8,27 @@ import {
   TouchableOpacity,
   Animated,
   TextInput,
-  Image
+  Image,
+  Alert
 } from 'react-native';
 import TarefaCardAdmin from './TarefaCardAdmin';
 import { AuthContext } from '../../contexts/AuthContext';
+import api from '../../services/api';
+import EditarTarefaModal from './EditarTarefaModal';
+import LottieView from 'lottie-react-native';
+import { atualizarTarefaAdmin } from '../../services/userService';
 
 interface Categoria {
   nome: string;
   cor: string;
   icone: string;
 }
-
 interface Funcionario {
   nome: string;
   setor?: string;
   foto?: string;
   _id: string;
 }
-
 interface Paciente {
   nome: string;
   idade?: string;
@@ -33,7 +36,6 @@ interface Paciente {
   saturacao?: string;
   sintomas?: string;
 }
-
 interface Tarefa {
   _id: string;
   titulo: string;
@@ -44,8 +46,8 @@ interface Tarefa {
   dataPrevista?: string;
   funcionario: Funcionario;
   concluida?: boolean;
+  status?: 'pendente' | 'em_andamento' | 'concluida';
 }
-
 interface Props {
   tarefas: Tarefa[];
   usuarioLogadoId?: string;
@@ -55,63 +57,107 @@ const coresPrioridade = { alta: '#FF6B6B', media: '#FFD93D', baixa: '#4ECDC4' };
 const larguraTela = Dimensions.get('window').width;
 
 const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) => {
-  const { role } = useContext(AuthContext);
-  const [expandido, setExpandido] = useState({ alta: false, media: false, baixa: false });
+  const { userId } = useContext(AuthContext);
+  const usuarioId = usuarioLogadoId || userId;
+
+  const [expandido, setExpandido] = useState<{ alta: boolean; media: boolean; baixa: boolean; concluidas: boolean }>({
+    alta: false,
+    media: false,
+    baixa: false,
+    concluidas: false
+  });
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [animacao, setAnimacao] = useState(false);
+  const [modalEditarVisible, setModalEditarVisible] = useState(false);
+  const [tarefaSelecionada, setTarefaSelecionada] = useState<Tarefa | null>(null);
+  const [listaTarefas, setListaTarefas] = useState<Tarefa[]>(tarefas);
+
   const [search, setSearch] = useState('');
   const [filtro, setFiltro] = useState<'todas' | 'minhas'>('todas');
   const [showFiltroModal, setShowFiltroModal] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const tarefasFiltradas = tarefas
-    .filter(t => filtro === 'todas' || t.funcionario._id === usuarioLogadoId)
-    .filter(t => t.funcionario.nome.toLowerCase().includes(search.toLowerCase()));
+  // Atualiza lista de tarefas
+  useEffect(() => setListaTarefas(tarefas), [tarefas]);
 
-  const tarefasConcluidas = tarefasFiltradas.filter(t => t.concluida);
-  const totalTarefas = tarefasFiltradas.length;
-  const progresso = totalTarefas ? Math.round((tarefasConcluidas.length / totalTarefas) * 100) : 0;
-
+  // Animação do overlay global
   useEffect(() => {
     Animated.timing(fadeAnim, {
-      toValue: tarefasFiltradas.length === 0 ? 1 : 0,
-      duration: 500,
+      toValue: listaTarefas.filter(t => t.status !== 'concluida').length === 0 ? 1 : 0,
+      duration: 400,
       useNativeDriver: true
     }).start();
-  }, [tarefasFiltradas]);
+  }, [listaTarefas]);
 
-  const renderPrioridade = (prio: 'alta' | 'media' | 'baixa') => {
-    const filtradas = tarefasFiltradas.filter(t => t.prioridade === prio);
-    const mostrarTodos = expandido[prio];
-    const exibidas = mostrarTodos ? filtradas : filtradas.slice(0, 3);
+  const atualizarTarefas = async () => {
+    try {
+      const response = await api.get('/tarefas');
+      setListaTarefas(response.data);
+    } catch (err) {
+      console.log('Erro ao atualizar tarefas', err);
+    }
+  };
 
-    return (
-      <View style={{ marginBottom: 24 }}>
-        <View style={styles.headerPrioridade}>
-          <View style={[styles.bolaPrioridade, { backgroundColor: coresPrioridade[prio] }]} />
-          <Text style={styles.titlePrioridade}>
-            {prio.toUpperCase()} ({filtradas.length})
-          </Text>
-          {filtradas.length > 3 && (
-            <TouchableOpacity onPress={() => setExpandido(prev => ({ ...prev, [prio]: !prev[prio] }))}>
-              <Text style={styles.expandText}>{mostrarTodos ? 'Mostrar menos' : 'Mostrar todos'}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+  const excluirTarefa = (id: string) => {
+    Alert.alert('Confirmação', 'Deseja mesmo excluir essa tarefa?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.delete(`/tarefas/${id}`);
+            Alert.alert('Sucesso', 'Tarefa excluída com sucesso!');
+            atualizarTarefas();
+          } catch (err) {
+            Alert.alert('Erro', 'Não foi possível excluir a tarefa.');
+          }
+        }
+      }
+    ]);
+  };
 
-        {exibidas.map(t => (
-          <TarefaCardAdmin
-            key={t._id}
-            titulo={t.titulo}
-            descricao={t.descricao}
-            paciente={t.paciente}
-            funcionario={t.funcionario}
-            categorias={t.categorias}
-            dataPrevista={t.dataPrevista}
-            onEditar={() => console.log('Editar', t._id)}
-            onDeletar={() => console.log('Deletar', t._id)}
-          />
-        ))}
-      </View>
-    );
+  const alternarConcluida = async (tarefa: Tarefa, novaConcluida: boolean) => {
+    try {
+      const novoStatus = novaConcluida ? 'concluida' : 'pendente';
+      await atualizarTarefaAdmin(tarefa._id, novoStatus);
+      setListaTarefas(prev => prev.map(t => (t._id === tarefa._id ? { ...t, status: novoStatus } : t)));
+      if (novaConcluida) {
+        setAnimacao(true);
+        setTimeout(() => setAnimacao(false), 2000);
+      }
+    } catch (err) {
+      Alert.alert('Erro', 'Não foi possível atualizar o status da tarefa.');
+    }
+  };
+
+  const tarefasNaoConcluidas = listaTarefas.filter(t => t.status !== 'concluida');
+  const tarefasConcluidas = listaTarefas.filter(t => t.status === 'concluida');
+
+  // Filtra por “todas” ou “minhas” e pesquisa por nome do funcionário
+  const filtrarTarefas = (lista: Tarefa[]) =>
+    lista
+      .filter(t => filtro === 'todas' || (t.funcionario && t.funcionario._id === usuarioId))
+      .filter(t => t.funcionario.nome.toLowerCase().includes(search.toLowerCase()));
+
+  const tarefasNaoConcluidasFiltradas = filtrarTarefas(tarefasNaoConcluidas);
+  const tarefasConcluidasFiltradas = filtrarTarefas(tarefasConcluidas);
+
+  const nenhumaTarefa = tarefasNaoConcluidasFiltradas.length === 0;
+
+  const progresso =
+    tarefasNaoConcluidasFiltradas.length + tarefasConcluidasFiltradas.length
+      ? Math.round(
+          (tarefasConcluidasFiltradas.length /
+            (tarefasNaoConcluidasFiltradas.length + tarefasConcluidasFiltradas.length)) *
+            100
+        )
+      : 0;
+
+  const rolarParaConcluidas = () => {
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    setAnimacao(false);
   };
 
   const opcoesFiltro = [
@@ -119,71 +165,235 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
     { label: 'Minhas tarefas', value: 'minhas' }
   ];
 
+  const renderPrioridade = (prio: 'alta' | 'media' | 'baixa', tarefasFiltradas: Tarefa[]) => {
+    const filtradas = tarefasFiltradas.filter(t => t.prioridade === prio);
+    const mostrarTodos = expandido[prio];
+    const exibidas = mostrarTodos ? filtradas : filtradas.slice(0, 3);
+
+    return (
+      <View style={{ marginBottom: 24 }}>
+        <View style={styles.headerPrioridade}>
+          <View style={styles.leftHeader}>
+            <View style={[styles.bolaPrioridade, { backgroundColor: coresPrioridade[prio] }]} />
+            <Text style={styles.titlePrioridade}>
+              {prio === 'alta' ? 'Prioridade Alta' : prio === 'media' ? 'Prioridade Média' : 'Prioridade Baixa'}
+            </Text>
+          </View>
+          <View style={styles.rightHeader}>
+            <Image
+              source={require('../../assets/images/telas-public/icone_contador.png')}
+              style={styles.contadorIcon}
+              resizeMode="contain"
+            />
+            <Text style={styles.contadorTexto}>
+              {filtradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+            </Text>
+          </View>
+        </View>
+
+        {exibidas.length > 0 ? (
+          <>
+            {exibidas.map(t => (
+              <TarefaCardAdmin
+                key={t._id}
+                tarefa={{ ...t, funcionario: t.funcionario ? { ...t.funcionario, id: t.funcionario._id } : undefined }}
+                onEditar={() => {
+                  setTarefaSelecionada(t);
+                  setModalEditarVisible(true);
+                }}
+                onDeletar={() => excluirTarefa(t._id)}
+                onToggleConcluida={novaConcluida => alternarConcluida(t, novaConcluida)}
+              />
+            ))}
+
+            {filtradas.length > 3 && (
+              <TouchableOpacity
+                style={styles.verMaisBotao}
+                onPress={() => setExpandido(prev => ({ ...prev, [prio]: !prev[prio] }))}
+              >
+                <Text style={styles.verMaisTexto}>{mostrarTodos ? 'Ver menos' : 'Ver mais'}</Text>
+                <Image
+                  source={
+                    mostrarTodos
+                      ? require('../../assets/images/telas-public/icone_cima.png')
+                      : require('../../assets/images/telas-public/icone_baixo.png')
+                  }
+                  style={styles.verMaisIcone}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </>
+        ) : (
+          <View style={styles.tarefasVaziasContainer}>
+            <LottieView
+              source={require('../../assets/lottie/sem_tarefas2.json')}
+              autoPlay
+              loop
+              style={{ width: larguraTela * 0.4, height: larguraTela * 0.4 }}
+            />
+            <Text style={styles.overlayTexto}>Parabéns, todas as tarefas dessa prioridade foram concluídas!</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <>
-      <View style={{ marginBottom: 16, width: larguraTela - 40, alignSelf: 'center' }}>
-        <Text style={styles.progressoTitulo}>Progresso da equipe</Text>
+    <View style={{ flex: 1 }}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={{ padding: 20, paddingTop: 1, flexGrow: 1 }}>
+        <Text style={styles.progressoTitulo}>{filtro === 'todas' ? 'Progresso da equipe' : 'Meu progresso'}</Text>
         <View style={styles.progressoContainer}>
           <View style={[styles.progressoFill, { width: `${progresso}%` }]} />
           <Text style={styles.progressoText}>{progresso}% concluído</Text>
         </View>
+
         <Text style={styles.progressoContador}>
-          {tarefasConcluidas.length} de {totalTarefas} tarefas concluídas
+          {tarefasConcluidasFiltradas.length} de{' '}
+          {tarefasNaoConcluidasFiltradas.length + tarefasConcluidasFiltradas.length} tarefas concluídas
         </Text>
-      </View>
 
-      <View style={styles.filterSearchRow}>
-        {/* Campo de pesquisa */}
-        <View style={styles.searchWrapper}>
-          <Image source={require('../../assets/images/telas-admin/icone_lupa.png')} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Pesquisar funcionário"
-            placeholderTextColor="#777"
-            value={search}
-            onChangeText={setSearch}
-          />
+        {/* Pesquisa e filtro */}
+        <View style={styles.filterSearchRow}>
+          <View style={styles.searchWrapper}>
+            <Image source={require('../../assets/images/telas-admin/icone_lupa.png')} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Pesquisar funcionário"
+              placeholderTextColor="#777"
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.filterWrapper}
+            onPress={() => setShowFiltroModal(prev => !prev)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.inputLabel}>Filtrar</Text>
+            <Text style={styles.inputFiltro}>{filtro === 'todas' ? 'Todas as tarefas' : 'Minhas tarefas'}</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Campo de filtro */}
-        <TouchableOpacity
-          style={styles.filterWrapper}
-          onPress={() => setShowFiltroModal(prev => !prev)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.inputLabel}>Filtrar</Text>
-          <Text style={styles.inputFiltro}>{filtro === 'todas' ? 'Todas as tarefas' : 'Minhas tarefas'}</Text>
-        </TouchableOpacity>
-      </View>
-      {showFiltroModal && (
-        <View style={styles.modalFiltro}>
-          {opcoesFiltro.map(opt => (
-            <TouchableOpacity
-              key={opt.value}
-              style={styles.modalOption}
-              onPress={() => {
-                setFiltro(opt.value as 'todas' | 'minhas'); // atualiza filtro
-                setShowFiltroModal(false); // fecha o modal
-              }}
-            >
-              <Text style={styles.modalOptionText}>{opt.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+        {showFiltroModal && (
+          <View style={styles.modalFiltro}>
+            {opcoesFiltro.map(opt => (
+              <TouchableOpacity
+                key={opt.value}
+                style={styles.modalOption}
+                onPress={() => {
+                  setFiltro(opt.value as 'todas' | 'minhas');
+                  setShowFiltroModal(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
-        {renderPrioridade('alta')}
-        {renderPrioridade('media')}
-        {renderPrioridade('baixa')}
+        <View style={{ position: 'relative' }}>
+          {nenhumaTarefa && (
+            <View style={styles.overlayPrioridades}>
+              <LottieView
+                source={require('../../assets/lottie/sem_tarefas.json')}
+                autoPlay
+                loop
+                style={{ width: larguraTela * 0.55, height: larguraTela * 0.55, marginTop: -250 }}
+              />
+              <Text style={styles.overlayTexto}>Nenhuma tarefa disponível</Text>
+              <TouchableOpacity style={styles.botaoVerConcluidas} onPress={rolarParaConcluidas}>
+                <Text style={styles.botaoTexto}>Ver concluídas</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {renderPrioridade('alta', tarefasNaoConcluidasFiltradas)}
+          {renderPrioridade('media', tarefasNaoConcluidasFiltradas)}
+          {renderPrioridade('baixa', tarefasNaoConcluidasFiltradas)}
+        </View>
+
+        {tarefasConcluidasFiltradas.length > 0 && (
+          <View style={{ marginTop: 24 }}>
+            <View style={styles.headerPrioridade}>
+              <View style={[styles.bolaPrioridade, { backgroundColor: '#4CAF50' }]} />
+              <Text style={styles.titlePrioridade}>Tarefas Concluídas</Text>
+              <View style={styles.rightHeader}>
+                <Image
+                  source={require('../../assets/images/telas-public/icone_contador.png')}
+                  style={styles.contadorIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.contadorTexto}>
+                  {tarefasConcluidasFiltradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+                </Text>
+              </View>
+            </View>
+
+            {tarefasConcluidasFiltradas
+              .slice(0, expandido.concluidas ? tarefasConcluidasFiltradas.length : 3)
+              .map(t => (
+                <TarefaCardAdmin
+                  key={t._id}
+                  tarefa={{
+                    ...t,
+                    funcionario: t.funcionario ? { ...t.funcionario, id: t.funcionario._id } : undefined
+                  }}
+                  onEditar={() => {
+                    setTarefaSelecionada(t);
+                    setModalEditarVisible(true);
+                  }}
+                  onDeletar={() => excluirTarefa(t._id)}
+                  onToggleConcluida={novaConcluida => alternarConcluida(t, novaConcluida)}
+                />
+              ))}
+
+            {tarefasConcluidasFiltradas.length > 3 && (
+              <TouchableOpacity
+                style={styles.verMaisBotao}
+                onPress={() => setExpandido(prev => ({ ...prev, concluidas: !prev.concluidas }))}
+              >
+                <Text style={styles.verMaisTexto}>{expandido.concluidas ? 'Ver menos' : 'Ver mais'}</Text>
+                <Image
+                  source={
+                    expandido.concluidas
+                      ? require('../../assets/images/telas-public/icone_cima.png')
+                      : require('../../assets/images/telas-public/icone_baixo.png')
+                  }
+                  style={styles.verMaisIcone}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </ScrollView>
 
-      {tarefasFiltradas.length === 0 && (
-        <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-          <Text style={styles.overlayTexto}>Nenhuma tarefa disponível</Text>
-        </Animated.View>
+      {/* Modal de edição */}
+      {tarefaSelecionada && (
+        <EditarTarefaModal
+          visible={modalEditarVisible}
+          onClose={() => setModalEditarVisible(false)}
+          tarefa={tarefaSelecionada}
+          onSave={() => {
+            setModalEditarVisible(false);
+            atualizarTarefas();
+          }}
+        />
       )}
-    </>
+
+      {/* Animação de sucesso ao concluir */}
+      {animacao && (
+        <View style={[styles.successOverlay, { bottom: 60 }]} pointerEvents="box-none">
+          <LottieView
+            source={require('../../assets/lottie/success.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 300, height: 300 }}
+          />
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -194,6 +404,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8
+  },
+  leftHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1
+  },
+  rightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  contadorIcon: {
+    width: 22,
+    height: 22,
+    marginRight: 6
+  },
+  contadorTexto: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#3C188F',
+    textAlign: 'center'
+  },
+  contadorLabel: {
+    fontSize: 10,
+    color: '#3C188F',
+    textAlign: 'center'
+  },
+  verMaisBotao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8f6fbff',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 8,
+    width: '100%',
+    alignSelf: 'center',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    borderColor: '#3C188F',
+    borderWidth: 1
+  },
+  verMaisTexto: {
+    color: '#3C188F',
+    fontWeight: '600',
+    fontSize: 13
+  },
+  verMaisIcone: {
+    width: 14,
+    height: 14,
+    marginLeft: 4
+  },
+  tarefasVaziasContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   bolaPrioridade: {
     width: 12,
@@ -206,7 +473,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#3C188F',
     flex: 1,
-    marginBottom: 20
+    marginBottom: 0
   },
   expandText: {
     color: '#3C188F',
@@ -250,8 +517,8 @@ const styles = StyleSheet.create({
   filterSearchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20, // espaço maior após a linha
-    marginTop: 10 // espaço antes da linha
+    marginBottom: 20,
+    marginTop: 18
   },
   searchWrapper: {
     flex: 0.58,
@@ -289,13 +556,13 @@ const styles = StyleSheet.create({
   inputFiltro: {
     fontSize: 14,
     color: '#000',
-    textAlign: 'center', // centraliza horizontalmente
-    lineHeight: 45 // centraliza verticalmente
+    textAlign: 'center',
+    lineHeight: 45
   },
   modalFiltro: {
     position: 'absolute',
-    top: 270,
-    right: 10,
+    top: 180,
+    right: 29,
     backgroundColor: '#fff',
     borderRadius: 12,
     paddingVertical: 8,
@@ -335,18 +602,47 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     elevation: 5
   },
-  overlay: {
+  overlayPrioridades: {
     position: 'absolute',
-    top: 150,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 5
   },
   overlayTexto: {
-    fontSize: 16,
+    marginTop: 10,
+    fontSize: 14,
     color: '#555',
-    fontWeight: '500'
+    fontWeight: '500',
+    textAlign: 'center'
+  },
+  successOverlay: {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    alignItems: 'center',
+    pointerEvents: 'box-none',
+    position: 'absolute',
+    justifyContent: 'center',
+    zIndex: 1
+  },
+  botaoVerConcluidas: {
+    marginTop: 20,
+    backgroundColor: '#3C188F',
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    borderRadius: 12,
+    elevation: 4
+  },
+  botaoTexto: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14
   }
 });

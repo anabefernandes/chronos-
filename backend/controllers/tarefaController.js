@@ -1,5 +1,6 @@
 const Tarefa = require('../models/Tarefa');
 const User = require('../models/User');
+const Notificacao = require('../models/Notificacao');
 
 // Criar tarefa (chefe e admin)
 exports.criarTarefa = async (req, res, next) => {
@@ -33,16 +34,23 @@ exports.criarTarefa = async (req, res, next) => {
       categorias: categoriasFormatadas
     });
 
-    res.status(201).json({ msg: 'Tarefa criada', tarefa });
+    // 🔔 Criar notificação automática para o funcionário
+    await Notificacao.create({
+      usuario: funcionario,
+      titulo: `Nova tarefa: ${titulo}`,
+      descricao: descricao || 'Você recebeu uma nova tarefa do seu chefe.'
+    });
+
+    res.status(201).json({ msg: 'Tarefa criada e notificação enviada', tarefa });
   } catch (err) {
     next(err);
   }
 };
 
+// ✅ Agora populando também o campo `role`
 exports.todasTarefas = async (req, res) => {
   try {
-    // Retorna todas as tarefas e popula informações do funcionário
-    const tarefas = await Tarefa.find().populate('funcionario', 'nome setor foto'); // campos que você quer
+    const tarefas = await Tarefa.find().populate('funcionario', 'nome setor foto role');
     res.json(tarefas);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,7 +63,7 @@ exports.tarefasFuncionario = async (req, res, next) => {
     const { funcionarioId } = req.params;
 
     const tarefas = await Tarefa.find({ funcionario: funcionarioId })
-      .populate('funcionario', '_id nome foto')
+      .populate('funcionario', '_id nome foto role')
       .sort({ createdAt: -1 });
 
     res.json(tarefas);
@@ -70,7 +78,8 @@ exports.atualizarTarefa = async (req, res, next) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const tarefa = await Tarefa.findByIdAndUpdate(id, updates, { new: true }).populate('funcionario', '_id nome foto');
+    const tarefa = await Tarefa.findByIdAndUpdate(id, updates, { new: true })
+      .populate('funcionario', '_id nome foto role');
 
     if (!tarefa) return res.status(404).json({ msg: 'Tarefa não encontrada' });
 
@@ -93,12 +102,34 @@ exports.deletarTarefa = async (req, res, next) => {
   }
 };
 
-// Listar tarefas do usuário logado
+// ✅ Também adicionando `role` aqui
 exports.minhasTarefas = async (req, res) => {
   try {
     const usuarioId = req.user.id;
-    const tarefas = await Tarefa.find({ funcionario: usuarioId }).populate('funcionario', 'nome setor foto');
+    const tarefas = await Tarefa.find({ funcionario: usuarioId }).populate('funcionario', 'nome setor foto role');
     res.json(tarefas);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.atualizarStatusProprio = async (req, res) => {
+  try {
+    const usuarioId = req.user.id;
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const tarefa = await Tarefa.findOne({ _id: id, funcionario: usuarioId });
+    if (!tarefa) return res.status(404).json({ msg: 'Tarefa não encontrada' });
+
+    if (!['pendente', 'em_andamento', 'concluida'].includes(status)) {
+      return res.status(400).json({ msg: 'Status inválido' });
+    }
+
+    tarefa.status = status;
+    await tarefa.save();
+
+    res.json({ msg: 'Status atualizado', tarefa });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

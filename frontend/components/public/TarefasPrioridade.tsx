@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Dimensions, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, Dimensions, Animated, Image } from 'react-native';
 import TarefaCard from './TarefaCard';
 import LottieView from 'lottie-react-native';
+import { atualizarTarefa } from '../../services/userService';
 
-// ✅ Tipo local
 interface Categoria {
   nome: string;
   cor: string;
@@ -17,6 +17,7 @@ interface Paciente {
   saturacao?: string;
   sintomas?: string;
 }
+
 interface Tarefa {
   _id: string;
   titulo: string;
@@ -25,6 +26,7 @@ interface Tarefa {
   categorias?: Categoria[];
   prioridade: 'baixa' | 'media' | 'alta';
   dataPrevista?: string;
+  status?: 'pendente' | 'em_andamento' | 'concluida';
 }
 
 interface Props {
@@ -35,7 +37,9 @@ const coresPrioridade = { alta: '#FF6B6B', media: '#FFD93D', baixa: '#4ECDC4' };
 const larguraTela = Dimensions.get('window').width;
 
 const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
-  const [concluidas, setConcluidas] = useState<string[]>([]);
+  const [concluidas, setConcluidas] = useState<string[]>(() =>
+    tarefas.filter(t => t.status === 'concluida').map(t => t._id)
+  );
   const [expandido, setExpandido] = useState<{ [key: string]: boolean }>({
     alta: false,
     media: false,
@@ -67,15 +71,23 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
     setAnimacao(false);
   };
 
-  const marcarConcluida = (id: string) => {
-    Alert.alert('Confirmação', 'Você realmente quer marcar como concluída?', [
+  // Atualiza o status da tarefa no back-end e local
+  const toggleConcluida = async (id: string, jaConcluida: boolean) => {
+    const acao = jaConcluida ? 'marcar como pendente' : 'marcar como concluída';
+    Alert.alert('Confirmação', `Você realmente quer ${acao}?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Sim',
-        onPress: () => {
-          setConcluidas(prev => [...prev, id]);
-          setAnimacao(true);
-          setTimeout(() => setAnimacao(false), 2000);
+        onPress: async () => {
+          try {
+            await atualizarTarefa(id, jaConcluida ? 'pendente' : 'concluida');
+            setConcluidas(prev => (jaConcluida ? prev.filter(tid => tid !== id) : [...prev, id]));
+            setAnimacao(true);
+            setTimeout(() => setAnimacao(false), 2000);
+          } catch (err) {
+            Alert.alert('Erro', 'Não foi possível atualizar o status da tarefa.');
+            console.error(err);
+          }
         }
       }
     ]);
@@ -86,35 +98,63 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
     const mostrarTodos = expandido[prio];
     const tarefasExibidas = mostrarTodos ? tarefasFiltradas : tarefasFiltradas.slice(0, 3);
 
+    const tituloPrioridade =
+      prio === 'alta' ? 'Prioridade Alta' : prio === 'media' ? 'Prioridade Média' : 'Prioridade Baixa';
+
     return (
-      <View
-        style={{ flex: 1, justifyContent: tarefasExibidas.length === 0 ? 'center' : 'flex-start', marginBottom: 24 }}
-      >
+      <View style={{ flex: 1, marginBottom: 24 }}>
+        {/* Header */}
         <View style={styles.headerPrioridade}>
-          <View style={[styles.bolaPrioridade, { backgroundColor: coresPrioridade[prio] }]} />
-          <Text style={styles.titlePrioridade}>
-            {prio.toUpperCase()} ({tarefasFiltradas.length})
-          </Text>
-          {tarefasFiltradas.length > 3 && (
-            <TouchableOpacity onPress={() => setExpandido(prev => ({ ...prev, [prio]: !prev[prio] }))}>
-              <Text style={styles.expandText}>{mostrarTodos ? 'Mostrar menos' : 'Mostrar todos'}</Text>
-            </TouchableOpacity>
-          )}
+          <View style={styles.leftHeader}>
+            <View style={[styles.bolaPrioridade, { backgroundColor: coresPrioridade[prio] }]} />
+            <Text style={styles.titlePrioridade}>{tituloPrioridade}</Text>
+          </View>
+          <View style={styles.rightHeader}>
+            <Image
+              source={require('../../assets/images/telas-public/icone_contador.png')}
+              style={styles.contadorIcon}
+              resizeMode="contain"
+            />
+            <Text style={styles.contadorTexto}>
+              {tarefasFiltradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+            </Text>
+          </View>
         </View>
 
+        {/* Lista */}
         {tarefasExibidas.length > 0 ? (
-          tarefasExibidas.map(t => (
-            <TarefaCard
-              key={t._id}
-              titulo={t.titulo}
-              descricao={t.descricao}
-              paciente={t.paciente} // agora é um objeto
-              categorias={t.categorias || []}
-              dataPrevista={t.dataPrevista}
-              concluida={false}
-              onToggleConcluida={() => marcarConcluida(t._id)}
-            />
-          ))
+          <>
+            {tarefasExibidas.map(t => (
+              <TarefaCard
+                key={t._id}
+                titulo={t.titulo}
+                descricao={t.descricao}
+                paciente={t.paciente}
+                categorias={t.categorias || []}
+                dataPrevista={t.dataPrevista}
+                concluida={concluidas.includes(t._id)}
+                onToggleConcluida={() => toggleConcluida(t._id, concluidas.includes(t._id))}
+              />
+            ))}
+
+            {tarefasFiltradas.length > 3 && (
+              <TouchableOpacity
+                style={styles.verMaisBotao}
+                onPress={() => setExpandido(prev => ({ ...prev, [prio]: !prev[prio] }))}
+              >
+                <Text style={styles.verMaisTexto}>{mostrarTodos ? 'Ver menos' : 'Ver mais'}</Text>
+                <Image
+                  source={
+                    mostrarTodos
+                      ? require('../../assets/images/telas-public/icone_cima.png')
+                      : require('../../assets/images/telas-public/icone_baixo.png')
+                  }
+                  style={styles.verMaisIcone}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
+          </>
         ) : (
           <View style={styles.tarefasVaziasContainer}>
             <LottieView
@@ -123,7 +163,7 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
               loop
               style={{ width: larguraTela * 0.4, height: larguraTela * 0.4 }}
             />
-            <Text style={styles.overlayTexto}>Parabéns, todas as tarefas foram concluidas!</Text>
+            <Text style={styles.overlayTexto}>Parabéns, todas as tarefas dessa prioridade foram concluídas!</Text>
           </View>
         )}
       </View>
@@ -154,9 +194,9 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
         </Text>
 
         <View style={{ flex: nenhumaTarefa ? 1 : undefined, position: 'relative' }}>
-          <View style={{ flex: 1 }}>{renderPrioridade('alta')}</View>
-          <View style={{ flex: 1 }}>{renderPrioridade('media')}</View>
-          <View style={{ flex: 1 }}>{renderPrioridade('baixa')}</View>
+          {renderPrioridade('alta')}
+          {renderPrioridade('media')}
+          {renderPrioridade('baixa')}
 
           {nenhumaTarefa && (
             <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
@@ -167,7 +207,6 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
                 style={{ width: larguraTela * 0.55, height: larguraTela * 0.55, marginBottom: 10 }}
               />
               <Text style={styles.overlayTexto}>Nenhuma tarefa disponível</Text>
-
               <TouchableOpacity style={styles.botaoVerConcluidas} onPress={rolarParaConcluidas}>
                 <Text style={styles.botaoTexto}>Ver concluídas</Text>
               </TouchableOpacity>
@@ -177,22 +216,51 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
 
         {tarefasConcluidas.length > 0 && (
           <View style={{ marginTop: 24 }}>
-            <Text style={styles.titlePrioridade}>TAREFAS CONCLUÍDAS ({tarefasConcluidas.length})</Text>
+            <View style={styles.headerPrioridade}>
+              <View style={styles.leftHeader}>
+                <View style={[styles.bolaPrioridade, { backgroundColor: '#4CAF50' }]} />
+                <Text style={styles.titlePrioridade}>Tarefas Concluídas</Text>
+              </View>
+              <View style={styles.rightHeader}>
+                <Image
+                  source={require('../../assets/images/telas-public/icone_contador.png')}
+                  style={styles.contadorIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.contadorTexto}>
+                  {tarefasConcluidas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+                </Text>
+              </View>
+            </View>
+
             {concluidasExibidas.map(t => (
               <TarefaCard
                 key={t._id}
                 titulo={t.titulo}
                 descricao={t.descricao}
-                paciente={t.paciente} // agora é um objeto
+                paciente={t.paciente}
                 categorias={t.categorias || []}
                 dataPrevista={t.dataPrevista}
-                concluida={false}
-                onToggleConcluida={() => marcarConcluida(t._id)}
+                concluida={true}
+                onToggleConcluida={() => toggleConcluida(t._id, true)}
               />
             ))}
+
             {tarefasConcluidas.length > 3 && (
-              <TouchableOpacity onPress={() => setExpandido(prev => ({ ...prev, concluidas: !prev.concluidas }))}>
-                <Text style={styles.expandText}>{mostrarConcluidas ? 'Ver menos' : 'Ver mais'}</Text>
+              <TouchableOpacity
+                style={styles.verMaisBotao}
+                onPress={() => setExpandido(prev => ({ ...prev, concluidas: !prev.concluidas }))}
+              >
+                <Text style={styles.verMaisTexto}>{mostrarConcluidas ? 'Ver menos' : 'Ver mais'}</Text>
+                <Image
+                  source={
+                    mostrarConcluidas
+                      ? require('../../assets/images/telas-public/icone_cima.png')
+                      : require('../../assets/images/telas-public/icone_baixo.png')
+                  }
+                  style={styles.verMaisIcone}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -208,20 +276,35 @@ const styles = StyleSheet.create({
   headerPrioridade: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8
+    marginBottom: 12
+  },
+  leftHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1
+  },
+  rightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
   },
   bolaPrioridade: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     marginRight: 8
+  },
+  contadorIcon: {
+    width: 22,
+    height: 22,
+    marginRight: 6
   },
   titlePrioridade: {
     fontSize: 16,
     fontWeight: '600',
     color: '#3C188F',
     flex: 1,
-    marginBottom: 20
+    marginBottom: 0
   },
   expandText: {
     color: '#3C188F',
@@ -285,7 +368,7 @@ const styles = StyleSheet.create({
   },
   overlayTexto: {
     marginTop: 5,
-    fontSize: 16,
+    fontSize: 13,
     color: '#555',
     fontWeight: '500',
     textAlign: 'center'
@@ -313,5 +396,62 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 14
+  },
+  contadorTarefas: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 3,
+    marginLeft: 'auto'
+  },
+  contadorTexto: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#3C188F',
+    textAlign: 'center'
+  },
+  contadorLabel: {
+    fontSize: 10,
+    color: '#3C188F',
+    textAlign: 'center'
+  },
+  verMaisContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 6
+  },
+  verMaisTexto: {
+    color: '#3C188F',
+    fontWeight: '600',
+    fontSize: 13
+  },
+  verMaisIcone: {
+    width: 14,
+    height: 14,
+    marginLeft: 4
+  },
+  verMaisBotao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8f6fbff',
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 8,
+    width: '100%',
+    alignSelf: 'center',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    borderColor: '#3C188F',
+    borderWidth: 1
   }
 });

@@ -18,12 +18,14 @@ import { AuthContext } from '../../contexts/AuthContext';
 import React, { useState, useContext } from 'react';
 import { useRouter } from 'expo-router';
 import api from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const { setRole, setNome, setUserId, setFoto, setSetor } = useContext(AuthContext);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -73,7 +75,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error('Erro ao tentar logar:', err.response?.data || err.message);
-      Alert.alert('Erro', err.response?.data?.msg || 'Falha no login. Verifique seu email e senha.');
+      showToast('Erro', err.response?.data?.msg || 'Falha no login. Verifique seu email e senha.');
     }
   };
 

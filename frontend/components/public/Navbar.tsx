@@ -1,16 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { AuthContext } from '../../contexts/AuthContext';
+import { listarNotificacoes } from '../../services/userService';
 
 const logo = require('../../assets/images/iniciais/logo_chronos.png');
 
-type NavbarProps = {
-  notificacoes?: number;
-};
-
-export default function Navbar({ notificacoes = 0 }: NavbarProps) {
+export default function Navbar() {
   const router = useRouter();
+  const { userId } = useContext(AuthContext);
+  const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0);
+
+  useEffect(() => {
+    const carregarNotificacoes = async () => {
+      try {
+        if (!userId) return;
+        const data = await listarNotificacoes(userId);
+        const naoLidas = data.filter((n: any) => !n.lida).length;
+        setNotificacoesNaoLidas(naoLidas);
+      } catch (err) {
+        console.log('Erro carregar notificacoes:', err);
+      }
+    };
+
+    carregarNotificacoes();
+
+    // Atualiza a cada 10 segundos
+    const interval = setInterval(carregarNotificacoes, 10000);
+    return () => clearInterval(interval);
+  }, [userId]);
 
   const handleNotificacoes = () => {
     router.push('/telas-iniciais/notificacoes');
@@ -27,9 +46,9 @@ export default function Navbar({ notificacoes = 0 }: NavbarProps) {
       <View style={styles.icons}>
         <TouchableOpacity onPress={handleNotificacoes} style={styles.iconWrapper}>
           <Ionicons name="notifications-outline" size={28} color="#fff" />
-          {notificacoes > 0 && (
+          {notificacoesNaoLidas > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{notificacoes}</Text>
+              <Text style={styles.badgeText}>{notificacoesNaoLidas}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -52,18 +71,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomLeftRadius: 26,
     borderBottomRightRadius: 26,
-    paddingTop: 30
+    paddingTop: 30,
   },
   logo: {
     width: 160,
-    height: 60
+    height: 60,
   },
   icons: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   iconWrapper: {
-    marginLeft: 20
+    marginLeft: 20,
   },
   badge: {
     position: 'absolute',
@@ -74,11 +93,11 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   badgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
 });

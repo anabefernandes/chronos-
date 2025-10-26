@@ -11,6 +11,7 @@ import Dashboard from './dashboard-admin';
 import GerenciarFuncionarios from './gerenciar-funcionarios';
 import CriarTarefas from './criar-tarefas';
 import TarefasAdmin from './tarefas-admin';
+import Notificacoes from '../telas-iniciais/notificacoes';
 
 type ScreenKey =
   | 'dashboard'
@@ -41,6 +42,8 @@ export default function PainelAdmin() {
         return <TarefasAdmin />;
       case 'criar-tarefas':
         return <CriarTarefas />;
+      case 'notificacoes':
+        return <Notificacoes />;
       case 'escalas':
         return <Escalas />;
       case 'holerite':

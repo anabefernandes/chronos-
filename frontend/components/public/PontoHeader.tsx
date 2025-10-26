@@ -1,9 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
+import { listarNotificacoes } from '../../services/userService';
 
 interface PontoHeaderProps {
   horario?: string;
@@ -11,7 +12,8 @@ interface PontoHeaderProps {
 }
 
 export default function PontoHeader({ horario: backendHorario, data: backendData }: PontoHeaderProps) {
-  const { nome, setor, getFoto } = useContext(AuthContext);
+  const router = useRouter();
+  const { nome, setor, getFoto, userId } = useContext(AuthContext);
   const fotoURL = getFoto();
 
   const now = new Date();
@@ -25,6 +27,8 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
         year: 'numeric'
       })
   );
+
+  const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState<number>(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,16 +46,46 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const carregarNotificacoes = async () => {
+      if (!userId) return;
+      try {
+        const notificacoes = await listarNotificacoes(userId);
+        const naoLidas = notificacoes.filter((n: any) => !n.lida).length;
+        setNotificacoesNaoLidas(naoLidas);
+      } catch (err) {
+        console.log('Erro ao listar notificações:', err);
+      }
+    };
+
+    carregarNotificacoes();
+    const interval = setInterval(carregarNotificacoes, 10000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  const handleNotificacoes = () => {
+    router.push('/telas-iniciais/notificacoes');
+  };
+
+  const handlePerfil = () => {
+    router.push('/telas-iniciais/perfil');
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#17153A', '#3e39a0fa']} locations={[0, 0.3]} style={styles.topBackground}>
         <View style={styles.iconRow}>
-          <Link href="/telas-iniciais/notificacoes">
+          <TouchableOpacity onPress={handleNotificacoes}>
             <Ionicons name="notifications-outline" size={28} color="#fff" />
-          </Link>
-          <Link href="/telas-iniciais/perfil">
+            {notificacoesNaoLidas > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{notificacoesNaoLidas}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handlePerfil}>
             <Ionicons name="person-circle-outline" size={32} color="#fff" />
-          </Link>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -147,5 +181,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4
+  },
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'red',
+    borderRadius: 8,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold'
   }
 });

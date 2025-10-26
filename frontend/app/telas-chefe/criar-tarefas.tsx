@@ -58,18 +58,14 @@ export default function CriarTarefas() {
     carregarUsuarios();
   }, []);
 
-  const getUserImage = (funcionario: Funcionario) => {
-    if (!funcionario.foto) return require('../../assets/images/telas-public/sem_foto.png');
+ const getUserImage = (foto?: string) => {
+    if (!foto || foto.trim() === '') return require('../../assets/images/telas-public/sem_foto.png');
+    if (foto.includes('sem_foto.png')) return require('../../assets/images/telas-public/sem_foto.png');
 
-    if (
-      funcionario.foto.startsWith('http') ||
-      funcionario.foto.startsWith('https') ||
-      funcionario.foto.startsWith('file://')
-    ) {
-      return { uri: funcionario.foto };
-    }
-
-    return require('../../assets/images/telas-public/sem_foto.png');
+    let baseURL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+    if (baseURL?.endsWith('/api')) baseURL = baseURL.replace(/\/api$/, '');
+    const cleanFoto = foto.replace(/^\/+/, '');
+    return { uri: `${baseURL}/${cleanFoto}` };
   };
 
   const handleCreate = async () => {
@@ -132,14 +128,33 @@ export default function CriarTarefas() {
       );
     }
 
+    const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
+    const cargoIcon =
+      funcionarioSelecionado.role === 'chefe'
+        ? require('../../assets/images/telas-admin/icone_chefe.png')
+        : require('../../assets/images/telas-admin/icone_funcionario.png');
+
     return (
-      <View style={styles.cardFuncionario}>
-        <View style={styles.row}>
-          <Image source={getUserImage(funcionarioSelecionado)} style={styles.avatar} />
-          <View style={styles.infoFuncionario}>
-            <Text style={styles.nome}>{funcionarioSelecionado.nome}</Text>
-            <Text style={styles.funcao}>{funcionarioSelecionado.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
+      <View style={styles.cardFuncionarioSelect}>
+        <View style={styles.rowFuncionario}>
+         <Image source={getUserImage(funcionarioSelecionado?.foto)} style={styles.foto} />
+
+          <View style={{ flex: 1, marginLeft: 10 }}>
+            <Text style={styles.nomeFuncionario}>{funcionarioSelecionado.nome}</Text>
+
+            <View style={styles.infoRowFuncionario}>
+              <Image source={cargoIcon} style={styles.infoIconFuncionario} />
+              <Text style={styles.infoTextFuncionario}>
+                {funcionarioSelecionado.role === 'chefe' ? 'Chefe' : 'Funcionário'}
+              </Text>
+            </View>
+
+            <View style={styles.infoRowFuncionario}>
+              <Image source={setorIcon} style={styles.infoIconFuncionario} />
+              <Text style={styles.infoTextFuncionario}>{funcionarioSelecionado.setor || 'Sem setor'}</Text>
+            </View>
           </View>
+
           <TouchableOpacity onPress={() => setFuncionarioSelecionado(null)}>
             <Image source={IconRemover} style={styles.iconRemover} />
           </TouchableOpacity>
@@ -147,7 +162,6 @@ export default function CriarTarefas() {
       </View>
     );
   };
-
   return (
     <View style={{ flex: 1 }}>
       <Navbar />
@@ -544,5 +558,52 @@ const styles = StyleSheet.create({
     height: 30,
     fontSize: 14,
     fontFamily: 'Poppins_400Regular'
-  }
+  },
+  cardFuncionarioSelect: {
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  padding: 12,
+  marginBottom: 16,
+  shadowColor: '#000',
+  shadowOpacity: 0.1,
+  shadowOffset: { width: 0, height: 1 },
+  shadowRadius: 2,
+  elevation: 2,
+  borderColor: '#3c188f3e',
+  borderWidth: 1
+},
+rowFuncionario: {
+  flexDirection: 'row',
+  alignItems: 'center'
+},
+fotoFuncionario: {
+  width: 50,
+  height: 50,
+  borderRadius: 25
+},
+nomeFuncionario: {
+  fontSize: 16,
+  fontFamily: 'Poppins_600SemiBold',
+  color: '#222'
+},
+infoRowFuncionario: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 4
+},
+infoIconFuncionario: {
+  width: 16,
+  height: 16,
+  marginRight: 4
+},
+infoTextFuncionario: {
+  fontSize: 14,
+  color: '#333',
+  fontFamily: 'Poppins_400Regular'
+},
+foto: {
+    width: 50,
+    height: 50,
+    borderRadius: 25
+  },
 });

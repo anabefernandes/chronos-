@@ -37,3 +37,52 @@ export const excluirUsuario = async (id: string) => {
   const response = await api.delete(`/user/excluirUsuario/${id}`);
   return response.data;
 };
+
+export const atualizarTarefa = async (id: string, status: 'pendente' | 'em_andamento' | 'concluida') => {
+  try {
+    const response = await api.put(`/tarefas/minha/${id}`, { status });
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao atualizar tarefa:', err);
+    throw err;
+  }
+};
+export const atualizarTarefaAdmin = async (id: string, status: 'pendente' | 'em_andamento' | 'concluida') => {
+  try {
+    const response = await api.put(`/tarefas/${id}`, { status });
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao atualizar tarefa:', err);
+    throw err;
+  }
+};
+
+export const listarNotificacoes = async (usuarioId: string) => {
+  try {
+    const response = await api.get(`/notificacoes/${usuarioId}`);
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao listar notificações:', err);
+    throw err;
+  }
+};
+
+export const marcarNotificacaoComoLida = async (id: string) => {
+  try {
+    const response = await api.patch(`/notificacoes/${id}/lida`);
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao marcar notificação como lida:', err);
+    throw err;
+  }
+};
+
+export const marcarTodasNotificacoesComoLidas = async (usuarioId: string) => {
+  try {
+    const response = await api.patch(`/notificacoes/usuario/${usuarioId}/lidas`);
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao marcar todas notificações como lidas:', err);
+    throw err;
+  }
+};
