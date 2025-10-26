@@ -1,4 +1,5 @@
 import api from '../../services/api';
+import * as Location from 'expo-location';
 import { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -43,13 +44,52 @@ const colors: Record<string, string> = {
   saida: '#AB3838'
 };
 
+// SUBSTITUIR PELAS COORDENADAS!! 
+const LOCAL_FIXO = {
+latitude: -24.024736511022894,
+  longitude: -46.488954928836364
+};
+const RAIO_PERMITIDO = 50; //DEFINIR AQUI OS METROS
+
+function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371e3;
+  const φ1 = lat1 * (Math.PI / 180);
+  const φ2 = lat2 * (Math.PI / 180);
+  const Δφ = (lat2 - lat1) * (Math.PI / 180);
+  const Δλ = (lon2 - lon1) * (Math.PI / 180);
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 // Componente -------------------
 export default function Ponto() {
   const [user, setUser] = useState<any>(null);
   const [pontos, setPontos] = useState<Ponto[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
+  const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  const pedirPermissaoLocalizacao = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'Precisamos da sua localização para registrar o ponto.');
+      return null;
+    }
+
+    const location = await Location.getCurrentPositionAsync({});
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    setLocalizacao(coords);
+    return coords;
+  };
 
   useEffect(() => {
     fetchUser();
@@ -58,7 +98,7 @@ export default function Ponto() {
 
   const fetchUser = async () => {
     try {
-      const res = await api.get('/auth/userAuth');
+      const res = await api.get('/api/auth/userAuth');
       setUser(res.data);
     } catch (err) {
       console.log('Erro ao buscar usuário:', err);
@@ -67,7 +107,7 @@ export default function Ponto() {
 
   const fetchPontos = async () => {
     try {
-      const res = await api.get('/ponto/meus');
+      const res = await api.get('/api/ponto/meus');
       const hoje = new Date().toISOString().slice(0, 10);
       const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
       setPontos(pontosHoje);
@@ -76,13 +116,32 @@ export default function Ponto() {
     }
   };
 
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const isRegistered = (status: string) => pontos.some(p => p.status === status);
+
   const registrarPonto = async (status: string) => {
     if (pontos.find(p => p.status === status)) {
       Alert.alert('Aviso', `O ponto de ${capitalize(status)} já foi registrado hoje.`);
       return;
     }
+
+    const coords = await pedirPermissaoLocalizacao();
+    if (!coords) return;
+
+    const distancia = getDistanceFromLatLonInMeters(
+      coords.latitude,
+      coords.longitude,
+      LOCAL_FIXO.latitude,
+      LOCAL_FIXO.longitude
+    );
+
+    if (distancia > RAIO_PERMITIDO) {
+      Alert.alert('Fora do local permitido', `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`);
+      return;
+    }
+
     try {
-      const res = await api.post('/ponto', { status });
+      const res = await api.post('/api/ponto', { status, localizacao: coords });
       Alert.alert('Sucesso', `Ponto de ${capitalize(status)} registrado!`);
       setPontos(prev => [...prev, res.data.ponto]);
     } catch (err) {
@@ -90,9 +149,6 @@ export default function Ponto() {
       Alert.alert('Erro', 'Não foi possível registrar o ponto');
     }
   };
-
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const isRegistered = (status: string) => pontos.some(p => p.status === status);
 
   // Divide os botões do carrossel em grupos de 2
   const slides: StatusDoDia[][] = [];
