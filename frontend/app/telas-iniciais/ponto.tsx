@@ -37,17 +37,13 @@ const statusDoDia: StatusDoDia[] = [
 
 const colors: Record<string, string> = {
   entrada: '#469348',
-  almoco: '#3493B4',
-  retorno: '#c8951eff',
+  almoco: '#c8951eff',
+  retorno: '#3493B4',
   saida: '#AB3838'
 };
 
-// SUBSTITUIR PELAS COORDENADAS!!
-const LOCAL_FIXO = {
-  latitude: -24.024736511022894,
-  longitude: -46.488954928836364
-};
-const RAIO_PERMITIDO = 50; //DEFINIR AQUI OS METROS
+const LOCAL_FIXO = { latitude: -24.000370725171997, longitude: -46.431776544151376 };
+const RAIO_PERMITIDO = 50;
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
@@ -56,9 +52,8 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   const Δφ = (lat2 - lat1) * (Math.PI / 180);
   const Δλ = (lon2 - lon1) * (Math.PI / 180);
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
   return R * c;
 }
 
@@ -69,22 +64,6 @@ export default function Ponto() {
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
   const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  const pedirPermissaoLocalizacao = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão negada', 'Precisamos da sua localização para registrar o ponto.');
-      return null;
-    }
-
-    const location = await Location.getCurrentPositionAsync({});
-    const coords = {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude
-    };
-    setLocalizacao(coords);
-    return coords;
-  };
-
   useEffect(() => {
     fetchUser();
     fetchPontos();
@@ -92,7 +71,7 @@ export default function Ponto() {
 
   const fetchUser = async () => {
     try {
-      const res = await api.get('/api/auth/userAuth');
+      const res = await api.get('/auth/userAuth');
       setUser(res.data);
     } catch (err) {
       console.log('Erro ao buscar usuário:', err);
@@ -101,7 +80,7 @@ export default function Ponto() {
 
   const fetchPontos = async () => {
     try {
-      const res = await api.get('/api/ponto/meus');
+      const res = await api.get('/ponto/meus');
       const hoje = new Date().toISOString().slice(0, 10);
       const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
       setPontos(pontosHoje);
@@ -112,6 +91,18 @@ export default function Ponto() {
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: string) => pontos.some(p => p.status === status);
+
+  const pedirPermissaoLocalizacao = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'Precisamos da sua localização para registrar o ponto.');
+      return null;
+    }
+    const location = await Location.getCurrentPositionAsync({});
+    const coords = { latitude: location.coords.latitude, longitude: location.coords.longitude };
+    setLocalizacao(coords);
+    return coords;
+  };
 
   const registrarPonto = async (status: string) => {
     if (pontos.find(p => p.status === status)) {
@@ -135,9 +126,11 @@ export default function Ponto() {
     }
 
     try {
-      const res = await api.post('/api/ponto', { status, localizacao: coords });
+      const res = await api.post('/ponto', { status, localizacao: coords });
+      const pontoRegistrado = res.data.ponto;
+
+      setPontos(prev => [...prev, pontoRegistrado]);
       Alert.alert('Sucesso', `Ponto de ${capitalize(status)} registrado!`);
-      setPontos(prev => [...prev, res.data.ponto]);
     } catch (err) {
       console.log('Erro ao registrar ponto:', err);
       Alert.alert('Erro', 'Não foi possível registrar o ponto');
@@ -145,9 +138,7 @@ export default function Ponto() {
   };
 
   const slides: StatusDoDia[][] = [];
-  for (let i = 0; i < statusDoDia.length; i += 2) {
-    slides.push(statusDoDia.slice(i, i + 2));
-  }
+  for (let i = 0; i < statusDoDia.length; i += 2) slides.push(statusDoDia.slice(i, i + 2));
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideIndex = Math.round(e.nativeEvent.contentOffset.x / width);

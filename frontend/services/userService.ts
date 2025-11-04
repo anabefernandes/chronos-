@@ -38,6 +38,16 @@ export const excluirUsuario = async (id: string) => {
   return response.data;
 };
 
+export const meusPontos = async (_id: string) => {
+  try {
+    const response = await api.get(`/ponto/meusPontos`);
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao buscar pontos:', err);
+    throw err;
+  }
+};
+
 export const atualizarTarefa = async (id: string, status: 'pendente' | 'em_andamento' | 'concluida') => {
   try {
     const response = await api.put(`/tarefas/minha/${id}`, { status });
@@ -83,6 +93,16 @@ export const marcarTodasNotificacoesComoLidas = async (usuarioId: string) => {
     return response.data;
   } catch (err) {
     console.error('Erro ao marcar todas notificações como lidas:', err);
+    throw err;
+  }
+};
+
+export const excluirNotificacao = async (id: string) => {
+  try {
+    const response = await api.delete(`/notificacoes/${id}`);
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao excluir notificação:', err);
     throw err;
   }
 };

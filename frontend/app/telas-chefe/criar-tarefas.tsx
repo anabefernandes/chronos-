@@ -21,11 +21,14 @@ import { Funcionario } from '../../components/admin/FuncionarioCard';
 import CategoriaSelector from '../../components/admin/CategoriaSelector';
 import PacienteModal, { PacienteData } from '../../components/admin/PacienteModal';
 import { useML } from '../../hooks/useML';
+import LottieView from 'lottie-react-native';
 
 export default function CriarTarefas() {
   const { usuarios, carregarUsuarios } = useContext(AuthContext);
   const { calcularPrioridade, loading: loadingML } = useML();
   const roboImg = require('../../assets/images/telas-admin/chatbot.png');
+  const [animacao, setAnimacao] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
 
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [modalFuncionarios, setModalFuncionarios] = useState(false);
@@ -88,7 +91,26 @@ export default function CriarTarefas() {
         dataPrevista: data.toISOString(),
         prioridade
       });
-      Alert.alert('Sucesso', 'Tarefa criada com sucesso!');
+      setMensagemSucesso('Tarefa criada com sucesso!');
+      setAnimacao(true);
+
+      // Ocultar a animação após 3 segundos
+      setTimeout(() => {
+        setAnimacao(false);
+        setMensagemSucesso('');
+      }, 3000);
+      setFuncionarioSelecionado(null);
+      setTitulo('');
+      setDescricao('');
+      setPacienteSelecionado({
+        nome: 'Nenhum',
+        temperatura: '',
+        sintomas: '',
+        idade: '',
+        saturacao: ''
+      });
+      setCategoriasSelecionadas([]);
+      setPrioridade('media');
     } catch (err: any) {
       Alert.alert('Erro', err.response?.data?.msg || 'Erro ao criar tarefa');
     }
@@ -301,10 +323,22 @@ export default function CriarTarefas() {
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* Modal Funcionário */}
+      {animacao && (
+        <View style={[styles.successOverlay, { bottom: 60, top: 100 }]} pointerEvents="box-none">
+          <LottieView
+            source={require('../../assets/lottie/success.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 250, height: 250 }}
+          />
+          {mensagemSucesso !== '' && <Text style={styles.successText}>{mensagemSucesso}</Text>}
+        </View>
+      )}
+
       <Modal visible={modalFuncionarios} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
+            {/* Header */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Selecione o Funcionário</Text>
               <TouchableOpacity onPress={() => setModalFuncionarios(false)} style={styles.cancelButton}>
@@ -326,24 +360,45 @@ export default function CriarTarefas() {
               </View>
             </View>
 
-            {/* Lista de funcionários */}
-            <ScrollView style={{ maxHeight: 400, minHeight: 200, paddingHorizontal: 12, top: -12 }}>
-              {usuarios
-                .filter(u => u.nome.toLowerCase().includes(searchText.toLowerCase()))
-                .map(u => (
-                  <FuncionarioCardSelect
-                    key={u._id}
-                    funcionario={{
-                      ...u,
-                      role: u.role === 'admin' || u.role === 'chefe' ? 'chefe' : 'funcionario'
-                    }}
-                    onSelect={f => {
-                      setFuncionarioSelecionado(f);
-                      setModalFuncionarios(false);
-                    }}
-                  />
-                ))}
-            </ScrollView>
+            {/* Conteúdo da lista com altura fixa */}
+            <View style={{ height: 400, paddingHorizontal: 12, paddingVertical: 8 }}>
+              {(() => {
+                const filteredUsuarios = usuarios.filter(u => u.nome.toLowerCase().includes(searchText.toLowerCase()));
+
+                if (filteredUsuarios.length === 0) {
+                  return (
+                    <View style={styles.emptyContainer}>
+                      <LottieView
+                        source={require('../../assets/lottie/nenhum_funcionario_encontrado.json')}
+                        autoPlay
+                        loop
+                        style={{ width: 250, height: 250 }}
+                      />
+                      <Text style={styles.emptyText}>Nenhum funcionário encontrado.</Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <ScrollView>
+                    {filteredUsuarios.map(u => (
+                      <FuncionarioCardSelect
+                        key={u._id}
+                        funcionario={{
+                          ...u,
+                          id: u._id,
+                          role: u.role === 'admin' || u.role === 'chefe' ? 'chefe' : 'funcionario'
+                        }}
+                        onSelect={f => {
+                          setFuncionarioSelecionado(f);
+                          setModalFuncionarios(false);
+                        }}
+                      />
+                    ))}
+                  </ScrollView>
+                );
+              })()}
+            </View>
           </View>
         </View>
       </Modal>
@@ -606,5 +661,34 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25
+  },
+  successOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    paddingVertical: 20
+  },
+  successText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#3C188F',
+    fontFamily: 'Poppins_600SemiBold',
+    textAlign: 'center'
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 50
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#858383ff',
+    fontFamily: 'Poppins_600SemiBold'
   }
 });

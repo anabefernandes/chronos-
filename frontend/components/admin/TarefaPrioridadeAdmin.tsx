@@ -78,10 +78,8 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
   const [filtro, setFiltro] = useState<'todas' | 'minhas'>('todas');
   const [showFiltroModal, setShowFiltroModal] = useState(false);
 
-  // Atualiza lista de tarefas
   useEffect(() => setListaTarefas(tarefas), [tarefas]);
 
-  // Animação do overlay global
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: listaTarefas.filter(t => t.status !== 'concluida').length === 0 ? 1 : 0,

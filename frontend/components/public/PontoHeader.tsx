@@ -1,10 +1,11 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
 import { listarNotificacoes } from '../../services/userService';
+import { io } from 'socket.io-client';
 
 interface PontoHeaderProps {
   horario?: string;
@@ -29,6 +30,29 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
   );
 
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState<number>(0);
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  const animarSininho = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 100, easing: Easing.linear, useNativeDriver: true })
+    ]).start();
+  };
+
+  const carregarNotificacoes = async () => {
+    if (!userId) return;
+    try {
+      const notificacoes = await listarNotificacoes(userId);
+      const naoLidas = notificacoes.filter((n: any) => !n.lida).length;
+      setNotificacoesNaoLidas(naoLidas);
+
+      if (naoLidas > 0) animarSininho();
+    } catch (err) {
+      console.log('Erro ao listar notificações:', err);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -46,37 +70,48 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
     return () => clearInterval(timer);
   }, []);
 
+  // conecta socket
   useEffect(() => {
-    const carregarNotificacoes = async () => {
-      if (!userId) return;
-      try {
-        const notificacoes = await listarNotificacoes(userId);
-        const naoLidas = notificacoes.filter((n: any) => !n.lida).length;
-        setNotificacoesNaoLidas(naoLidas);
-      } catch (err) {
-        console.log('Erro ao listar notificações:', err);
+    if (!userId) return;
+
+    const socket = io(process.env.EXPO_PUBLIC_API_URL || '', { transports: ['websocket'], reconnection: true });
+    socket.emit('join', userId);
+
+    socket.on('nova_notificacao', async (data: any) => {
+      if (data.usuario === userId) {
+        await carregarNotificacoes();
       }
-    };
+    });
 
     carregarNotificacoes();
-    const interval = setInterval(carregarNotificacoes, 10000);
-    return () => clearInterval(interval);
+
+    return () => {
+      socket.disconnect();
+    };
   }, [userId]);
 
-  const handleNotificacoes = () => {
-    router.push('/telas-iniciais/notificacoes');
-  };
-
-  const handlePerfil = () => {
-    router.push('/telas-iniciais/perfil');
-  };
+  const handleNotificacoes = () => router.push('/telas-iniciais/notificacoes');
+  const handlePerfil = () => router.push('/telas-iniciais/perfil');
 
   return (
     <View style={styles.container}>
       <LinearGradient colors={['#17153A', '#3e39a0fa']} locations={[0, 0.3]} style={styles.topBackground}>
         <View style={styles.iconRow}>
           <TouchableOpacity onPress={handleNotificacoes}>
-            <Ionicons name="notifications-outline" size={28} color="#fff" />
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    rotate: shakeAnim.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: ['-15deg', '15deg']
+                    })
+                  }
+                ]
+              }}
+            >
+              <Ionicons name="notifications-outline" size={28} color="#fff" />
+            </Animated.View>
             {notificacoesNaoLidas > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{notificacoesNaoLidas}</Text>
@@ -91,14 +126,11 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
 
       <View style={styles.content}>
         <Image source={fotoURL} style={styles.foto} />
-
         <Text style={styles.nome}>{nome || 'NOVO USUÁRIO'}</Text>
-
         <View style={styles.setorContainer}>
           <Image source={require('../../assets/images/telas-admin/icone_setor.png')} style={styles.setorIcon} />
           <Text style={styles.setor}>{setor || 'Setor não informado'}</Text>
         </View>
-
         <View style={styles.card}>
           <Text style={styles.horario}>{horario}</Text>
           <Text style={styles.data}>{data}</Text>
@@ -152,7 +184,7 @@ const styles = StyleSheet.create({
   setorIcon: {
     width: 16,
     height: 16,
-    marginRight: 6
+    marginRight: 1
   },
   setor: {
     fontSize: 14,

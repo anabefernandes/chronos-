@@ -10,7 +10,8 @@ const UserSchema = new mongoose.Schema({
     default: 'funcionario'
   },
   setor: { type: String, required: true },
-  foto: { type: String, default: null }
+  foto: { type: String, default: null },
+  status: {type: String, default: 'Inativo'}
 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -37,7 +37,7 @@ exports.criarTarefa = async (req, res, next) => {
     // 🔔 Criar notificação automática para o funcionário
     await Notificacao.create({
       usuario: funcionario,
-      titulo: `Nova tarefa: ${titulo}`,
+      titulo: titulo,
       descricao: descricao || 'Você recebeu uma nova tarefa do seu chefe.'
     });
 

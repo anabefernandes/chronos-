@@ -41,4 +41,11 @@ router.patch('/:id/lida', auth, ctrl.marcarComoLida);
 // Marcar todas como lidas
 router.patch('/usuario/:usuarioId/lidas', auth, ctrl.marcarTodasComoLidas);
 
+// Excluir todas notificações de um usuário
+router.delete('/usuario/:usuarioId/todas', auth, ctrl.excluirTodasNotificacoes);
+
+// Excluir notificação individual
+router.delete('/:id', auth, ctrl.excluirNotificacao);
+
+
 module.exports = router;

@@ -1,4 +1,3 @@
-// frontend/contexts/ToastContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
 import { Text, StyleSheet, Animated, Dimensions } from 'react-native';
 

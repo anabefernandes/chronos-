@@ -9,9 +9,11 @@ import Holerite from '../telas-iniciais/holerite';
 import Perfil from '../telas-iniciais/perfil';
 import Dashboard from './dashboard-admin';
 import GerenciarFuncionarios from './gerenciar-funcionarios';
-import CriarTarefas from './criar-tarefas';
 import TarefasAdmin from './tarefas-admin';
 import Notificacoes from '../telas-iniciais/notificacoes';
+import CriarEscalas from './criar-escalas';
+import CriarTarefas from './criar-tarefas';
+import CriarHolerite from './criar-holerite';
 
 type ScreenKey =
   | 'dashboard'
@@ -19,7 +21,9 @@ type ScreenKey =
   | 'tarefas'
   | 'criar-tarefas'
   | 'escalas'
+  | 'criar-escalas'
   | 'holerite'
+  | 'criar-holerite'
   | 'gerenciar-funcionarios'
   | 'notificacoes'
   | 'perfil';
@@ -46,8 +50,12 @@ export default function PainelAdmin() {
         return <Notificacoes />;
       case 'escalas':
         return <Escalas />;
+      case 'criar-escalas':
+        return <CriarEscalas />;
       case 'holerite':
         return <Holerite />;
+      case 'criar-holerite':
+        return <CriarHolerite />;
       case 'gerenciar-funcionarios':
         return <GerenciarFuncionarios />;
       case 'perfil':

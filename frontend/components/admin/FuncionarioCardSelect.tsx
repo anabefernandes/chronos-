@@ -20,16 +20,39 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
   };
 
   const handlePress = () => {
-    if (onSelect) {
-      onSelect(funcionario);
-    }
+    if (onSelect) onSelect(funcionario);
     toggleExpand();
   };
 
-  const statusColorMap = {
+  // Função para mapear status corretamente
+  const displayStatus = () => {
+    if (!funcionario.status) return 'Inativo';
+
+    switch (funcionario.status.toLowerCase()) {
+      case 'almoco':
+      case 'almoço':
+        return 'Almoço';
+      case 'entrada':
+      case 'ativo':
+        return 'Ativo';
+      case 'saida':
+      case 'inativo':
+        return 'Inativo';
+      case 'folga':
+        return 'Folga';
+      case 'atraso':
+        return 'Atraso';
+      default:
+        return funcionario.status;
+    }
+  };
+
+  const statusColorMap: Record<string, string> = {
     Ativo: '#C1E1C1',
     Atraso: '#F4C7C3',
-    Folga: '#B9D7F0'
+    Folga: '#B9D7F0',
+    Almoço: '#FFD580',
+    Inativo: '#BDBDBD'
   };
 
   const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
@@ -66,8 +89,8 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
           </View>
         </View>
 
-        <View style={[styles.statusBox, { backgroundColor: statusColorMap[funcionario.status || 'Ativo'] }]}>
-          <Text style={styles.statusText}>{funcionario.status || 'Ativo'}</Text>
+        <View style={[styles.statusBox, { backgroundColor: statusColorMap[displayStatus()] || '#BDBDBD' }]}>
+          <Text style={styles.statusText}>{displayStatus()}</Text>
         </View>
 
         <TouchableOpacity onPress={toggleExpand} style={{ marginLeft: 8 }}>
@@ -110,37 +133,36 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 12,
     marginVertical: 6,
+    marginHorizontal: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
-    borderColor: '#3c188f3e',
-    borderWidth: 1
+    elevation: 2
   },
   cardExpanded: {
-    backgroundColor: '#f9f9f9'
+    paddingBottom: 16
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center'
   },
   foto: {
-    width: 50,
-    height: 50,
-    borderRadius: 25
+    width: 60,
+    height: 60,
+    borderRadius: 30
   },
   nome: {
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: '600'
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4
+    marginTop: 2
   },
   infoIcon: {
     width: 16,
@@ -149,39 +171,41 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#333'
+    color: '#555'
   },
   statusBox: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    marginLeft: 8
+    paddingVertical: 4,
+    borderRadius: 8,
+    width: 70,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   statusText: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#333'
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center'
   },
   expandedContainer: {
     marginTop: 12
+  },
+  expandedBox: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
+    padding: 8
   },
   infoBox: {
     flex: 1
   },
   label: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#666'
+    fontWeight: '600',
+    color: '#555',
+    marginTop: 4
   },
   value: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 6
-  },
-  expandedBox: {
-    backgroundColor: '#EEF0FF',
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 8
+    color: '#333'
   }
 });

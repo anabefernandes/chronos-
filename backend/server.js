@@ -8,9 +8,35 @@ const { swaggerUi, swaggerSpec } = require('./swagger');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 dbConnect();
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CORS_ORIGIN || '*'
+  }
+});
+
+app.set('io', io);
+
+io.on('connection', socket => {
+  console.log('🟢 Usuário conectado via Socket:', socket.id);
+
+  socket.on('join', userId => {
+    socket.join(userId);
+    console.log(`Usuário ${userId} entrou na sala ${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('🔴 Usuário desconectado:', socket.id);
+  });
+});
+
+module.exports.io = io;
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(helmet());
@@ -30,7 +56,6 @@ app.use('/api/tarefas', require('./routes/tarefa.routes'));
 app.use('/api/user', require('./routes/user.routes'));
 app.use('/api/ml', require('./routes/ml.routes'));
 app.use('/api/notificacoes', require('./routes/notificacao.routes'));
-
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -58,7 +83,7 @@ const createAdmin = async () => {
   }
 };
 
-app.listen(PORT, async () => {
-  console.log(`Servidor na porta ${PORT}`);
+server.listen(PORT, async () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
   await createAdmin();
 });

@@ -8,7 +8,9 @@ type MenuKey =
   | 'tarefas'
   | 'criar-tarefas'
   | 'escalas'
+  | 'criar-escalas'
   | 'holerite'
+  | 'criar-holerite'
   | 'gerenciar-funcionarios'
   | 'perfil'
   | 'notificacoes'
@@ -149,7 +151,8 @@ const styles = StyleSheet.create({
     top: -48,
     left: '50%',
     transform: [{ translateX: -37.5 }],
-    zIndex: 20
+    zIndex: 9999,
+    elevation: 9999
   },
   dashboardCircle: {
     width: 75,

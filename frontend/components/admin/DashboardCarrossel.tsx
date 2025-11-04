@@ -38,9 +38,9 @@ export default function DashboardCarousel({ setActiveScreen }: DashboardCarousel
   };
 
   const actionToScreen: Record<string, string> = {
-    holerite: 'holerite',
+    holerite: 'criar-holerite',
     tarefas: 'criar-tarefas',
-    escalas: 'escalas',
+    escalas: 'criar-escalas',
     equipe: 'gerenciar-funcionarios'
   };
 

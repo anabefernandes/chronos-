@@ -1,16 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext, AuthContextType } from '../../contexts/AuthContext';
 import FuncionarioCard, { Funcionario } from '../../components/admin/FuncionarioCard';
 import FormAdicionarFuncionario from '../../components/admin/FormAddFuncionario';
 import { criarUsuario, atualizarUsuario, excluirUsuario } from '../../services/userService';
 import Navbar from '../../components/public/Navbar';
+import LottieView from 'lottie-react-native';
+import { io } from 'socket.io-client';
 
 export default function GerenciarFuncionarios() {
-  const { usuarios, carregarUsuarios } = useContext(AuthContext);
+  const { usuarios, carregarUsuarios, setUsuarios } = useContext(AuthContext) as AuthContextType;
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingFuncionario, setEditingFuncionario] = useState<Funcionario | null>(null);
+  const [animacao, setAnimacao] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
 
   const handleEdit = (funcionario: Funcionario) => {
     setEditingFuncionario(funcionario);
@@ -36,8 +40,45 @@ export default function GerenciarFuncionarios() {
     ]);
   };
 
+  const mapStatus = (status: string) => {
+    switch (status) {
+      case 'entrada':
+        return 'Ativo';
+      case 'saida':
+        return 'Inativo';
+      case 'almoco':
+        return 'Almoço';
+      case 'retorno':
+        return 'Ativo';
+      default:
+        return 'Inativo';
+    }
+  };
+
   useEffect(() => {
     carregarUsuarios();
+    const socket = io(process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000', {
+      transports: ['websocket']
+    });
+
+    socket.on('connect', () => {
+      console.log('🟢 Conectado ao servidor Socket.io');
+    });
+
+    socket.on('statusAtualizado', ({ userId, novoStatus }) => {
+      console.log('📡 Atualização recebida:', userId, novoStatus);
+
+      const statusFormatado = mapStatus(novoStatus);
+      setUsuarios(prevUsuarios => prevUsuarios.map(u => (u._id === userId ? { ...u, status: statusFormatado } : u)));
+    });
+
+    socket.on('disconnect', () => {
+      console.log('🔴 Desconectado do Socket.io');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const filteredUsuarios = usuarios.filter(u => {
@@ -105,7 +146,13 @@ export default function GerenciarFuncionarios() {
                       setor: string;
                     }
                   );
-                  Alert.alert('Sucesso', 'Usuário criado!');
+                  setMensagemSucesso('Usuário adicionado com sucesso!');
+                  setAnimacao(true);
+
+                  setTimeout(() => {
+                    setAnimacao(false);
+                    setMensagemSucesso('');
+                  }, 3000);
                 }
 
                 setShowForm(false);
@@ -119,6 +166,40 @@ export default function GerenciarFuncionarios() {
           />
         )}
       </View>
+      {animacao && (
+        <View style={[styles.successOverlay, { bottom: 60, top: 100 }]} pointerEvents="box-none">
+          <LottieView
+            source={require('../../assets/lottie/success.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 300, height: 300 }}
+          />
+          {mensagemSucesso !== '' && <Text style={styles.successText}>{mensagemSucesso}</Text>}
+        </View>
+      )}
+      {!animacao && usuarios.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <LottieView
+            source={require('../../assets/lottie/sem_funcionario.json')}
+            autoPlay
+            loop
+            style={{ width: 250, height: 250 }}
+          />
+          <Text style={styles.emptyText}>Nenhum funcionário cadastrado.</Text>
+        </View>
+      )}
+
+      {usuarios.length > 0 && filteredUsuarios.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <LottieView
+            source={require('../../assets/lottie/nenhum_funcionario_encontrado.json')}
+            autoPlay
+            loop
+            style={{ width: 250, height: 250 }}
+          />
+          <Text style={styles.emptyText}>Nenhum funcionário encontrado.</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -185,5 +266,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     fontFamily: 'Poppins_600SemiBold'
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: -190
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#858383ff',
+    fontFamily: 'Poppins_600SemiBold'
+  },
+  successOverlay: {
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    alignItems: 'center',
+    pointerEvents: 'box-none',
+    position: 'absolute',
+    justifyContent: 'center',
+    zIndex: 1
+  },
+  successText: {
+    fontSize: 16,
+    color: '#3C188F',
+    fontFamily: 'Poppins_600SemiBold',
+    marginTop: -20
   }
 });

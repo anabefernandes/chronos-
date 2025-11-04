@@ -15,7 +15,8 @@ exports.criarNotificacao = async (req, res, next) => {
     const notificacao = await Notificacao.create({
       usuario,
       titulo,
-      descricao
+      descricao,
+      tipo: 'tarefa'
     });
 
     res.status(201).json({ msg: 'Notificação criada', notificacao });
@@ -52,7 +53,31 @@ exports.marcarTodasComoLidas = async (req, res, next) => {
     const usuarioId = req.params.usuarioId;
     await Notificacao.updateMany({ usuario: usuarioId, lida: false }, { lida: true });
     res.json({ msg: 'Todas notificações marcadas como lidas' });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
 
+exports.excluirNotificacao = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
+    const notificacao = await Notificacao.findByIdAndDelete(id);
+    if (!notificacao) {
+      return res.status(404).json({ msg: 'Notificação não encontrada' });
+    }
+
+    res.json({ msg: 'Notificação excluída com sucesso' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.excluirTodasNotificacoes = async (req, res, next) => {
+  try {
+    await Notificacao.deleteMany({ usuario: req.params.usuarioId });
+    res.json({ msg: 'Todas notificações excluídas com sucesso' });
+  } catch (err) {
+    next(err);
+  }
+};

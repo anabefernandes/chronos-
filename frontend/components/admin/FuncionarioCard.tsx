@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Key, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -6,13 +6,14 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export interface Funcionario {
+  id: Key | null | undefined;
   _id: string;
   nome: string;
   email?: string;
   role: 'funcionario' | 'chefe';
   cargo?: string;
   foto?: string;
-  status?: 'Ativo' | 'Atraso' | 'Folga';
+  status?: 'Ativo' | 'Atraso' | 'Folga' | 'Almoço' | 'Inativo';
   horario?: string;
   observacao?: string;
   tarefas?: string;
@@ -50,10 +51,35 @@ export default function FuncionarioCard({
     }
   };
 
-  const statusColorMap = {
+  // Mapear status para exibição correta
+  const displayStatus = () => {
+    if (!funcionario.status) return 'Inativo';
+
+    switch (funcionario.status.toLowerCase()) {
+      case 'almoco':
+      case 'almoço':
+        return 'Almoço';
+      case 'entrada':
+      case 'ativo':
+        return 'Ativo';
+      case 'saida':
+      case 'inativo':
+        return 'Inativo';
+      case 'folga':
+        return 'Folga';
+      case 'atraso':
+        return 'Atraso';
+      default:
+        return funcionario.status;
+    }
+  };
+
+  const statusColorMap: Record<string, string> = {
     Ativo: '#C1E1C1',
     Atraso: '#F4C7C3',
-    Folga: '#B9D7F0'
+    Folga: '#B9D7F0',
+    Almoço: '#FFD580', // cor laranja
+    Inativo: '#BDBDBD'
   };
 
   const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
@@ -106,8 +132,8 @@ export default function FuncionarioCard({
           </View>
         )}
 
-        <View style={[styles.statusBox, { backgroundColor: statusColorMap[funcionario.status || 'Ativo'] }]}>
-          <Text style={styles.statusText}>{funcionario.status || 'Ativo'}</Text>
+        <View style={[styles.statusBox, { backgroundColor: statusColorMap[displayStatus()] || '#BDBDBD' }]}>
+          <Text style={styles.statusText}>{displayStatus()}</Text>
         </View>
       </View>
 

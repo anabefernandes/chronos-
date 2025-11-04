@@ -116,7 +116,8 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
               resizeMode="contain"
             />
             <Text style={styles.contadorTexto}>
-              {tarefasFiltradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+              {tarefasFiltradas.length}{' '}
+              <Text style={styles.contadorLabel}>{tarefasFiltradas.length === 1 ? 'tarefa' : 'tarefas'}</Text>
             </Text>
           </View>
         </View>
@@ -228,7 +229,8 @@ const TarefasPorPrioridade: React.FC<Props> = ({ tarefas }) => {
                   resizeMode="contain"
                 />
                 <Text style={styles.contadorTexto}>
-                  {tarefasConcluidas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+                  {tarefasConcluidas.length}{' '}
+                  <Text style={styles.contadorLabel}>{tarefasConcluidas.length === 1 ? 'tarefa' : 'tarefas'}</Text>
                 </Text>
               </View>
             </View>

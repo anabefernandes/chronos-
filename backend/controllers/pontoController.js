@@ -1,7 +1,8 @@
 const Ponto = require('../models/Ponto');
 const Holerite = require('../models/Holerite');
+const User = require('../models/User'); // ✅ trocado aqui
 
-//FUNÇAO p calcular horas de um dia
+// FUNÇÃO para calcular horas do dia (mantida igual)
 function calcularHorasDoDiaComFlag(pontosDoDia) {
   let isWorking = false;
   let entrada = null;
@@ -47,6 +48,7 @@ function calcularHorasDoDiaComFlag(pontosDoDia) {
   return totalHoras;
 }
 
+// FUNÇÃO para calcular distância (mantida igual)
 function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const φ1 = (lat1 * Math.PI) / 180;
@@ -60,7 +62,6 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-//registra ponto e atualiza o holerite
 exports.registrarPonto = async (req, res, next) => {
   try {
     const { status, localizacao } = req.body;
@@ -74,12 +75,12 @@ exports.registrarPonto = async (req, res, next) => {
       return res.status(400).json({ msg: 'Localização é obrigatória' });
     }
 
-    //DEFINIR COORDENADAS AQUI
+    // Coordenadas fixas do local de trabalho
     const LOCAL_TRABALHO = {
-      latitude: -24.024736511022894,
-      longitude: -46.488954928836364
+      latitude: -24.000566750040868,
+      longitude: -46.432012578475224
     };
-    const RAIO_PERMITIDO = 50; //DEFINIR METROS
+    const RAIO_PERMITIDO = 50; // metros
 
     const distancia = calcularDistancia(
       localizacao.latitude,
@@ -94,12 +95,47 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
+    // ✅ 1. Cria o ponto
     const ponto = await Ponto.create({
       funcionario: funcionarioId,
       status,
       localizacao
     });
 
+    // ✅ 2. Define o novo status do funcionário conforme o ponto batido
+    let novoStatus = 'Inativo';
+    switch (status) {
+      case 'entrada':
+        novoStatus = 'Ativo';
+        break;
+      case 'almoco':
+        novoStatus = 'Almoço';
+        break;
+      case 'retorno':
+        novoStatus = 'Ativo';
+        break;
+      case 'saida':
+        novoStatus = 'Inativo';
+        break;
+      // opcional: futuro suporte a folga/atraso
+      case 'folga':
+        novoStatus = 'Folga';
+        break;
+      case 'atraso':
+        novoStatus = 'Atraso';
+        break;
+    }
+
+    // ✅ 3. Atualiza o status no usuário
+    await User.findByIdAndUpdate(funcionarioId, { status: novoStatus });
+
+    const io = req.app.get('io');
+    io.emit('statusAtualizado', {
+      userId: funcionarioId,
+      novoStatus
+    });
+
+    // ⚙️ Cálculo do holerite (mantém igual ao seu código)
     const data = new Date(ponto.horario);
     const primeiroDia = new Date(data.getFullYear(), data.getMonth(), 1);
     const ultimoDia = new Date(data.getFullYear(), data.getMonth() + 1, 0);
@@ -162,7 +198,12 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({ msg: 'Ponto registrado e holerite atualizado', ponto });
+    // ✅ 4. Retorna tudo certinho
+    res.status(201).json({
+      msg: 'Ponto registrado, status atualizado e holerite recalculado',
+      ponto,
+      novoStatus
+    });
   } catch (err) {
     next(err);
   }
@@ -190,3 +231,5 @@ exports.todosPontos = async (req, res, next) => {
     next(err);
   }
 };
+
+

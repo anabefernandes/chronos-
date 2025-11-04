@@ -8,7 +8,9 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import { useFonts, Poppins_400Regular, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,7 +38,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await api.post('/api/auth/login', { email, senha });
+      const res = await api.post('/auth/login', { email, senha });
       const token = res.data.token;
       const roleBackend = res.data.user?.role;
       const nome = res.data.user?.nome || 'NOVO USUÁRIO';
@@ -52,14 +54,12 @@ export default function Login() {
 
       const role = roleBackend.toLowerCase();
 
-      // Atualiza contexto
       setUserId(userId);
       setRole(role);
       setNome(nome);
       setFoto(foto);
       setSetor(setor);
 
-      // Salva no AsyncStorage
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('userId', userId);
       await AsyncStorage.setItem('role', role);
@@ -67,7 +67,6 @@ export default function Login() {
       await AsyncStorage.setItem('foto', foto);
       await AsyncStorage.setItem('setor', setor);
 
-      // Redireciona
       if (role === 'chefe' || role === 'admin') {
         router.replace('/telas-chefe/painel-admin');
       } else {
@@ -80,62 +79,70 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.container}>
-          <EllipseHeader />
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1, backgroundColor: '#fff' }}
+        >
+          <View style={styles.container}>
+            <EllipseHeader />
 
-          <View style={styles.content}>
-            <View style={styles.form}>
-              <Text style={styles.title}>Login</Text>
-              <Text style={styles.subtitle}>
-                Não tem conta?{' '}
-                <Text style={styles.link} onPress={() => router.push('/cadastro')}>
-                  Cadastre-se
+            <View style={styles.content}>
+              <View style={styles.form}>
+                <Text style={styles.title}>Login</Text>
+                <Text style={styles.subtitle}>
+                  Não tem conta?{' '}
+                  <Text style={styles.link} onPress={() => router.push('/cadastro')}>
+                    Cadastre-se
+                  </Text>
                 </Text>
-              </Text>
 
-              <View style={styles.inputContainer}>
-                <Image source={require('../../assets/images/iniciais/icone_email.png')} style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor="#1E1E1E"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                />
+                <View style={styles.inputContainer}>
+                  <Image source={require('../../assets/images/iniciais/icone_email.png')} style={styles.icon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email"
+                    placeholderTextColor="#1E1E1E"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    multiline={false}
+                    scrollEnabled={false}
+                    keyboardType="email-address"
+                  />
+                </View>
+
+                <View style={styles.inputContainer}>
+                  <Image source={require('../../assets/images/iniciais/icone_codigo.png')} style={styles.icon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Senha"
+                    placeholderTextColor="#1E1E1E"
+                    value={senha}
+                    onChangeText={setSenha}
+                    secureTextEntry
+                    multiline={false}
+                    scrollEnabled={false}
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.forgotContainer} onPress={() => router.push('/recuperar-senha')}>
+                  <Text style={styles.forgotText}>Esqueci a senha</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                  <Text style={styles.buttonText}>Entrar</Text>
+                </TouchableOpacity>
               </View>
 
-              <View style={styles.inputContainer}>
-                <Image source={require('../../assets/images/iniciais/icone_codigo.png')} style={styles.icon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Senha"
-                  placeholderTextColor="#1E1E1E"
-                  value={senha}
-                  onChangeText={setSenha}
-                  secureTextEntry
-                />
-              </View>
-
-              <TouchableOpacity style={styles.forgotContainer} onPress={() => router.push('/recuperar-senha')}>
-                <Text style={styles.forgotText}>Esqueci a senha</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                <Text style={styles.buttonText}>Entrar</Text>
-              </TouchableOpacity>
+              <Footer />
             </View>
-
-            <Footer />
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -193,7 +200,9 @@ const styles = StyleSheet.create({
     height: 40,
     color: '#000',
     fontFamily: 'Poppins_400Regular',
-    fontSize: 18
+    fontSize: 18,
+    paddingVertical: 0,
+    textAlignVertical: 'center'
   },
   forgotContainer: {
     width: '90%',

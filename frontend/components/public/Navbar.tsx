@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { View, Image, StyleSheet, TouchableOpacity, Text, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
 import { listarNotificacoes } from '../../services/userService';
+import { io } from 'socket.io-client';
 
 const logo = require('../../assets/images/iniciais/logo_chronos.png');
 
@@ -11,40 +12,79 @@ export default function Navbar() {
   const router = useRouter();
   const { userId } = useContext(AuthContext);
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState(0);
+  const socketRef = useRef<any>(null);
+
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  const animarSininho = () => {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 1, duration: 100, easing: Easing.linear, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 100, easing: Easing.linear, useNativeDriver: true })
+    ]).start();
+  };
+
+  const carregarNotificacoes = async () => {
+    if (!userId) return;
+
+    try {
+      const notificacoes = await listarNotificacoes(userId);
+      const naoLidas = notificacoes.filter((n: any) => !n.lida).length;
+
+      // animação do sininho sempre que houver notificações
+      if (naoLidas > 0) animarSininho();
+
+      setNotificacoesNaoLidas(naoLidas);
+    } catch (err) {
+      console.log('Erro ao listar notificações:', err);
+    }
+  };
 
   useEffect(() => {
-    const carregarNotificacoes = async () => {
-      try {
-        if (!userId) return;
-        const data = await listarNotificacoes(userId);
-        const naoLidas = data.filter((n: any) => !n.lida).length;
-        setNotificacoesNaoLidas(naoLidas);
-      } catch (err) {
-        console.log('Erro carregar notificacoes:', err);
+    if (!userId) return;
+
+    const socket = io(process.env.EXPO_PUBLIC_API_URL || '', { transports: ['websocket'], reconnection: true });
+    socketRef.current = socket;
+    socket.emit('join', userId);
+
+    socket.on('nova_notificacao', (data: any) => {
+      if (data.usuario === userId) {
+        carregarNotificacoes();
       }
-    };
+    });
 
     carregarNotificacoes();
 
-    const interval = setInterval(carregarNotificacoes, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
   }, [userId]);
 
-  const handleNotificacoes = () => {
-    router.push('/telas-iniciais/notificacoes');
-  };
-
-  const handlePerfil = () => {
-    router.push('/telas-iniciais/perfil');
-  };
+  const handleNotificacoes = () => router.push('/telas-iniciais/notificacoes');
+  const handlePerfil = () => router.push('/telas-iniciais/perfil');
 
   return (
     <View style={styles.container}>
       <Image source={logo} style={styles.logo} resizeMode="contain" />
-
       <View style={styles.icons}>
         <TouchableOpacity onPress={handleNotificacoes} style={styles.iconWrapper}>
-          <Ionicons name="notifications-outline" size={28} color="#fff" />
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  rotate: shakeAnim.interpolate({
+                    inputRange: [-1, 1],
+                    outputRange: ['-15deg', '15deg']
+                  })
+                }
+              ]
+            }}
+          >
+            <Ionicons name="notifications-outline" size={28} color="#fff" />
+          </Animated.View>
+
           {notificacoesNaoLidas > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{notificacoesNaoLidas}</Text>
