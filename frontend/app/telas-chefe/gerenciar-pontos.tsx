@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Navbar from '../../components/public/Navbar';
 
-export default function Holerite() {
+export default function GerenciarPontos() {
   return (
     <View style={styles.container}>
       <Navbar />
       <View style={styles.content}>
-        <Text style={styles.text}>💰 Tela de Criar Holerite</Text>
+        <Text style={styles.text}>Tela visualização de todos os pontos</Text>
       </View>
     </View>
   );

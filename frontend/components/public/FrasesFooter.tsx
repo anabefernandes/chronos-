@@ -1,26 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { Text, View, StyleSheet, Animated, Easing } from 'react-native';
 
 const frases = [
   'Organize sua rotina com o Chronos ⏳',
   'Um dia bem planejado vale por dois 💡',
   'Seu tempo, sua produtividade 🚀',
   'Controle e praticidade na palma da mão 📱',
-  'Cada segundo conta ⌛'
+  'Cada segundo conta ⌛',
+  'Chronos — tecnologia a favor do cuidado ⏳'
 ];
 
 export default function Footer() {
-  const [frase, setFrase] = useState('');
+  const [fraseIndex, setFraseIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(10)).current;
+
+  const animarEntrada = () => {
+    fadeAnim.setValue(0);
+    translateY.setValue(10);
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 700,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 700,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true
+      })
+    ]).start();
+  };
 
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * frases.length);
-    setFrase(frases[randomIndex]);
+    animarEntrada();
+    const intervalo = setInterval(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true
+      }).start(() => {
+        setFraseIndex((prev) => (prev + 1) % frases.length);
+        animarEntrada();
+      });
+    }, 5000); // troca a cada 5 segundos
+
+    return () => clearInterval(intervalo);
   }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.line} />
-      <Text style={styles.text}>{frase}</Text>
+      <Animated.Text
+        style={[
+          styles.text,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY }]
+          }
+        ]}
+      >
+        {frases[fraseIndex]}
+      </Animated.Text>
     </View>
   );
 }

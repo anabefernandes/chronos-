@@ -184,7 +184,8 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
               resizeMode="contain"
             />
             <Text style={styles.contadorTexto}>
-              {filtradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+              {filtradas.length}{' '}
+              <Text style={styles.contadorLabel}>{filtradas.length === 1 ? 'tarefa' : 'tarefas'}</Text>
             </Text>
           </View>
         </View>
@@ -323,7 +324,10 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
                   resizeMode="contain"
                 />
                 <Text style={styles.contadorTexto}>
-                  {tarefasConcluidasFiltradas.length} <Text style={styles.contadorLabel}>tarefas</Text>
+                  {tarefasConcluidasFiltradas.length}{' '}
+                  <Text style={styles.contadorLabel}>
+                    {tarefasConcluidasFiltradas.length === 1 ? 'tarefa' : 'tarefas'}
+                  </Text>
                 </Text>
               </View>
             </View>

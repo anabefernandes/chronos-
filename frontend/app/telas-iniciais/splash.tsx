@@ -3,17 +3,17 @@ import { useFonts, Poppins_400Regular } from '@expo-google-fonts/poppins';
 import React, { useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
 
-const LogoRelogio = require('../../assets/images/iniciais/relogio_logo.png');
 const LogoTexto = require('../../assets/images/iniciais/nome_logo.png');
 
 const { width, height } = Dimensions.get('window');
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 export default function Splash() {
   const router = useRouter();
-
-  const spinValue = useRef(new Animated.Value(0)).current;
   const animValue = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const [dots, setDots] = useState('');
 
   const [fontsLoaded] = useFonts({
@@ -21,18 +21,35 @@ export default function Splash() {
   });
 
   useEffect(() => {
+    // 🌈 Movimento diagonal super suave (vai e volta)
     Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 2000,
-        easing: Easing.linear,
-        useNativeDriver: true
-      })
+      Animated.sequence([
+        Animated.timing(animValue, {
+          toValue: 1,
+          duration: 6000, // mais lento para suavidade
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: false
+        }),
+        Animated.timing(animValue, {
+          toValue: 0,
+          duration: 6000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: false
+        })
+      ])
     ).start();
+
+    // ✨ Fade in dos elementos
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 2000,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true
+    }).start();
 
     const timer = setTimeout(() => {
       router.push('/telas-iniciais/login');
-    }, 4000);
+    }, 4500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -44,56 +61,30 @@ export default function Splash() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(animValue, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false
-        }),
-        Animated.timing(animValue, {
-          toValue: 0,
-          duration: 2000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false
-        })
-      ])
-    ).start();
-  }, []);
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg']
-  });
-
-  const startX = animValue.interpolate({ inputRange: [0, 1], outputRange: [0, 0.3] });
-  const startY = animValue.interpolate({ inputRange: [0, 1], outputRange: [0, 0.2] });
-  const endX = animValue.interpolate({ inputRange: [0, 1], outputRange: [1, 0.7] });
-  const endY = animValue.interpolate({ inputRange: [0, 1], outputRange: [1, 0.8] });
+  // 🌀 Movimentação diagonal (vai do canto superior esquerdo ao inferior direito)
+  const startX = animValue.interpolate({ inputRange: [0, 1], outputRange: [0.0, 0.8] });
+  const startY = animValue.interpolate({ inputRange: [0, 1], outputRange: [0.0, 0.2] });
+  const endX = animValue.interpolate({ inputRange: [0, 1], outputRange: [1.0, 0.6] });
+  const endY = animValue.interpolate({ inputRange: [0, 1], outputRange: [1.0, 0.9] });
 
   if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: '#fff' }} />;
+    return <View style={{ flex: 1, backgroundColor: '#3C188F' }} />;
   }
 
   return (
     <AnimatedLinearGradient
+      // 💙💜 Gradiente vibrante e suave igual ao vídeo
       colors={['#4DC9EA', '#3C188F']}
       start={{ x: startX as any, y: startY as any }}
       end={{ x: endX as any, y: endY as any }}
       style={styles.container}
     >
-      <View style={styles.logoWrapper}>
+      <Animated.View style={[styles.logoWrapper, { opacity: fadeAnim }]}>
         <View style={styles.logoContainer}>
-          <Animated.Image
-            source={LogoRelogio}
-            style={[styles.relogio, { transform: [{ rotate: spin }] }]}
-            resizeMode="contain"
-          />
+          <LottieView source={require('../../assets/lottie/clock.json')} autoPlay loop style={styles.lottie} />
           <Image source={LogoTexto} style={styles.texto} resizeMode="contain" />
         </View>
-      </View>
+      </Animated.View>
 
       <View style={styles.textContainer}>
         <Text style={styles.text}>
@@ -104,8 +95,6 @@ export default function Splash() {
     </AnimatedLinearGradient>
   );
 }
-
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const styles = StyleSheet.create({
   container: {
@@ -125,23 +114,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  relogio: {
-    width: 90,
-    height: 90,
-    left: 35
+  lottie: {
+    width: 130,
+    height: 130,
+    left: 20,
+    top: -1,
+    opacity: 0.9
   },
   texto: {
     height: 90,
     flexShrink: 1,
-    marginLeft: -35
+    marginLeft: -75
   },
   textContainer: {
-    marginTop: -10
+    marginTop: -50
   },
   text: {
     fontSize: 20,
     fontFamily: 'Poppins_400Regular',
-    color: '#fff',
+    color: '#FFFFFFE5',
     textAlign: 'center'
   }
 });

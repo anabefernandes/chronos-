@@ -92,14 +92,17 @@ export default function Login() {
 
             <View style={styles.content}>
               <View style={styles.form}>
-                <Text style={styles.title}>Login</Text>
-                <Text style={styles.subtitle}>
-                  Não tem conta?{' '}
-                  <Text style={styles.link} onPress={() => router.push('/cadastro')}>
-                    Cadastre-se
-                  </Text>
-                </Text>
+                <View style={styles.titleContainer}>
+                  <Text style={styles.title}>Bem-vindo de volta</Text>
+                  <Image
+                    source={require('../../assets/images/telas-public/icone_boasvindas.png')}
+                    style={styles.titleIcon}
+                  />
+                </View>
 
+                <Text style={styles.subtitle}>Coloque suas credenciais para continuar</Text>
+
+                {/* Campos */}
                 <View style={styles.inputContainer}>
                   <Image source={require('../../assets/images/iniciais/icone_email.png')} style={styles.icon} />
                   <TextInput
@@ -129,10 +132,7 @@ export default function Login() {
                   />
                 </View>
 
-                <TouchableOpacity style={styles.forgotContainer} onPress={() => router.push('/recuperar-senha')}>
-                  <Text style={styles.forgotText}>Esqueci a senha</Text>
-                </TouchableOpacity>
-
+               
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
@@ -157,26 +157,34 @@ const styles = StyleSheet.create({
   },
   form: {
     padding: 20,
-    marginTop: -60
+    marginTop: -50
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 100,
+    marginBottom: 22
   },
   title: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: 'bold',
-    textAlign: 'center',
     color: '#3C188F',
-    marginBottom: 5,
-    marginTop: 100,
-    fontFamily: 'Poppins_600SemiBold'
+    fontFamily: 'Poppins_600SemiBold',
+    marginRight: 5 // dá um espacinho entre o texto e o ícone
   },
+  titleIcon: {
+    width: 30, // pode ajustar conforme o tamanho do PNG
+    height: 30,
+    resizeMode: 'contain'
+  },
+
   subtitle: {
     textAlign: 'center',
-    marginBottom: 35,
+    marginBottom: 40,
     color: '#1B0A43',
-    fontFamily: 'Poppins_400Regular'
-  },
-  link: {
-    color: '#3C188F',
-    fontFamily: 'Poppins_600SemiBold'
+    fontFamily: 'Poppins_400Regular',
+    top: -15
   },
   inputContainer: {
     flexDirection: 'row',
@@ -186,7 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 15,
     paddingVertical: 5,
-    marginBottom: 20,
+    marginBottom: 22,
     width: '90%',
     alignSelf: 'center'
   },
@@ -198,21 +206,21 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
-    color: '#000',
+    color: '#1B0A43',
     fontFamily: 'Poppins_400Regular',
     fontSize: 18,
     paddingVertical: 0,
     textAlignVertical: 'center'
   },
-  forgotContainer: {
+  infoContainer: {
     width: '90%',
     alignSelf: 'center',
     alignItems: 'flex-end',
     marginBottom: 10
   },
-  forgotText: {
-    color: '#1B0A43',
-    fontWeight: '500',
+  infoText: {
+    color: '#6E6E8F',
+    fontSize: 13,
     fontFamily: 'Poppins_400Regular'
   },
   button: {
@@ -230,5 +238,5 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
-  }
+  },
 });

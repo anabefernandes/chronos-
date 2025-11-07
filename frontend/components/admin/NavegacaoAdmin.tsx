@@ -5,6 +5,7 @@ import { icons, activeIconsAdmin } from '../../assets/images/navegacao';
 type MenuKey =
   | 'dashboard'
   | 'ponto'
+  | 'gerenciar-pontos'
   | 'tarefas'
   | 'criar-tarefas'
   | 'escalas'

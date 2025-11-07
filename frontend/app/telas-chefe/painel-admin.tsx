@@ -14,9 +14,11 @@ import Notificacoes from '../telas-iniciais/notificacoes';
 import CriarEscalas from './criar-escalas';
 import CriarTarefas from './criar-tarefas';
 import CriarHolerite from './criar-holerite';
+import GerenciarPontos from './gerenciar-pontos';
 
 type ScreenKey =
   | 'dashboard'
+  | 'gerenciar-pontos'
   | 'ponto'
   | 'tarefas'
   | 'criar-tarefas'
@@ -42,6 +44,8 @@ export default function PainelAdmin() {
         return <Dashboard setActiveScreen={handleScreenChange} />;
       case 'ponto':
         return <Ponto />;
+      case 'gerenciar-pontos':
+        return <GerenciarPontos />
       case 'tarefas':
         return <TarefasAdmin />;
       case 'criar-tarefas':
