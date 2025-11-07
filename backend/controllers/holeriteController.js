@@ -7,8 +7,7 @@ function formatarHoras(horasDecimais) {
   return `${horas}h${minutos.toString().padStart(2, '0')}min`;
 }
 
-//croar ou editar holerite (apenas admin)
-//serve para setar valorHora e descontos
+// criar ou editar holerite (apenas admin)
 exports.criarOuEditarHolerite = async (req, res, next) => {
   try {
     const { funcionario, periodoInicio, periodoFim, valorHora, descontos } = req.body;
@@ -30,8 +29,10 @@ exports.criarOuEditarHolerite = async (req, res, next) => {
         periodoFim: new Date(periodoFim),
         valorHora: Number(valorHora || 20),
         descontos: Number(descontos || 0),
-        totalHoras: 0, //preenchido no pontoController
-        salarioLiquido: 0, //tb
+        totalHoras: 0,
+        totalHorasExtras: 0,
+        totalHorasDescontadas: 0,
+        salarioLiquido: 0,
         detalhesDias: []
       });
       return res.status(201).json({ msg: 'Holerite criado (aguardando pontos)', holerite });
@@ -42,7 +43,9 @@ exports.criarOuEditarHolerite = async (req, res, next) => {
 
     holerite.detalhesDias = holerite.detalhesDias.map(d => ({
       ...d.toObject(),
-      horasFormatadas: formatarHoras(d.horasTrabalhadas || 0)
+      horasFormatadas: formatarHoras(d.horasTrabalhadas || 0),
+      horasExtrasFormatadas: formatarHoras(d.horasExtras || 0),
+      horasFaltantesFormatadas: formatarHoras(d.horasFaltantes || 0)
     }));
 
     await holerite.save();
@@ -53,19 +56,19 @@ exports.criarOuEditarHolerite = async (req, res, next) => {
   }
 };
 
-//holerites do func logado
+// holerites do func logado
 exports.meuHolerite = async (req, res, next) => {
   try {
     const funcionarioId = req.user.id;
-    let holerites = await Holerite.find({ funcionario: funcionarioId }).sort({
-      periodoInicio: -1
-    });
+    let holerites = await Holerite.find({ funcionario: funcionarioId }).sort({ periodoInicio: -1 });
 
     holerites = holerites.map(h => ({
       ...h.toObject(),
       detalhesDias: h.detalhesDias.map(d => ({
         ...d.toObject(),
-        horasFormatadas: formatarHoras(d.horasTrabalhadas || 0)
+        horasFormatadas: formatarHoras(d.horasTrabalhadas || 0),
+        horasExtrasFormatadas: formatarHoras(d.horasExtras || 0),
+        horasFaltantesFormatadas: formatarHoras(d.horasFaltantes || 0)
       }))
     }));
 
@@ -75,17 +78,23 @@ exports.meuHolerite = async (req, res, next) => {
   }
 };
 
-//tds os holerites (admin)
+// todos os holerites (admin)
 exports.todosHolerites = async (req, res, next) => {
   try {
-    let holerites = await Holerite.find().populate('funcionario', 'nome email').sort({ periodoInicio: -1 });
-    holerites = holerites.map(h => {
-      h.detalhesDias = h.detalhesDias.map(d => ({
+    let holerites = await Holerite.find()
+      .populate('funcionario', 'nome email')
+      .sort({ periodoInicio: -1 });
+
+    holerites = holerites.map(h => ({
+      ...h.toObject(),
+      detalhesDias: h.detalhesDias.map(d => ({
         ...d.toObject(),
-        horasFormatadas: formatarHoras(d.horasTrabalhadas || 0)
-      }));
-      return h;
-    });
+        horasFormatadas: formatarHoras(d.horasTrabalhadas || 0),
+        horasExtrasFormatadas: formatarHoras(d.horasExtras || 0),
+        horasFaltantesFormatadas: formatarHoras(d.horasFaltantes || 0)
+      }))
+    }));
+
     res.json(holerites);
   } catch (err) {
     next(err);

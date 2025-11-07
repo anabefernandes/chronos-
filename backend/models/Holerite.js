@@ -6,7 +6,9 @@ const detalheDiaSchema = new mongoose.Schema({
   almoco: Date,
   retorno: Date,
   saida: Date,
-  horasTrabalhadas: Number
+  horasTrabalhadas: Number,
+  horasExtras: { type: Number, default: 0 },
+  horasFaltantes: { type: Number, default: 0 }
 });
 
 const holeriteSchema = new mongoose.Schema({
@@ -20,6 +22,8 @@ const holeriteSchema = new mongoose.Schema({
   valorHora: { type: Number, required: true },
   descontos: { type: Number, default: 0 },
   totalHoras: { type: Number, default: 0 },
+  totalHorasExtras: { type: Number, default: 0 },
+  totalHorasDescontadas: { type: Number, default: 0 },
   salarioLiquido: { type: Number, default: 0 },
   detalhesDias: [detalheDiaSchema]
 });

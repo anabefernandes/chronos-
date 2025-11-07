@@ -3,6 +3,7 @@ const ctrl = require('../controllers/userController');
 const { auth, requireRole } = require('../middlewares/auth');
 const upload = require('../middlewares/upload');
 const { atualizarMeusDados } = require('../controllers/userController');
+const User = require('../models/User');
 
 /**
  * @swagger
@@ -161,5 +162,19 @@ router.put('/atualizarMinhaFoto', auth, upload.single('foto'), ctrl.atualizarMin
  *         description: Permissão negada
  */
 router.delete('/excluirUsuario/:id', auth, requireRole('admin', 'chefe'), ctrl.excluirUsuario);
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const usuarioId = req.user.id;
+    const user = await User.findById(usuarioId).select('nome email role setor cargaHorariaDiaria foto');
+
+    if (!user) return res.status(404).json({ msg: 'Usuário não encontrado' });
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Erro ao buscar usuário' });
+  }
+});
 
 module.exports = router;

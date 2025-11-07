@@ -133,19 +133,31 @@ export default function GerenciarFuncionarios() {
             onAdd={async dados => {
               try {
                 if (editingFuncionario) {
-                  await atualizarUsuario(editingFuncionario._id, dados);
+                  const dadosAtualizados: any = {
+                    nome: dados.nome,
+                    email: dados.email,
+                    role: dados.role,
+                    setor: dados.setor,
+                    cargaHorariaDiaria: dados.cargaHorariaDiaria,
+                  };
+
+                  // só envia senha se o usuário digitou algo
+                  if (dados.senha && dados.senha.trim() !== '') {
+                    dadosAtualizados.senha = dados.senha;
+                  }
+
+                  await atualizarUsuario(editingFuncionario._id, dadosAtualizados);
                   Alert.alert('Sucesso', 'Usuário atualizado!');
                 } else {
-                  await criarUsuario(
-                    dados as {
-                      nome: string;
-                      email: string;
-                      senha: string;
-                      role: 'funcionario' | 'chefe';
-                      foto?: string;
-                      setor: string;
-                    }
-                  );
+                  await criarUsuario({
+                    nome: dados.nome,
+                    email: dados.email,
+                    senha: dados.senha ?? '',
+                    role: dados.role,
+                    setor: dados.setor,
+                    cargaHorariaDiaria: dados.cargaHorariaDiaria,
+                  });
+
                   setMensagemSucesso('Usuário adicionado com sucesso!');
                   setAnimacao(true);
 
