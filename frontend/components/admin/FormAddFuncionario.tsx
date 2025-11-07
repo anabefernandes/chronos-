@@ -17,7 +17,14 @@ import { Funcionario } from './FuncionarioCard';
 
 interface FormProps {
   onClose: () => void;
-  onAdd: (dados: { nome: string; email: string; senha?: string; role: 'funcionario' | 'chefe'; setor: string }) => void;
+  onAdd: (dados: {
+    nome: string;
+    email: string;
+    senha?: string;
+    role: 'funcionario' | 'chefe';
+    setor: string;
+    cargaHorariaDiaria: number;
+  }) => void;
   funcionario?: Funcionario;
 }
 
@@ -27,6 +34,9 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
   const [senha, setSenha] = useState('');
   const [role, setRole] = useState<'funcionario' | 'chefe'>(funcionario?.role || 'funcionario');
   const [setor, setSetor] = useState(funcionario?.setor || '');
+  const [cargaHorariaDiaria, setCargaHorariaDiaria] = useState(
+    funcionario?.cargaHorariaDiaria?.toString() || '8'
+  );
 
   const slideAnim = useRef(new Animated.Value(300)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -40,7 +50,14 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
 
   const handleSubmit = () => {
     if (!nome || !email || !setor) return;
-    const dados = { nome, email, senha, role, setor };
+    const dados = {
+      nome,
+      email,
+      senha,
+      role,
+      setor,
+      cargaHorariaDiaria: Number(cargaHorariaDiaria)
+    };
     onAdd(dados);
     onClose();
   };
@@ -103,6 +120,19 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
                   value={setor}
                   onChangeText={setSetor}
                   placeholderTextColor="#999"
+                />
+              </View>
+
+              {/* Carga Horária Diária */}
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Carga Horária Diária (h)</Text>
+                <TextInput
+                  placeholder="8"
+                  style={styles.input}
+                  value={cargaHorariaDiaria}
+                  onChangeText={setCargaHorariaDiaria}
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
                 />
               </View>
 

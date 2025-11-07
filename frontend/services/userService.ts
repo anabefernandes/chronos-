@@ -6,6 +6,7 @@ export const criarUsuario = async (dados: {
   senha: string;
   role: 'funcionario' | 'chefe';
   setor: string;
+  cargaHorariaDiaria?: number;
 }) => {
   const response = await api.post('/user/criarUsuario', dados, {
     headers: { 'Content-Type': 'application/json' }
@@ -25,7 +26,7 @@ export const listarChefe = async () => {
 
 export const atualizarUsuario = async (
   id: string,
-  dados: { nome?: string; email?: string; senha?: string; role?: 'funcionario' | 'chefe'; setor?: string }
+  dados: { nome?: string; email?: string; senha?: string; role?: 'funcionario' | 'chefe'; setor?: string; cargaHorariaDiaria?: number }
 ) => {
   const response = await api.put(`/user/atualizarUsuario/${id}`, dados, {
     headers: { 'Content-Type': 'application/json' }
@@ -104,5 +105,59 @@ export const excluirNotificacao = async (id: string) => {
   } catch (err) {
     console.error('Erro ao excluir notificação:', err);
     throw err;
+  }
+};
+
+// Tipo base para uma escala
+export interface EscalaRequest {
+  funcionario: string;
+  data: string;
+  horaEntrada?: string;
+  horaSaida?: string;
+  folga?: boolean; // opcional — útil se quiser registrar folgas
+}
+
+// Criar ou editar uma escala (chefe/admin)
+export const criarOuEditarEscala = async (dados: EscalaRequest) => {
+  try {
+    const response = await api.post('/escala/criarOuEditarEscala', dados, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao criar/editar escala:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Listar todas as escalas (admin)
+export const listarTodasEscalas = async () => {
+  try {
+    const response = await api.get('/escala/todasEscalas');
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao listar escalas:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Listar escalas do funcionário logado
+export const minhasEscalas = async () => {
+  try {
+    const response = await api.get('/escala/minhasEscalas');
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao listar minhas escalas:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getUserRole = async (): Promise<'admin' | 'chefe' | 'funcionario'> => {
+  try {
+    const response = await api.get('/user/me'); // rota que retorna info do usuário logado
+    return response.data.role; // assume que vem { role: 'admin' | 'chefe' | 'funcionario', ... }
+  } catch (err) {
+    console.error('Erro ao buscar role do usuário:', err);
+    return 'funcionario';
   }
 };

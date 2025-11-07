@@ -4,8 +4,8 @@ const bcrypt = require('bcryptjs');
 //criar usuario chefe ou func (admin)
 exports.criarUsuario = async (req, res, next) => {
   try {
-    const { nome, email, senha, role, setor } = req.body;
-    if (!nome || !email || !senha || !role || !setor) return res.status(400).json({ msg: 'Campos obrigatórios' });
+    const { nome, email, senha, role, setor, cargaHorariaDiaria } = req.body;
+    if (!nome || !email || !senha || !role || !setor || !cargaHorariaDiaria) return res.status(400).json({ msg: 'Campos obrigatórios' });
 
     if (await User.findOne({ email })) return res.status(400).json({ msg: 'Email já cadastrado' });
 
@@ -17,6 +17,7 @@ exports.criarUsuario = async (req, res, next) => {
       senha: hashed,
       role,
       setor,
+      cargaHorariaDiaria: cargaHorariaDiaria || 8,
       foto: '/assets/images/telas-public/sem_foto.png'
     });
 
@@ -28,6 +29,7 @@ exports.criarUsuario = async (req, res, next) => {
         email: user.email,
         role: user.role,
         setor: user.setor,
+        cargaHorariaDiaria: user.cargaHorariaDiaria,
         foto: user.foto
       }
     });

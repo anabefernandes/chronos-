@@ -10,8 +10,9 @@ const UserSchema = new mongoose.Schema({
     default: 'funcionario'
   },
   setor: { type: String, required: true },
+  cargaHorariaDiaria: { type: Number, default: 8 },
   foto: { type: String, default: null },
-  status: {type: String, default: 'Inativo'}
+  status: { type: String, default: 'Inativo' }
 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -42,7 +42,8 @@ const colors: Record<string, string> = {
   saida: '#AB3838'
 };
 
-const LOCAL_FIXO = { latitude: -24.000370725171997, longitude: -46.431776544151376 };
+const LOCAL_FIXO = { latitude: -24.02465809432836,
+      longitude: -46.488879830813474 };
 const RAIO_PERMITIDO = 50;
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {

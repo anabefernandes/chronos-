@@ -1,15 +1,18 @@
 const mongoose = require('mongoose');
 
-const EscalaSchema = new mongoose.Schema({
-  funcionario: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+const diaSchema = new mongoose.Schema({
+  dia: { type: String, required: true }, // Segunda, Terça...
   data: { type: Date, required: true },
-  horaEntrada: Date,
-  horaSaida: Date,
-  createdAt: { type: Date, default: Date.now }
+  horaEntrada: { type: String, required: false },
+  horaSaida: { type: String, required: false },
+  folga: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model('Escala', EscalaSchema);
+const escalaSchema = new mongoose.Schema({
+  funcionario: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  semanaInicio: { type: Date, required: true },
+  semanaFim: { type: Date, required: true },
+  dias: [diaSchema], // <-- array com horários por dia
+}, { timestamps: true });
+
+module.exports = mongoose.model('Escala', escalaSchema);

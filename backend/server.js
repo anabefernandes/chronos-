@@ -48,14 +48,14 @@ app.get('/', (req, res) => res.json({ ok: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 //ROTAS
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/escala', require('./routes/escala.routes'));
-app.use('/api/holerite', require('./routes/holerite.routes'));
-app.use('/api/ponto', require('./routes/ponto.routes'));
-app.use('/api/tarefas', require('./routes/tarefa.routes'));
-app.use('/api/user', require('./routes/user.routes'));
-app.use('/api/ml', require('./routes/ml.routes'));
-app.use('/api/notificacoes', require('./routes/notificacao.routes'));
+app.use('/auth', require('./routes/auth.routes'));
+app.use('/escala', require('./routes/escala.routes'));
+app.use('/holerite', require('./routes/holerite.routes'));
+app.use('/ponto', require('./routes/ponto.routes'));
+app.use('/tarefas', require('./routes/tarefa.routes'));
+app.use('/user', require('./routes/user.routes'));
+app.use('/ml', require('./routes/ml.routes'));
+app.use('/notificacoes', require('./routes/notificacao.routes'));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -74,7 +74,8 @@ const createAdmin = async () => {
       nome: process.env.ADMIN_NAME,
       email: process.env.ADMIN_EMAIL,
       senha: hashed,
-      role: 'admin'
+      role: 'admin',
+      setor: 'Admin'
     });
 
     console.log('🚀 Admin criado com sucesso:', admin.email);
