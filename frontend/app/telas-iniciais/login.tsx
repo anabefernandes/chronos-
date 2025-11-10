@@ -132,7 +132,6 @@ export default function Login() {
                   />
                 </View>
 
-               
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
@@ -171,10 +170,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3C188F',
     fontFamily: 'Poppins_600SemiBold',
-    marginRight: 5 // dá um espacinho entre o texto e o ícone
+    marginRight: 5
   },
   titleIcon: {
-    width: 30, // pode ajustar conforme o tamanho do PNG
+    width: 30,
     height: 30,
     resizeMode: 'contain'
   },
@@ -238,5 +237,5 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
-  },
+  }
 });

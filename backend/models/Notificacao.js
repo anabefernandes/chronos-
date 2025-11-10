@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
-const notificacaoSchema = new mongoose.Schema({
-  usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
-  titulo: { type: String, required: true },
-  descricao: { type: String },
-  tipo: {
-    type: String,
-    enum: ['tarefa', 'ponto', 'alerta', 'sistema'],
-    default: 'sistema'
+const notificacaoSchema = new mongoose.Schema(
+  {
+    usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
+    titulo: { type: String, required: true },
+    descricao: { type: String },
+    tipo: {
+      type: String,
+      enum: ['tarefa', 'ponto', 'alerta', 'sistema', 'escala'],
+      default: 'sistema'
+    },
+    lida: { type: Boolean, default: false },
+    dataCriacao: { type: Date, default: Date.now }
   },
-  lida: { type: Boolean, default: false },
-  dataCriacao: { type: Date, default: Date.now }
-}, { collection: 'notificacoes' });
+  { collection: 'notificacoes' }
+);
 
 module.exports = mongoose.model('Notificacao', notificacaoSchema);

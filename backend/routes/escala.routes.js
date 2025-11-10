@@ -83,6 +83,33 @@ router.get('/minhasEscalas', auth, ctrl.minhasEscalas);
  *       403:
  *         description: Permissão negada
  */
-router.get('/todasEscalas', auth, requireRole('admin'), ctrl.todasEscalas);
+router.get('/todasEscalas', auth, requireRole('admin', 'chefe'), ctrl.todasEscalas);
+
+/**
+ * @swagger
+ * /escala/{funcionarioId}:
+ *   get:
+ *     summary: Listar todas as escalas de um funcionário específico
+ *     tags: [Escala]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: funcionarioId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do funcionário
+ *     responses:
+ *       200:
+ *         description: Lista de escalas do funcionário
+ *       400:
+ *         description: ID ausente
+ *       401:
+ *         description: Token inválido
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get('/:funcionarioId', auth, requireRole('chefe', 'admin'), ctrl.escalasPorFuncionario);
 
 module.exports = router;

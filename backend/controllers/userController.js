@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 exports.criarUsuario = async (req, res, next) => {
   try {
     const { nome, email, senha, role, setor, cargaHorariaDiaria } = req.body;
-    if (!nome || !email || !senha || !role || !setor || !cargaHorariaDiaria) return res.status(400).json({ msg: 'Campos obrigatórios' });
+    if (!nome || !email || !senha || !role || !setor || !cargaHorariaDiaria)
+      return res.status(400).json({ msg: 'Campos obrigatórios' });
 
     if (await User.findOne({ email })) return res.status(400).json({ msg: 'Email já cadastrado' });
 

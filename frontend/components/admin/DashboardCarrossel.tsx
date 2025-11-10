@@ -124,9 +124,9 @@ const styles = StyleSheet.create({
   actionCard: {
     borderRadius: 16,
     overflow: 'hidden',
-    height: 135,
+    height: 140,
     backgroundColor: '#ffffffff',
-    elevation: 8
+    elevation: 15
   },
   background: {
     flex: 1,

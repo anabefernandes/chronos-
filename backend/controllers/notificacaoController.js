@@ -1,10 +1,10 @@
 const Notificacao = require('../models/Notificacao.js');
 const User = require('../models/User.js');
+const { io } = require('../server');
 
-// Criar notificação manual
 exports.criarNotificacao = async (req, res, next) => {
   try {
-    const { usuario, titulo, descricao } = req.body;
+    const { usuario, titulo, descricao, tipo } = req.body; // tipo enviado pelo frontend
     if (!usuario || !titulo) {
       return res.status(400).json({ msg: 'Usuário e título são obrigatórios' });
     }
@@ -16,7 +16,16 @@ exports.criarNotificacao = async (req, res, next) => {
       usuario,
       titulo,
       descricao,
-      tipo: 'tarefa'
+      tipo: tipo || 'tarefa' // default para 'tarefa' se não enviar
+    });
+
+    io.to(usuario).emit('nova_notificacao', {
+      _id: notificacao._id,
+      titulo: notificacao.titulo,
+      descricao: notificacao.descricao,
+      tipo: notificacao.tipo,
+      lida: notificacao.lida,
+      dataCriacao: notificacao.dataCriacao
     });
 
     res.status(201).json({ msg: 'Notificação criada', notificacao });

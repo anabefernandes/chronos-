@@ -47,5 +47,4 @@ router.delete('/usuario/:usuarioId/todas', auth, ctrl.excluirTodasNotificacoes);
 // Excluir notificação individual
 router.delete('/:id', auth, ctrl.excluirNotificacao);
 
-
 module.exports = router;

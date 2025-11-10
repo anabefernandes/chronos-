@@ -161,3 +161,32 @@ export const getUserRole = async (): Promise<'admin' | 'chefe' | 'funcionario'> 
     return 'funcionario';
   }
 };
+
+export interface NotificacaoRequest {
+  titulo: string;
+  descricao: string;
+  destinatario: string; 
+  tipo?: 'escala' | 'tarefa' | 'geral';
+}
+
+export const criarNotificacao = async (dados: NotificacaoRequest) => {
+  try {
+    const response = await api.post('/notificacoes/criar', dados, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (err: any) {
+    console.error('Erro ao criar notificação:', err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export const listarEscalasPorFuncionario = async (funcionarioId: string) => {
+  try {
+    const response = await api.get(`/escala/${funcionarioId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Erro ao buscar escalas do funcionário:', error.response?.data || error.message);
+    throw error;
+  }
+};

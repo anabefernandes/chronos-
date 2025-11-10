@@ -119,41 +119,60 @@ export default function Notificacoes() {
     }
   };
 
-  const iconeTarefa = require('../../assets/images/telas-public/icone_tarefa.png');
   const iconeLerTodas = require('../../assets/images/telas-public/icone_ler_todas.png');
   const iconeExcluirTodas = require('../../assets/images/telas-public/icone_excluir_todas.png');
-  const coresTarefa = ['#4B47B8', '#5E59D1'] as const;
 
-  const renderNotificacao = ({ item }: any) => (
-    <View style={[styles.notificacaoCard, item.lida ? styles.lida : styles.naoLida]}>
-      <TouchableOpacity style={styles.notificacaoConteudo} onPress={() => handleLida(item._id)} activeOpacity={0.8}>
-        <LinearGradient colors={coresTarefa} style={styles.iconeContainer}>
-          <Image source={iconeTarefa} style={styles.iconeImagem} resizeMode="contain" />
-        </LinearGradient>
+  const renderNotificacao = ({ item }: any) => {
+    let corGradiente: [string, string];
+    let icone: any;
+    let titulo: string;
 
-        <View style={styles.textoContainer}>
-          <Text style={styles.titulo}>Nova Tarefa!</Text>
-          <Text style={styles.subtitulo}>{item.titulo}</Text>
-          <Text style={styles.descricao}>{item.descricao}</Text>
-        </View>
+    switch (item.tipo) {
+      case 'escala':
+        corGradiente = ['#57b6beff', '#92dbe0ff'] as [string, string];
+        icone = require('../../assets/images/telas-public/icone_notificacao-escalas.png');
+        titulo = 'Nova Escala!';
+        break;
 
-        <TouchableOpacity onPress={() => handleExcluir(item._id)}>
-          <Image
-            source={require('../../assets/images/telas-public/icone_excluir.png')}
-            style={{ width: 20, height: 20, tintColor: '#5e0d86ff', top: -18, left: 5 }}
-            resizeMode="contain"
-          />
+      case 'tarefa':
+      default:
+        corGradiente = ['#4aa4ed', '#6bb9f7'] as [string, string];
+        icone = require('../../assets/images/telas-public/icone_notificacao-tarefas.png');
+        titulo = 'Nova Tarefa!';
+        break;
+    }
+
+    return (
+      <View style={[styles.notificacaoCard, item.lida ? styles.lida : styles.naoLida]}>
+        <TouchableOpacity style={styles.notificacaoConteudo} onPress={() => handleLida(item._id)} activeOpacity={0.8}>
+          <LinearGradient colors={corGradiente} style={styles.iconeContainer}>
+            <Image source={icone} style={styles.iconeImagem} resizeMode="contain" />
+          </LinearGradient>
+
+          <View style={styles.textoContainer}>
+            <Text style={styles.titulo}>{titulo}</Text>
+            <Text style={styles.subtitulo}>{item.titulo}</Text>
+            <Text style={styles.descricao}>{item.descricao}</Text>
+          </View>
+
+          <TouchableOpacity onPress={() => handleExcluir(item._id)}>
+            <Image
+              source={require('../../assets/images/telas-public/icone_excluir.png')}
+              style={{ width: 20, height: 20, tintColor: '#5e0d86ff', top: -18, left: 5 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </TouchableOpacity>
-      </TouchableOpacity>
 
-      <View style={styles.footer}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', gap: 8 }}>
-          <Text style={styles.data}>{new Date(item.dataCriacao).toLocaleString()}</Text>
-          {!item.lida && <View style={styles.bolinhaAzul} />}
+        <View style={styles.footer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 'auto', gap: 8 }}>
+            <Text style={styles.data}>{new Date(item.dataCriacao).toLocaleString()}</Text>
+            {!item.lida && <View style={styles.bolinhaAzul} />}
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const notificacoesVisiveis = mostrarTodas ? notificacoes : notificacoes.slice(0, 6);
 

@@ -56,9 +56,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   const Δφ = ((lat2 - lat1) * Math.PI) / 180;
   const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a =
-    Math.sin(Δφ / 2) ** 2 +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
@@ -256,9 +254,7 @@ exports.meusPontos = async (req, res, next) => {
 // 🧭 Listar todos os pontos (apenas admin)
 exports.todosPontos = async (req, res, next) => {
   try {
-    const pontos = await Ponto.find()
-      .populate('funcionario', 'nome email')
-      .sort({ horario: -1 });
+    const pontos = await Ponto.find().populate('funcionario', 'nome email').sort({ horario: -1 });
     res.json(pontos);
   } catch (err) {
     next(err);

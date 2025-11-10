@@ -17,6 +17,7 @@ export interface Funcionario {
   tarefas?: string;
   escala?: string;
   cargo?: string;
+  cargaHorariaDiaria?: number;
 }
 
 export interface AuthContextType {

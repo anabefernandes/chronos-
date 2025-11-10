@@ -138,7 +138,7 @@ export default function GerenciarFuncionarios() {
                     email: dados.email,
                     role: dados.role,
                     setor: dados.setor,
-                    cargaHorariaDiaria: dados.cargaHorariaDiaria,
+                    cargaHorariaDiaria: dados.cargaHorariaDiaria
                   };
 
                   // só envia senha se o usuário digitou algo
@@ -155,7 +155,7 @@ export default function GerenciarFuncionarios() {
                     senha: dados.senha ?? '',
                     role: dados.role,
                     setor: dados.setor,
-                    cargaHorariaDiaria: dados.cargaHorariaDiaria,
+                    cargaHorariaDiaria: dados.cargaHorariaDiaria
                   });
 
                   setMensagemSucesso('Usuário adicionado com sucesso!');

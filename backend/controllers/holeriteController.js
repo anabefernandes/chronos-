@@ -81,9 +81,7 @@ exports.meuHolerite = async (req, res, next) => {
 // todos os holerites (admin)
 exports.todosHolerites = async (req, res, next) => {
   try {
-    let holerites = await Holerite.find()
-      .populate('funcionario', 'nome email')
-      .sort({ periodoInicio: -1 });
+    let holerites = await Holerite.find().populate('funcionario', 'nome email').sort({ periodoInicio: -1 });
 
     holerites = holerites.map(h => ({
       ...h.toObject(),

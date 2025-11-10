@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
+import LottieView from 'lottie-react-native'; // ← Import do Lottie
 import Navbar from '../../components/public/Navbar';
 import api from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -76,7 +77,15 @@ export default function Tarefas() {
     <View style={styles.container}>
       <Navbar />
       {tarefas.length === 0 ? (
-        <Text style={styles.semTarefas}>Nenhuma tarefa encontrada.</Text>
+        <View style={styles.semTarefasContainer}>
+          <LottieView
+            source={require('../../assets/lottie/sem_tarefas.json')} // coloque o arquivo na pasta correta
+            autoPlay
+            loop
+            style={styles.lottie}
+          />
+          <Text style={styles.semTarefasTexto}>Nenhuma tarefa no momento</Text>
+        </View>
       ) : (
         <TarefasPorPrioridade tarefas={tarefas} />
       )}
@@ -89,9 +98,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff'
   },
-  semTarefas: {
-    textAlign: 'center',
+  semTarefasContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  lottie: {
+    width: 250,
+    height: 250
+  },
+  semTarefasTexto: {
+    marginTop: 10,
+    fontSize: 16,
     color: '#555',
-    marginTop: 20
+    textAlign: 'center'
   }
 });

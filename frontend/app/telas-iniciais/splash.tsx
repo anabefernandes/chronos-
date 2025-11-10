@@ -81,7 +81,7 @@ export default function Splash() {
     >
       <Animated.View style={[styles.logoWrapper, { opacity: fadeAnim }]}>
         <View style={styles.logoContainer}>
-          <LottieView source={require('../../assets/lottie/clock.json')} autoPlay loop style={styles.lottie} />
+          <LottieView source={require('../../assets/lottie/relogio.json')} autoPlay loop style={styles.lottie} />
           <Image source={LogoTexto} style={styles.texto} resizeMode="contain" />
         </View>
       </Animated.View>

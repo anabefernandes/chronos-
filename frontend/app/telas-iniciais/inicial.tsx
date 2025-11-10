@@ -8,7 +8,7 @@ import {
   Dimensions,
   FlatList,
   Animated,
-  Easing,
+  Easing
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -16,7 +16,7 @@ const { width, height } = Dimensions.get('window');
 
 const slides = [
   { id: '1', image: require('../../assets/images/iniciais/slide1.png') },
-  { id: '2', image: require('../../assets/images/iniciais/slide2.png') },
+  { id: '2', image: require('../../assets/images/iniciais/slide2.png') }
 ];
 
 export default function Inicial() {
@@ -34,19 +34,19 @@ export default function Inicial() {
           toValue: 1.02, // zoom leve
           duration: 6000,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: true
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 6000,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
+          useNativeDriver: true
+        })
       ])
     ).start();
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
+      setCurrentIndex(prev => {
         const next = (prev + 1) % slides.length;
         flatListRef.current?.scrollToIndex({ index: next, animated: true });
         return next;
@@ -60,7 +60,7 @@ export default function Inicial() {
     <FlatList
       ref={flatListRef}
       data={slides}
-      keyExtractor={(item) => item.id}
+      keyExtractor={item => item.id}
       horizontal
       pagingEnabled
       showsHorizontalScrollIndicator={false}
@@ -70,11 +70,7 @@ export default function Inicial() {
           {/* Wrapper fixa o tamanho e impede o vazamento do zoom */}
           <View style={styles.imageWrapper}>
             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-              <ImageBackground
-                source={item.image}
-                style={styles.image}
-                resizeMode="cover"
-              >
+              <ImageBackground source={item.image} style={styles.image} resizeMode="cover">
                 <ImageBackground
                   source={require('../../assets/images/iniciais/logo_chronos.png')}
                   style={styles.logo}
@@ -82,10 +78,7 @@ export default function Inicial() {
                 />
 
                 {index === currentIndex && (
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => router.push('/telas-iniciais/splash')}
-                  >
+                  <TouchableOpacity style={styles.button} onPress={() => router.push('/telas-iniciais/splash')}>
                     <Text style={styles.buttonText}>Começar</Text>
                   </TouchableOpacity>
                 )}
@@ -93,10 +86,7 @@ export default function Inicial() {
                 <View style={styles.separator} />
                 <View style={styles.indicators}>
                   {slides.map((_, i) => (
-                    <View
-                      key={i}
-                      style={[styles.dot, currentIndex === i && styles.activeDot]}
-                    />
+                    <View key={i} style={[styles.dot, currentIndex === i && styles.activeDot]} />
                   ))}
                 </View>
               </ImageBackground>
@@ -113,26 +103,26 @@ const styles = StyleSheet.create({
     width,
     height,
     justifyContent: 'flex-end',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   imageWrapper: {
     width,
     height,
-    overflow: 'hidden', // evita que o zoom ultrapasse
+    overflow: 'hidden'
   },
   image: {
     width,
     height,
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 80,
+    paddingBottom: 80
   },
   logo: {
     width: 280,
     height: 140,
     position: 'absolute',
     top: 80,
-    alignSelf: 'center',
+    alignSelf: 'center'
   },
   button: {
     backgroundColor: '#17153A',
@@ -144,29 +134,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 10,
+    elevation: 10
   },
   buttonText: {
     color: '#fff',
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   indicators: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: 60,
+    bottom: 60
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#fff',
-    marginHorizontal: 4,
+    marginHorizontal: 4
   },
   activeDot: {
     backgroundColor: '#17153A',
     width: 10,
-    height: 10,
+    height: 10
   },
   separator: {
     width: '100%',
@@ -178,6 +168,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.6,
     shadowRadius: 6,
-    elevation: 6,
-  },
+    elevation: 6
+  }
 });

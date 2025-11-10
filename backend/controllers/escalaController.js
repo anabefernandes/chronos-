@@ -1,5 +1,6 @@
 const Escala = require('../models/Escala');
 const User = require('../models/User');
+const Notificacao = require('../models/Notificacao');
 
 // ✅ Criar ou editar escala semanal
 exports.criarOuEditarEscala = async (req, res, next) => {
@@ -10,7 +11,10 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       return res.status(400).json({ msg: 'Funcionário e data são obrigatórios' });
     }
 
-    // Se não for folga, precisa ter horaEntrada e horaSaida
+    if (req.user.role === 'chefe' && funcionario === req.user.id) {
+      return res.status(403).json({ msg: 'Chefes não podem criar ou editar suas próprias escalas' });
+    }
+
     if (!folga && (!horaEntrada || !horaSaida)) {
       return res.status(400).json({ msg: 'Horários obrigatórios quando não é folga' });
     }
@@ -27,7 +31,6 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     ];
     const diaSemana = nomesDias[dataBase.getDay()];
 
-    // 📅 Início (domingo) e fim (sábado) da semana
     const semanaInicio = new Date(dataBase);
     semanaInicio.setDate(dataBase.getDate() - dataBase.getDay());
     semanaInicio.setHours(0, 0, 0, 0);
@@ -36,22 +39,24 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     semanaFim.setDate(semanaInicio.getDate() + 6);
     semanaFim.setHours(23, 59, 59, 999);
 
-    // 🕐 Formatar hora se existir
     const formatarHora = h => {
       if (!h) return null;
       if (typeof h === 'string') return h;
       return h.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
     };
 
-    // 🔎 Busca escala da semana
     let escala = await Escala.findOne({
       funcionario,
       semanaInicio: { $lte: dataBase },
       semanaFim: { $gte: dataBase }
     });
 
+    // 🔔 Flag pra saber se é atualização ou criação
+    let tipo = 'nova';
+
     if (escala) {
-      // Atualiza o dia existente ou adiciona novo
+      tipo = 'atualizacao';
+
       const diaIndex = escala.dias.findIndex(d => new Date(d.data).toDateString() === dataBase.toDateString());
 
       if (diaIndex >= 0) {
@@ -73,26 +78,56 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       }
 
       await escala.save();
-      return res.json({ msg: 'Dia atualizado na escala semanal!', escala });
+    } else {
+      escala = await Escala.create({
+        funcionario,
+        semanaInicio,
+        semanaFim,
+        dias: [
+          {
+            dia: diaSemana,
+            data: dataBase,
+            horaEntrada: formatarHora(horaEntrada),
+            horaSaida: formatarHora(horaSaida),
+            folga: !!folga
+          }
+        ]
+      });
     }
 
-    // 🆕 Cria nova escala
-    escala = await Escala.create({
-      funcionario,
-      semanaInicio,
-      semanaFim,
-      dias: [
-        {
-          dia: diaSemana,
-          data: dataBase,
-          horaEntrada: formatarHora(horaEntrada),
-          horaSaida: formatarHora(horaSaida),
-          folga: !!folga
-        }
-      ]
+    // 🔔 Criar ou atualizar notificação única de escala
+    const titulo = 'Escala atualizada';
+    const descricao =
+      tipo === 'nova'
+        ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
+        : 'Sua escala semanal foi atualizada.';
+
+    // 👉 Verifica se já existe notificação "Escala atualizada" para esse usuário
+    let notificacao = await Notificacao.findOne({
+      usuario: funcionario,
+      titulo: 'Escala atualizada'
     });
 
-    res.status(201).json({ msg: 'Escala semanal criada!', escala });
+    if (notificacao) {
+      notificacao.descricao = descricao;
+      notificacao.dataCriacao = new Date();
+      notificacao.tipo = 'escala';
+      await notificacao.save();
+    } else {
+      notificacao = await Notificacao.create({
+        usuario: funcionario,
+        titulo,
+        descricao,
+        tipo: 'escala'
+      });
+    }
+
+    // 🔴 Emitir via Socket.io
+    const io = req.app.get('io');
+    io.to(funcionario.toString()).emit('nova_notificacao', notificacao);
+
+    const msg = tipo === 'nova' ? 'Escala semanal criada com sucesso!' : 'Escala semanal atualizada!';
+    res.status(201).json({ msg, escala });
   } catch (err) {
     console.error('Erro ao criar/editar escala semanal:', err);
     res.status(500).json({ msg: 'Erro interno ao criar/editar escala semanal' });
@@ -103,8 +138,9 @@ exports.criarOuEditarEscala = async (req, res, next) => {
 exports.minhasEscalas = async (req, res, next) => {
   try {
     const funcionarioId = req.user.id;
-
-    const escalas = await Escala.find({ funcionario: funcionarioId }).sort({ semanaInicio: 1 });
+    const escalas = await Escala.find({ funcionario: funcionarioId })
+      .populate('funcionario', 'nome email role')
+      .sort({ semanaInicio: 1 });
 
     res.json(escalas);
   } catch (err) {
@@ -113,14 +149,38 @@ exports.minhasEscalas = async (req, res, next) => {
   }
 };
 
-// ✅ Listar todas as escalas (admin)
+// ✅ Listar todas as escalas (chefe e admin podem visualizar todas)
 exports.todasEscalas = async (req, res, next) => {
   try {
-    const escalas = await Escala.find().populate('funcionario', 'nome email').sort({ semanaInicio: -1 });
+    const escalas = await Escala.find().populate('funcionario', 'nome email role').sort({ semanaInicio: -1 });
 
     res.json(escalas);
   } catch (err) {
     console.error('Erro ao listar todas as escalas:', err);
     res.status(500).json({ msg: 'Erro ao listar escalas' });
+  }
+};
+
+// ✅ Listar escalas de um funcionário específico (usado na verificação no app)
+exports.escalasPorFuncionario = async (req, res, next) => {
+  try {
+    const { funcionarioId } = req.params;
+
+    if (!funcionarioId) {
+      return res.status(400).json({ msg: 'ID do funcionário é obrigatório.' });
+    }
+
+    const escalas = await Escala.find({ funcionario: funcionarioId })
+      .populate('funcionario', 'nome email role')
+      .sort({ semanaInicio: 1 });
+
+    if (!escalas || escalas.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.json(escalas);
+  } catch (err) {
+    console.error('Erro ao buscar escalas do funcionário:', err);
+    res.status(500).json({ msg: 'Erro ao buscar escalas do funcionário.' });
   }
 };

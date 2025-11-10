@@ -35,11 +35,15 @@ exports.criarTarefa = async (req, res, next) => {
     });
 
     // 🔔 Criar notificação automática para o funcionário
-    await Notificacao.create({
+    const notificacao = await Notificacao.create({
       usuario: funcionario,
       titulo: titulo,
       descricao: descricao || 'Você recebeu uma nova tarefa do seu chefe.'
     });
+
+    // 🔴 Emitir notificação via Socket.io
+    const io = req.app.get('io'); // pega o io
+    io.to(funcionario.toString()).emit('nova_notificacao', notificacao);
 
     res.status(201).json({ msg: 'Tarefa criada e notificação enviada', tarefa });
   } catch (err) {
@@ -78,8 +82,10 @@ exports.atualizarTarefa = async (req, res, next) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const tarefa = await Tarefa.findByIdAndUpdate(id, updates, { new: true })
-      .populate('funcionario', '_id nome foto role');
+    const tarefa = await Tarefa.findByIdAndUpdate(id, updates, { new: true }).populate(
+      'funcionario',
+      '_id nome foto role'
+    );
 
     if (!tarefa) return res.status(404).json({ msg: 'Tarefa não encontrada' });
 
