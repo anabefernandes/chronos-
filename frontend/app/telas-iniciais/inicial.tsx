@@ -8,7 +8,7 @@ import {
   Dimensions,
   FlatList,
   Animated,
-  Easing
+  Easing,Platform, StatusBar
 } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width,
-    height,
+    height: Platform.OS === 'android' ? height + (StatusBar.currentHeight || 0) : height,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 80

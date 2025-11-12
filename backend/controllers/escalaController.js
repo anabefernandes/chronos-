@@ -20,15 +20,7 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     }
 
     const dataBase = new Date(data);
-    const nomesDias = [
-      'domingo',
-      'segunda-feira',
-      'terça-feira',
-      'quarta-feira',
-      'quinta-feira',
-      'sexta-feira',
-      'sábado'
-    ];
+    const nomesDias = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
     const diaSemana = nomesDias[dataBase.getDay()];
 
     const semanaInicio = new Date(dataBase);
@@ -51,7 +43,6 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       semanaFim: { $gte: dataBase }
     });
 
-    // 🔔 Flag pra saber se é atualização ou criação
     let tipo = 'nova';
 
     if (escala) {
@@ -95,18 +86,13 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       });
     }
 
-    // 🔔 Criar ou atualizar notificação única de escala
+    // 🔔 Criar ou atualizar notificação
     const titulo = 'Escala atualizada';
-    const descricao =
-      tipo === 'nova'
-        ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
-        : 'Sua escala semanal foi atualizada.';
+    const descricao = tipo === 'nova'
+      ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
+      : 'Sua escala semanal foi atualizada.';
 
-    // 👉 Verifica se já existe notificação "Escala atualizada" para esse usuário
-    let notificacao = await Notificacao.findOne({
-      usuario: funcionario,
-      titulo: 'Escala atualizada'
-    });
+    let notificacao = await Notificacao.findOne({ usuario: funcionario, titulo: 'Escala atualizada' });
 
     if (notificacao) {
       notificacao.descricao = descricao;
@@ -122,7 +108,6 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       });
     }
 
-    // 🔴 Emitir via Socket.io
     const io = req.app.get('io');
     io.to(funcionario.toString()).emit('nova_notificacao', notificacao);
 
@@ -139,7 +124,7 @@ exports.minhasEscalas = async (req, res, next) => {
   try {
     const funcionarioId = req.user.id;
     const escalas = await Escala.find({ funcionario: funcionarioId })
-      .populate('funcionario', 'nome email role')
+      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos necessários
       .sort({ semanaInicio: 1 });
 
     res.json(escalas);
@@ -149,10 +134,12 @@ exports.minhasEscalas = async (req, res, next) => {
   }
 };
 
-// ✅ Listar todas as escalas (chefe e admin podem visualizar todas)
+// ✅ Listar todas as escalas
 exports.todasEscalas = async (req, res, next) => {
   try {
-    const escalas = await Escala.find().populate('funcionario', 'nome email role').sort({ semanaInicio: -1 });
+    const escalas = await Escala.find()
+      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos
+      .sort({ semanaInicio: -1 });
 
     res.json(escalas);
   } catch (err) {
@@ -161,7 +148,7 @@ exports.todasEscalas = async (req, res, next) => {
   }
 };
 
-// ✅ Listar escalas de um funcionário específico (usado na verificação no app)
+// ✅ Listar escalas de um funcionário específico
 exports.escalasPorFuncionario = async (req, res, next) => {
   try {
     const { funcionarioId } = req.params;
@@ -171,12 +158,8 @@ exports.escalasPorFuncionario = async (req, res, next) => {
     }
 
     const escalas = await Escala.find({ funcionario: funcionarioId })
-      .populate('funcionario', 'nome email role')
+      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos
       .sort({ semanaInicio: 1 });
-
-    if (!escalas || escalas.length === 0) {
-      return res.status(200).json([]);
-    }
 
     res.json(escalas);
   } catch (err) {

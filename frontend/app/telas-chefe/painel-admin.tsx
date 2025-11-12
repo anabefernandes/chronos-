@@ -4,8 +4,6 @@ import NavegacaoAdmin from '../../components/admin/NavegacaoAdmin';
 import { AuthContext } from '../../contexts/AuthContext';
 
 import Ponto from '../telas-iniciais/ponto';
-import Escalas from '../telas-iniciais/escalas';
-import Holerite from '../telas-iniciais/holerite';
 import Perfil from '../telas-iniciais/perfil';
 import Dashboard from './dashboard-admin';
 import GerenciarFuncionarios from './gerenciar-funcionarios';
@@ -13,8 +11,9 @@ import TarefasAdmin from './tarefas-admin';
 import Notificacoes from '../telas-iniciais/notificacoes';
 import CriarEscalas from './criar-escalas';
 import CriarTarefas from './criar-tarefas';
-import CriarHolerite from './criar-holerite';
 import GerenciarPontos from './gerenciar-pontos';
+import Relatorio from '../telas-iniciais/relatorio';
+import EscalasAdmin from './escalas-admin';
 
 type ScreenKey =
   | 'dashboard'
@@ -24,8 +23,7 @@ type ScreenKey =
   | 'criar-tarefas'
   | 'escalas'
   | 'criar-escalas'
-  | 'holerite'
-  | 'criar-holerite'
+  | 'relatorio'
   | 'gerenciar-funcionarios'
   | 'notificacoes'
   | 'perfil';
@@ -45,7 +43,7 @@ export default function PainelAdmin() {
       case 'ponto':
         return <Ponto />;
       case 'gerenciar-pontos':
-        return <GerenciarPontos />
+        return <GerenciarPontos />;
       case 'tarefas':
         return <TarefasAdmin />;
       case 'criar-tarefas':
@@ -53,13 +51,11 @@ export default function PainelAdmin() {
       case 'notificacoes':
         return <Notificacoes />;
       case 'escalas':
-        return <Escalas />;
+        return <EscalasAdmin />;
       case 'criar-escalas':
         return <CriarEscalas />;
-      case 'holerite':
-        return <Holerite />;
-      case 'criar-holerite':
-        return <CriarHolerite />;
+      case 'relatorio':
+        return <Relatorio />;
       case 'gerenciar-funcionarios':
         return <GerenciarFuncionarios />;
       case 'perfil':

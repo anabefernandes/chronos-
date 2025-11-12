@@ -5,7 +5,7 @@ import Navegacao from '../../components/public/Navegacao';
 import Ponto from '../telas-iniciais/ponto';
 import Tarefas from '../telas-iniciais/tarefas';
 import Escalas from '../telas-iniciais/escalas';
-import Holerite from '../telas-iniciais/holerite';
+import Relatorio from './relatorio';
 
 export default function Painel() {
   const { role } = useContext(AuthContext);
@@ -16,7 +16,7 @@ export default function Painel() {
     ponto: <Ponto />,
     tarefas: <Tarefas />,
     escalas: <Escalas />,
-    holerite: <Holerite />
+    relatorio: <Relatorio />
   };
 
   return (

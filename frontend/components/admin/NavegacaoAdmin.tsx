@@ -10,8 +10,7 @@ type MenuKey =
   | 'criar-tarefas'
   | 'escalas'
   | 'criar-escalas'
-  | 'holerite'
-  | 'criar-holerite'
+  | 'relatorio'
   | 'gerenciar-funcionarios'
   | 'perfil'
   | 'notificacoes'
@@ -28,7 +27,7 @@ const NavegacaoAdmin: React.FC<NavegacaoAdminProps> = ({ activeScreen, onScreenC
     { key: 'tarefas', label: 'Tarefas' },
     { key: 'dashboard', label: 'Dashboard' },
     { key: 'escalas', label: 'Escalas' },
-    { key: 'holerite', label: 'Holerite' }
+    { key: 'relatorio', label: 'Relatório' }
   ];
 
   const normalItems = menuItems.filter(item => item.key !== 'dashboard');

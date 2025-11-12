@@ -1,12 +1,12 @@
 import { View, Text, StyleSheet } from 'react-native';
 import Navbar from '../../components/public/Navbar';
 
-export default function Holerite() {
+export default function Relatorio() {
   return (
     <View style={styles.container}>
       <Navbar />
       <View style={styles.content}>
-        <Text style={styles.text}>💰 Tela de Holerite</Text>
+        <Text style={styles.text}> Tela de Relatorios</Text>
       </View>
     </View>
   );

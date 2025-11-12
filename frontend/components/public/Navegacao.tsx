@@ -15,7 +15,7 @@ const Navegacao: React.FC<NavegacaoProps> = ({ activeScreen, onScreenChange }) =
     { key: 'ponto', label: 'Ponto' },
     { key: 'tarefas', label: 'Tarefas' },
     { key: 'escalas', label: 'Escalas' },
-    { key: 'holerite', label: 'Holerite' }
+    { key: 'relatorio', label: 'Relatório' }
   ];
 
   const screenWidth = Dimensions.get('window').width - 20;

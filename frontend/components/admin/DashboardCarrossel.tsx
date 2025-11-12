@@ -7,7 +7,6 @@ interface ActionItem {
 }
 
 const actions: ActionItem[] = [
-  { key: 'holerite', label: 'Criar\nHolerite' },
   { key: 'tarefas', label: 'Criar\nTarefas' },
   { key: 'escalas', label: 'Criar\nEscalas' },
   { key: 'equipe', label: 'Ver\nEquipe' },
@@ -19,7 +18,6 @@ const slideWidth = screenWidth;
 const cardWidth = screenWidth * 0.42;
 
 const actionImages: Record<string, any> = {
-  holerite: require('../../assets/images/dashboard/criar_holerite.png'),
   tarefas: require('../../assets/images/dashboard/criar_tarefas.png'),
   escalas: require('../../assets/images/dashboard/criar_escalas.png'),
   equipe: require('../../assets/images/dashboard/ver_equipe.png'),
@@ -27,7 +25,6 @@ const actionImages: Record<string, any> = {
 };
 
 const titleColors: Record<string, string> = {
-  holerite: '#ff8d88',
   tarefas: '#4aa4ed',
   escalas: '#489da5',
   equipe: '#ff7e4d',
@@ -55,7 +52,6 @@ export default function DashboardCarousel({ setActiveScreen }: DashboardCarousel
   };
 
   const actionToScreen: Record<string, string> = {
-    holerite: 'criar-holerite',
     tarefas: 'criar-tarefas',
     escalas: 'criar-escalas',
     equipe: 'gerenciar-funcionarios',

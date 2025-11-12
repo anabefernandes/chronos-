@@ -131,7 +131,12 @@ export default function Login() {
                     scrollEnabled={false}
                   />
                 </View>
-
+                <TouchableOpacity
+                  style={styles.linkContainer}
+                  onPress={() => router.push('/telas-iniciais/redefinicao')}
+                >
+                  <Text style={styles.linkText}>Esqueci minha senha</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
@@ -177,10 +182,9 @@ const styles = StyleSheet.create({
     height: 30,
     resizeMode: 'contain'
   },
-
   subtitle: {
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
     color: '#1B0A43',
     fontFamily: 'Poppins_400Regular',
     top: -15
@@ -237,5 +241,18 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
+  },
+  linkContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    alignItems: 'flex-end',
+    marginTop: -10,
+    marginBottom: 15
+  },
+  linkText: {
+    color: '#3C188F',
+    fontSize: 13,
+    fontFamily: 'Poppins_400Regular',
+    textDecorationLine: 'underline'
   }
 });

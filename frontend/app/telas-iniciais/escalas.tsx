@@ -122,7 +122,11 @@ export default function Escalas() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
       <Navbar />
 
       <Calendar
@@ -218,7 +222,11 @@ export default function Escalas() {
       {/* LISTA SEMANAL */}
       <Text style={styles.tituloLista}>Minhas Escalas Semanais</Text>
 
-      <ScrollView style={styles.lista} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+      >
         {escalas.map((e, i) => (
           <View key={i} style={styles.cardSemana}>
             {(role === 'admin' || role === 'chefe') && (
@@ -271,7 +279,7 @@ export default function Escalas() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -297,7 +305,7 @@ const styles = StyleSheet.create({
     color: '#3C188F',
     textAlign: 'center',
     marginTop: 10,
-    marginBottom: 8
+    marginBottom: 25
   },
   lista: {
     flex: 1,
@@ -306,10 +314,11 @@ const styles = StyleSheet.create({
   },
   cardSemana: {
     backgroundColor: '#ffffff',
-    padding: 10,
+    padding: 12,
     borderRadius: 14,
     elevation: 3,
-    marginVertical: 8
+    marginRight: 14,
+    width: 320
   },
   cardTitle: {
     fontWeight: 'bold',
@@ -365,43 +374,48 @@ const styles = StyleSheet.create({
   colunaCentro: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'flex-start'
+    alignItems: 'center' 
   },
   horariosContainer: {
-    flexDirection: 'row',
-    gap: 10
+    flexDirection: 'column',
+    gap: 6,
+    alignItems: 'center', 
+    justifyContent: 'center'
   },
   tagBox: {
     borderRadius: 20,
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    minWidth: 90,
-    alignItems: 'center'
+    width: 120, 
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   tagEntrada: {
-    backgroundColor: '#c6edc6ff',
-    marginLeft: 5
+    backgroundColor: '#c6edc6ff'
   },
   tagSaida: {
-    backgroundColor: '#a8dbff'
+    backgroundColor: '#ffc8a8ff'
   },
   tagFolgaBox: {
     backgroundColor: '#a8dbff',
     borderRadius: 20,
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    alignItems: 'flex-start',
-    marginLeft: 5
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 120
   },
   textHora: {
     color: '#333',
     fontWeight: '600',
-    fontSize: 12
+    fontSize: 12,
+    textAlign: 'center' 
   },
   textFolga: {
     color: '#004d80',
     fontWeight: 'bold',
-    fontSize: 13
+    fontSize: 13,
+    textAlign: 'center'
   },
   colunaIcone: {
     width: 50,
@@ -482,7 +496,7 @@ const styles = StyleSheet.create({
     width: '70%'
   },
   saidaBox: {
-    backgroundColor: '#90caf9',
+    backgroundColor: '#ffc8a8ff',
     width: '70%'
   },
   folgaBox: {

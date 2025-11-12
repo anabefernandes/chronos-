@@ -72,7 +72,7 @@ export default function CriarEscalas() {
   const [modalFuncionarios, setModalFuncionarios] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [listaFiltrada, setListaFiltrada] = useState<Funcionario[]>([]);
-
+  const [ultimaEntrada, setUltimaEntrada] = useState<Date | null>(null);
   const [semanaInicio, setSemanaInicio] = useState<Date | null>(null);
   const [semanaFim, setSemanaFim] = useState<Date | null>(null);
   const [mostrarPickerHora, setMostrarPickerHora] = useState<MostrarPickerHora>({ index: -1, tipo: null });
@@ -80,6 +80,7 @@ export default function CriarEscalas() {
   const [erroChefe, setErroChefe] = useState(false);
   const [animacao, setAnimacao] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const { userId } = useContext(AuthContext);
 
   const [semana, setSemana] = useState<DiaSemana[]>([
     { dia: 'Domingo', data: null, entrada: null, saida: null, folga: false, modo: 'nenhum' },
@@ -192,7 +193,7 @@ export default function CriarEscalas() {
                     role: u.role === 'admin' || u.role === 'chefe' ? 'chefe' : 'funcionario'
                   }}
                   onSelect={f => {
-                    if (f.role === 'chefe') {
+                    if (f.role === 'chefe' && f._id === userId) {
                       setErroChefe(true);
                     } else {
                       setFuncionarioSelecionado(f);
@@ -260,10 +261,16 @@ export default function CriarEscalas() {
     const novaSemana = [...semana];
     novaSemana[index][tipo] = hora;
 
-    if (tipo === 'entrada' && funcionarioSelecionado?.cargaHorariaDiaria) {
-      const saida = new Date(hora);
-      saida.setHours(saida.getHours() + funcionarioSelecionado.cargaHorariaDiaria);
-      novaSemana[index].saida = saida;
+    // ✅ Se for hora de entrada, salvar como última hora usada
+    if (tipo === 'entrada') {
+      setUltimaEntrada(hora);
+
+      // Define saída automaticamente se o funcionário tiver carga horária
+      if (funcionarioSelecionado?.cargaHorariaDiaria) {
+        const saida = new Date(hora);
+        saida.setHours(saida.getHours() + funcionarioSelecionado.cargaHorariaDiaria);
+        novaSemana[index].saida = saida;
+      }
     }
 
     setSemana(novaSemana);
@@ -272,11 +279,25 @@ export default function CriarEscalas() {
   const definirModo = (index: number, modo: 'horario' | 'folga') => {
     const novaSemana = [...semana];
     novaSemana[index].modo = modo;
+
     if (modo === 'folga') {
       novaSemana[index].entrada = null;
       novaSemana[index].saida = null;
       novaSemana[index].folga = true;
+    } else if (modo === 'horario') {
+      // ✅ Puxa a última entrada automaticamente
+      if (ultimaEntrada) {
+        novaSemana[index].entrada = new Date(ultimaEntrada);
+
+        // Define saída com base na carga horária do funcionário
+        if (funcionarioSelecionado?.cargaHorariaDiaria) {
+          const saida = new Date(ultimaEntrada);
+          saida.setHours(saida.getHours() + funcionarioSelecionado.cargaHorariaDiaria);
+          novaSemana[index].saida = saida;
+        }
+      }
     }
+
     setSemana(novaSemana);
   };
 
@@ -647,7 +668,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     marginVertical: 20,
-    marginBottom: 50
+    marginBottom: 70
   },
   saveText: {
     color: '#fff',
@@ -827,7 +848,7 @@ const styles = StyleSheet.create({
   avisoBalao: {
     position: 'absolute',
     top: -12,
-    left: 10, 
+    left: 10,
     width: 24,
     height: 24,
     resizeMode: 'contain'
@@ -837,7 +858,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginVertical: 10,
-    position: 'relative', 
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center'
   },

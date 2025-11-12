@@ -1,36 +1,43 @@
 {
   "expo": {
-    "name": "appChronos",
-    "slug": "appChronos",
+    "name": "Chronos",
+    "slug": "chronos",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "chronos",
-    "icon": "./assets/expoGo/icon.png",
+    "icon": "./assets/expoGo/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/expoGo/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/expoGo/logo.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#3C188F"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/expoGo/logo.png",
+        "backgroundColor": "#3C188F"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/expoGo/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/expoGo/logo.png",
+        "backgroundColor": "#3C188F"
       },
       "edgeToEdgeEnabled": true,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.anonymous.chronos"
     },
     "web": {
-      "favicon": "./assets/expoGo/favicon.png"
+      "favicon": "./assets/expoGo/logo_daweb.png"
     },
-    "plugins": [
-      "expo-font",
-      "expo-router",
-      "expo-audio"
-    ]
+    "plugins": ["expo-font", "expo-router", "expo-audio"]
   }
 }
