@@ -308,43 +308,55 @@ export default function CriarEscalas() {
   };
 
   // ---------------- SALVAR ESCALA ----------------
-  const salvarEscala = async () => {
-    if (!funcionarioSelecionado || !semanaInicio || !semanaFim) {
-      Alert.alert('Atenção', 'Selecione o funcionário e uma semana.');
-      return;
-    }
+const salvarEscala = async () => {
+  if (!funcionarioSelecionado || !semanaInicio || !semanaFim) {
+    Alert.alert('Atenção', 'Selecione o funcionário e uma semana.');
+    return;
+  }
 
-    try {
-      for (const dia of semana) {
-        if (!dia.data) continue;
+  try {
+    for (const dia of semana) {
+      if (!dia.data) continue;
 
-        const dados: EscalaRequest = {
-          funcionario: funcionarioSelecionado._id,
-          data: dia.data.toISOString()
-        };
+      const dados: EscalaRequest = {
+        funcionario: funcionarioSelecionado._id,
+        data: dia.data.toISOString(),
+      };
 
-        if (dia.modo === 'folga') dados.folga = true;
-        else if (dia.modo === 'horario' && dia.entrada && dia.saida) {
-          const formatarHora = (d: Date) =>
-            d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
-          dados.horaEntrada = formatarHora(dia.entrada);
-          dados.horaSaida = formatarHora(dia.saida);
-        }
-
-        await criarOuEditarEscala(dados);
+      if (dia.modo === 'folga') {
+        dados.folga = true;
+      } else if (dia.modo === 'horario' && dia.entrada && dia.saida) {
+        const formatarHora = (d: Date) =>
+          d.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+        dados.horaEntrada = formatarHora(dia.entrada);
+        dados.horaSaida = formatarHora(dia.saida);
       }
 
-      setMensagemSucesso('Escala criada com sucesso!');
-      setAnimacao(true);
-      setTimeout(() => {
-        setAnimacao(false);
-        setMensagemSucesso('');
-      }, 3000);
-    } catch (err) {
-      console.error('Erro ao criar escala:', err);
-      Alert.alert('Erro', 'Não foi possível criar a escala.');
+      await criarOuEditarEscala(dados);
     }
-  };
+
+    setMensagemSucesso('Escala criada com sucesso!');
+    setAnimacao(true);
+    setTimeout(() => {
+      setAnimacao(false);
+      setMensagemSucesso('');
+    }, 3000);
+  } catch (error: any) {
+    console.error('Erro ao criar escala:', error.response?.data || error.message);
+
+    const mensagemBackend =
+      error.response?.data?.message ||
+      error.response?.data?.msg ||
+      'Não foi possível criar a escala. Tente novamente.';
+
+    Alert.alert('Erro', mensagemBackend);
+  }
+};
+
 
   // ---------------- RENDER ----------------
   const podeEditarDias = funcionarioSelecionado && semanaInicio && semanaFim;

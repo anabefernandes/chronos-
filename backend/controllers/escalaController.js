@@ -37,6 +37,31 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       return h.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
     };
 
+    // 🔒 Verificação: funcionário já tem escala criada para esta semana?
+    const escalaExistenteSemana = await Escala.findOne({
+      funcionario,
+      semanaInicio: { $lte: dataBase },
+      semanaFim: { $gte: dataBase }
+    });
+
+    if (escalaExistenteSemana) {
+      // Verifica se o mesmo dia já foi cadastrado
+      const jaTemDia = escalaExistenteSemana.dias.some(
+        d => new Date(d.data).toDateString() === dataBase.toDateString()
+      );
+
+      if (jaTemDia) {
+        return res.status(400).json({ msg: 'Esse dia já está cadastrado nesta escala semanal.' });
+      }
+
+      // Caso a semana já tenha 7 dias cadastrados, bloqueia criação
+      if (escalaExistenteSemana.dias.length >= 7) {
+        return res.status(400).json({
+          msg: `Essa semana (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}) já está completa. Crie uma nova semana.`
+        });
+      }
+    }
+
     let escala = await Escala.findOne({
       funcionario,
       semanaInicio: { $lte: dataBase },
