@@ -12,7 +12,8 @@ export interface Funcionario {
   email?: string;
   role: 'funcionario' | 'chefe';
   cargo?: string;
-  cargaHorariaDiaria?: number; 
+  cargaHorariaDiaria?: number;
+  salario: number;
   foto?: string;
   status?: 'Ativo' | 'Atraso' | 'Folga' | 'Almoço' | 'Inativo';
   horario?: string;

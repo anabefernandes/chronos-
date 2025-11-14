@@ -42,17 +42,29 @@ const colors: Record<string, string> = {
   saida: '#AB3838'
 };
 
-const LOCAL_FIXO = { latitude: -24.000285284594113, longitude: -46.431759210560685 };
+const LOCAL_FIXO = {
+  latitude: -24.024364136251414,
+  longitude: -46.48873560889776
+};
+
 const RAIO_PERMITIDO = 100;
 
-function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
+function getDistanceFromLatLonInMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
   const R = 6371e3;
   const φ1 = lat1 * (Math.PI / 180);
   const φ2 = lat2 * (Math.PI / 180);
   const Δφ = (lat2 - lat1) * (Math.PI / 180);
   const Δλ = (lon2 - lon1) * (Math.PI / 180);
 
-  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  const a =
+    Math.sin(Δφ / 2) ** 2 +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -62,7 +74,10 @@ export default function Ponto() {
   const [pontos, setPontos] = useState<Ponto[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
-  const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [localizacao, setLocalizacao] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchUser();
@@ -82,34 +97,77 @@ export default function Ponto() {
     try {
       const res = await api.get('/ponto/meus');
       const hoje = new Date().toISOString().slice(0, 10);
-      const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
+
+      const pontosHoje = res.data.filter(
+        (p: Ponto) =>
+          new Date(p.horario).toISOString().slice(0, 10) === hoje
+      );
+
       setPontos(pontosHoje);
     } catch (err) {
       console.log('Erro ao buscar pontos:', err);
     }
   };
 
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const isRegistered = (status: string) => pontos.some(p => p.status === status);
+  const capitalize = (s: string) =>
+    s.charAt(0).toUpperCase() + s.slice(1);
+
+  const isRegistered = (status: string) =>
+    pontos.some(p => p.status === status);
 
   const pedirPermissaoLocalizacao = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } =
+      await Location.requestForegroundPermissionsAsync();
+
     if (status !== 'granted') {
-      Alert.alert('Permissão negada', 'Precisamos da sua localização para registrar o ponto.');
+      Alert.alert(
+        'Permissão negada',
+        'Precisamos da sua localização para registrar o ponto.'
+      );
       return null;
     }
+
     const location = await Location.getCurrentPositionAsync({});
-    const coords = { latitude: location.coords.latitude, longitude: location.coords.longitude };
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    };
+
     setLocalizacao(coords);
     return coords;
   };
 
   const registrarPonto = async (status: string) => {
+    // 1️⃣ Verifica duplicado
     if (pontos.find(p => p.status === status)) {
-      Alert.alert('Aviso', `O ponto de ${capitalize(status)} já foi registrado hoje.`);
+      Alert.alert(
+        'Aviso',
+        `O ponto de ${capitalize(status)} já foi registrado hoje.`
+      );
       return;
     }
 
+    // 2️⃣ Verifica ordem correta
+    const ordem = ['entrada', 'almoco', 'retorno', 'saida'];
+
+    const ultimoStatus =
+      pontos.length > 0 ? pontos[pontos.length - 1].status : null;
+
+    const esperado = ultimoStatus
+      ? ordem[ordem.indexOf(ultimoStatus) + 1]
+      : 'entrada';
+
+    if (status !== esperado) {
+      Alert.alert(
+        'Sequência inválida',
+        `Você só pode registrar "${capitalize(
+          esperado
+        )}" agora.`
+      );
+      return;
+    }
+
+    // 3️⃣ Localização
     const coords = await pedirPermissaoLocalizacao();
     if (!coords) return;
 
@@ -121,16 +179,27 @@ export default function Ponto() {
     );
 
     if (distancia > RAIO_PERMITIDO) {
-      Alert.alert('Fora do local permitido', `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`);
+      Alert.alert(
+        'Fora do local permitido',
+        `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`
+      );
       return;
     }
 
+    // 4️⃣ Envio ao backend
     try {
-      const res = await api.post('/ponto', { status, localizacao: coords });
-      const pontoRegistrado = res.data.ponto;
+      const res = await api.post('/ponto', {
+        status,
+        localizacao: coords
+      });
 
+      const pontoRegistrado = res.data.ponto;
       setPontos(prev => [...prev, pontoRegistrado]);
-      Alert.alert('Sucesso', `Ponto de ${capitalize(status)} registrado!`);
+
+      Alert.alert(
+        'Sucesso',
+        `Ponto de ${capitalize(status)} registrado!`
+      );
     } catch (err) {
       console.log('Erro ao registrar ponto:', err);
       Alert.alert('Erro', 'Não foi possível registrar o ponto');
@@ -138,10 +207,16 @@ export default function Ponto() {
   };
 
   const slides: StatusDoDia[][] = [];
-  for (let i = 0; i < statusDoDia.length; i += 2) slides.push(statusDoDia.slice(i, i + 2));
+  for (let i = 0; i < statusDoDia.length; i += 2) {
+    slides.push(statusDoDia.slice(i, i + 2));
+  }
 
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const slideIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+  const handleScroll = (
+    e: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    const slideIndex = Math.round(
+      e.nativeEvent.contentOffset.x / width
+    );
     setCurrentSlide(slideIndex);
   };
 
@@ -170,12 +245,15 @@ export default function Ponto() {
                   style={[
                     styles.circleCarrossel,
                     {
-                      backgroundColor: isRegistered(status.value) ? colors[status.value] : '#fff',
+                      backgroundColor: isRegistered(status.value)
+                        ? colors[status.value]
+                        : '#fff',
                       borderColor: colors[status.value],
                       borderWidth: 2
                     }
                   ]}
                 />
+
                 <Text style={styles.label}>{status.label}</Text>
               </TouchableOpacity>
             ))}
@@ -187,32 +265,71 @@ export default function Ponto() {
         {slides.map((_, index) => (
           <View
             key={index}
-            style={[styles.dot, { backgroundColor: currentSlide === index ? '#3C188F' : '#777779ff' }]}
+            style={[
+              styles.dot,
+              {
+                backgroundColor:
+                  currentSlide === index
+                    ? '#3C188F'
+                    : '#777779ff'
+              }
+            ]}
           />
         ))}
       </View>
 
       <Text style={styles.titulo}>Registros do dia</Text>
+
       <View style={styles.timeline}>
         {statusDoDia.map((status: StatusDoDia, index: number) => {
-          const ponto = pontos.find(p => p.status === status.value);
-          const isFirstAndEmpty = index === 0 && pontos.length === 0;
-          const color = ponto ? colors[status.value] : isFirstAndEmpty ? '#3C188F' : '#9e9e9eff';
+          const ponto = pontos.find(
+            p => p.status === status.value
+          );
+
+          const isFirstAndEmpty =
+            index === 0 && pontos.length === 0;
+
+          const color = ponto
+            ? colors[status.value]
+            : isFirstAndEmpty
+            ? '#3C188F'
+            : '#9e9e9eff';
+
           const dateText = ponto
-            ? new Date(ponto.horario).toLocaleDateString('pt-BR').replace(/\//g, '-')
+            ? new Date(ponto.horario)
+                .toLocaleDateString('pt-BR')
+                .replace(/\//g, '-')
             : isFirstAndEmpty
             ? 'sem registros'
             : '--/--/----';
-          const timeText = ponto ? new Date(ponto.horario).toLocaleTimeString('pt-BR') : '--:--';
+
+          const timeText = ponto
+            ? new Date(ponto.horario).toLocaleTimeString(
+                'pt-BR'
+              )
+            : '--:--';
 
           return (
-            <View key={status.value} style={styles.timelineItem}>
-              <View style={[styles.circle, { backgroundColor: color }]} />
+            <View
+              key={status.value}
+              style={styles.timelineItem}
+            >
+              <View
+                style={[styles.circle, { backgroundColor: color }]}
+              />
+
               {index !== statusDoDia.length - 1 && (
-                <View style={[styles.lineVertical, { backgroundColor: '#433466ff' }]} />
+                <View
+                  style={[
+                    styles.lineVertical,
+                    { backgroundColor: '#433466ff' }
+                  ]}
+                />
               )}
+
               <View style={styles.lineContent}>
                 <Text style={styles.status}>{status.label}</Text>
+
                 <View style={styles.row}>
                   <Text style={styles.date}>{dateText}</Text>
                   <Text style={styles.time}>{timeText}</Text>

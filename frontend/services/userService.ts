@@ -7,6 +7,7 @@ export const criarUsuario = async (dados: {
   role: 'funcionario' | 'chefe';
   setor: string;
   cargaHorariaDiaria?: number;
+  salario: number;
 }) => {
   const response = await api.post('/user/criarUsuario', dados, {
     headers: { 'Content-Type': 'application/json' }

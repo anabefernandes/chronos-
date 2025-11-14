@@ -18,6 +18,7 @@ export interface Funcionario {
   escala?: string;
   cargo?: string;
   cargaHorariaDiaria?: number;
+  salario?: number;
 }
 
 export interface AuthContextType {

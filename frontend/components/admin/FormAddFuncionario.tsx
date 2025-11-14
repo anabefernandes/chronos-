@@ -24,6 +24,7 @@ interface FormProps {
     role: 'funcionario' | 'chefe';
     setor: string;
     cargaHorariaDiaria: number;
+    salario: number;
   }) => void;
   funcionario?: Funcionario;
 }
@@ -37,6 +38,10 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
   const [cargaHorariaDiaria, setCargaHorariaDiaria] = useState(
     funcionario?.cargaHorariaDiaria?.toString() || '8'
   );
+  const [salario, setSalario] = useState(
+  funcionario?.salario?.toString() || ''
+);
+
 
   const slideAnim = useRef(new Animated.Value(300)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -56,7 +61,8 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
       senha,
       role,
       setor,
-      cargaHorariaDiaria: Number(cargaHorariaDiaria)
+      cargaHorariaDiaria: Number(cargaHorariaDiaria),
+      salario: Number(salario) || 0,
     };
     onAdd(dados);
     onClose();
@@ -135,6 +141,20 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
                   keyboardType="numeric"
                 />
               </View>
+
+              {/* Salário */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Salário (R$)</Text>
+                  <TextInput
+                    placeholder="Ex: 2500"
+                    style={styles.input}
+                    value={salario}
+                    onChangeText={setSalario}
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                  />
+                </View>
+
 
               {/* Cargo */}
               <View style={styles.inputWrapper}>
