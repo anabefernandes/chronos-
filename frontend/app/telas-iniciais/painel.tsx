@@ -6,6 +6,7 @@ import Ponto from '../telas-iniciais/ponto';
 import Tarefas from '../telas-iniciais/tarefas';
 import Escalas from '../telas-iniciais/escalas';
 import Relatorio from './relatorio';
+import EnrollScreen from './enrollscreen';
 
 export default function Painel() {
   const { role } = useContext(AuthContext);
@@ -16,7 +17,8 @@ export default function Painel() {
     ponto: <Ponto />,
     tarefas: <Tarefas />,
     escalas: <Escalas />,
-    relatorio: <Relatorio />
+    relatorio: <Relatorio />,
+    enrollscreen: <EnrollScreen />,
   };
 
   return (

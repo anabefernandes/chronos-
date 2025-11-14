@@ -10,8 +10,12 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const { startPython } = require("./pythonRunner.js");
 
 const app = express();
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
+startPython();
 dbConnect();
 
 const server = http.createServer(app);
