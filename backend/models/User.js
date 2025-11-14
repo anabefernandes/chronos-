@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema({
   },
   setor: { type: String, required: true },
   cargaHorariaDiaria: { type: Number, default: 8 },
+  salario: { type: Number, required: false, default: 0 },
   foto: { type: String, default: null },
   status: { type: String, default: 'Inativo' }
 });

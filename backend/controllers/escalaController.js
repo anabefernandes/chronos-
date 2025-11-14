@@ -20,7 +20,15 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     }
 
     const dataBase = new Date(data);
-    const nomesDias = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    const nomesDias = [
+      'domingo',
+      'segunda-feira',
+      'terça-feira',
+      'quarta-feira',
+      'quinta-feira',
+      'sexta-feira',
+      'sábado'
+    ];
     const diaSemana = nomesDias[dataBase.getDay()];
 
     const semanaInicio = new Date(dataBase);
@@ -113,9 +121,10 @@ exports.criarOuEditarEscala = async (req, res, next) => {
 
     // 🔔 Criar ou atualizar notificação
     const titulo = 'Escala atualizada';
-    const descricao = tipo === 'nova'
-      ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
-      : 'Sua escala semanal foi atualizada.';
+    const descricao =
+      tipo === 'nova'
+        ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
+        : 'Sua escala semanal foi atualizada.';
 
     let notificacao = await Notificacao.findOne({ usuario: funcionario, titulo: 'Escala atualizada' });
 
@@ -190,5 +199,43 @@ exports.escalasPorFuncionario = async (req, res, next) => {
   } catch (err) {
     console.error('Erro ao buscar escalas do funcionário:', err);
     res.status(500).json({ msg: 'Erro ao buscar escalas do funcionário.' });
+  }
+};
+
+// 🔎 Retornar horário do dia para o funcionário logado
+exports.horarioDoDia = async (req, res) => {
+  try {
+    const funcionarioId = req.user.id;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    // Buscar escala onde HOJE está dentro da semana
+    const escala = await Escala.findOne({
+      funcionario: funcionarioId,
+      semanaInicio: { $lte: hoje },
+      semanaFim: { $gte: hoje }
+    });
+
+    if (!escala) {
+      return res.status(404).json({ msg: 'Nenhuma escala encontrada para esta semana.' });
+    }
+
+    // Procurar o dia dentro da escala
+    const dia = escala.dias.find(d => new Date(d.data).toDateString() === hoje.toDateString());
+
+    if (!dia) {
+      return res.status(404).json({ msg: 'Nenhuma escala encontrada para hoje.' });
+    }
+
+    res.json({
+      dia: dia.dia,
+      data: dia.data,
+      folga: dia.folga,
+      horaEntrada: dia.horaEntrada,
+      horaSaida: dia.horaSaida
+    });
+  } catch (err) {
+    console.error('Erro ao buscar horário do dia:', err);
+    res.status(500).json({ msg: 'Erro ao buscar horário do dia.' });
   }
 };

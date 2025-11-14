@@ -2,50 +2,82 @@ const Ponto = require('../models/Ponto');
 const Holerite = require('../models/Holerite');
 const User = require('../models/User');
 
-// 🕐 Função para calcular horas do dia
+// 🕐 Função atualizada para calcular horas do dia com regras completas do almoço
 function calcularHorasDoDiaComFlag(pontosDoDia) {
-  let isWorking = false;
   let entrada = null;
-  let totalHoras = 0;
-
   let almocoInicio = null;
   let almocoFim = null;
+  let saida = null;
 
+  // Capturar registros
   pontosDoDia.forEach(p => {
     const horario = new Date(p.horario);
 
     switch (p.status) {
       case 'entrada':
-        isWorking = true;
         entrada = horario;
         break;
       case 'almoco':
-        if (isWorking && entrada) {
-          almocoInicio = horario;
-          totalHoras += (almocoInicio - entrada) / (1000 * 60 * 60);
-          isWorking = false;
-        }
+        almocoInicio = horario;
         break;
       case 'retorno':
         almocoFim = horario;
-        entrada = almocoFim;
-        isWorking = true;
         break;
       case 'saida':
-        if (isWorking && entrada) {
-          totalHoras += (horario - entrada) / (1000 * 60 * 60);
-          isWorking = false;
-        }
+        saida = horario;
         break;
     }
   });
 
-  if (almocoInicio && almocoFim) {
-    const pausa = (almocoFim - almocoInicio) / (1000 * 60 * 60);
-    totalHoras -= Math.max(pausa - 1, 0);
+  // Se não tiver entrada ou saída, não calcula nada
+  if (!entrada || !saida) return 0;
+
+  // 🟦 1. Calcular tempo trabalhado MANHÃ
+  let manha = 0;
+  if (entrada && almocoInicio) {
+    manha = (almocoInicio - entrada) / 3600000;
   }
 
-  return totalHoras;
+  // 🟩 2. Calcular tempo trabalhado TARDE
+  let tarde = 0;
+  if (almocoFim && saida) {
+    tarde = (saida - almocoFim) / 3600000;
+  }
+
+  // Se não tem almoço ou retorno, tratar como turno único
+  let tempoTrabalhadoBruto = manha + tarde;
+
+  // -----------------------------
+  // 🔥 REGRAS DO ALMOÇO
+  // -----------------------------
+  let tempoAlmocoConsiderado = 1; // padrão 1h
+  let atrasoAlmoco = 0;
+
+  if (almocoInicio && almocoFim) {
+    const duracaoAlmocoHoras = (almocoFim - almocoInicio) / 3600000;
+
+    if (duracaoAlmocoHoras < 0.75) {
+      // ❗ A) Menos de 45 min → usar o valor real
+      tempoAlmocoConsiderado = duracaoAlmocoHoras;
+    } else if (duracaoAlmocoHoras > 1.25) {
+      // ❗ C) Mais de 1h15 → atraso no almoço
+      tempoAlmocoConsiderado = 1;
+      atrasoAlmoco = duracaoAlmocoHoras - 1;
+    } else {
+      // ✅ B) Dentro da faixa 45min–1h15 → conta 1h cravado
+      tempoAlmocoConsiderado = 1;
+    }
+  }
+
+  // 🟧 Tempo total final (descontando almoço considerado e atrasos)
+  let horasTotais = manha + tarde;
+
+  // Se houver atraso, ele vira descontado no holerite
+  if (atrasoAlmoco > 0) {
+    horasTotais -= atrasoAlmoco;
+  }
+
+  return horasTotais;
 }
 
 // 📍 Função para calcular distância
@@ -77,9 +109,10 @@ exports.registrarPonto = async (req, res, next) => {
     }
 
     // 📍 Local fixo de trabalho
+
     const LOCAL_TRABALHO = {
-      latitude: -24.000285284594113,
-      longitude: -46.431759210560685
+      latitude: -24.024364136251414,
+      longitude: -46.48873560889776
     };
     const RAIO_PERMITIDO = 100; // metros
 
@@ -194,10 +227,38 @@ exports.registrarPonto = async (req, res, next) => {
     }
 
     // 💰 Cálculo financeiro
-    const valorHora = holerite ? holerite.valorHora : 20;
-    const descontosFixos = holerite ? holerite.descontos : 0;
-    const valorHoraExtra = valorHora * 1.5; // 50% adicional
+    // 💰 Pegar salário mensal e carga horária diária do funcionário
+    const salarioMensal = funcionario?.salario || 0;
+    const cargaHorariaDiaria = funcionario?.cargaHorariaDiaria || 8; // exemplo: 8h/dia
 
+    // 🗓️ Calcular dias úteis do mês (segunda a sexta)
+    function diasUteisDoMes(ano, mes) {
+      let count = 0;
+      let ultimoDia = new Date(ano, mes + 1, 0).getDate();
+
+      for (let dia = 1; dia <= ultimoDia; dia++) {
+        const d = new Date(ano, mes, dia).getDay();
+        if (d !== 0 && d !== 6) count++; // Ignora sábado (6) e domingo (0)
+      }
+      return count;
+    }
+
+    const ano = data.getFullYear();
+    const mes = data.getMonth();
+
+    const diasUteis = diasUteisDoMes(ano, mes);
+
+    // 🕐 Carga mensal total considerando 1h de almoço (não paga)
+    const cargaDiariaLiquida = cargaHorariaDiaria - 1;
+    const cargaMensalLiquida = cargaDiariaLiquida * diasUteis;
+
+    // 🎯 Valor real da hora
+    const valorHora = cargaMensalLiquida > 0 ? salarioMensal / cargaMensalLiquida : 0;
+
+    const valorHoraExtra = valorHora * 1.5; // 50% adicional
+    const descontosFixos = holerite ? holerite.descontos : 0;
+
+    // ---- Cálculo Final ----
     const salarioBase = totalHoras * valorHora;
     const valorExtras = totalHorasExtras * valorHoraExtra;
     const valorDescontos = totalHorasDescontadas * valorHora;

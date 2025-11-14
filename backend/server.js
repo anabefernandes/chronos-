@@ -56,6 +56,7 @@ app.use('/tarefas', require('./routes/tarefa.routes'));
 app.use('/user', require('./routes/user.routes'));
 app.use('/ml', require('./routes/ml.routes'));
 app.use('/notificacoes', require('./routes/notificacao.routes'));
+app.use('/relatorio', require('./routes/relatorio.routes'));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

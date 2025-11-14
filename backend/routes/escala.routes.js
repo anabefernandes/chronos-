@@ -112,4 +112,7 @@ router.get('/todasEscalas', auth, requireRole('admin', 'chefe'), ctrl.todasEscal
  */
 router.get('/:funcionarioId', auth, requireRole('chefe', 'admin'), ctrl.escalasPorFuncionario);
 
+router.get('/horario-do-dia', auth, ctrl.horarioDoDia);
+
+
 module.exports = router;
