@@ -25,7 +25,6 @@ import { useToast } from '../../contexts/ToastContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const { setRole, setNome, setUserId, setFoto, setSetor } = useContext(AuthContext);
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -54,24 +53,21 @@ export default function Login() {
 
       const role = roleBackend.toLowerCase();
 
-      setUserId(userId);
-      setRole(role);
-      setNome(nome);
-      setFoto(foto);
-      setSetor(setor);
-
+      // Salvar dados diretamente no AsyncStorage
       await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('userId', userId);
+      await AsyncStorage.setItem('userId', String(userId)); // garante que seja string
       await AsyncStorage.setItem('role', role);
       await AsyncStorage.setItem('nome', nome);
       await AsyncStorage.setItem('foto', foto);
       await AsyncStorage.setItem('setor', setor);
 
+      // Navegação de acordo com o papel do usuário
       if (role === 'chefe' || role === 'admin') {
         router.replace('/telas-chefe/painel-admin');
       } else {
         router.replace('/telas-iniciais/painel');
       }
+
     } catch (err: any) {
       console.error('Erro ao tentar logar:', err.response?.data || err.message);
       showToast('Erro', err.response?.data?.msg || 'Falha no login. Verifique seu email e senha.');
@@ -131,12 +127,8 @@ export default function Login() {
                     scrollEnabled={false}
                   />
                 </View>
-                <TouchableOpacity
-                  style={styles.linkContainer}
-                  onPress={() => router.push('/telas-iniciais/redefinicao')}
-                >
-                  <Text style={styles.linkText}>Esqueci minha senha</Text>
-                </TouchableOpacity>
+
+               
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
@@ -175,16 +167,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3C188F',
     fontFamily: 'Poppins_600SemiBold',
-    marginRight: 5
+    marginRight: 5 // dá um espacinho entre o texto e o ícone
   },
   titleIcon: {
-    width: 30,
+    width: 30, // pode ajustar conforme o tamanho do PNG
     height: 30,
     resizeMode: 'contain'
   },
+
   subtitle: {
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 40,
     color: '#1B0A43',
     fontFamily: 'Poppins_400Regular',
     top: -15
@@ -242,17 +235,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
   },
-  linkContainer: {
-    width: '90%',
-    alignSelf: 'center',
-    alignItems: 'flex-end',
-    marginTop: -10,
-    marginBottom: 15
-  },
-  linkText: {
-    color: '#3C188F',
-    fontSize: 13,
-    fontFamily: 'Poppins_400Regular',
-    textDecorationLine: 'underline'
-  }
 });
