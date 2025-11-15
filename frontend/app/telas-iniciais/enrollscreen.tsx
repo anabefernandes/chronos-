@@ -89,7 +89,7 @@ const handleEnroll = async () => {
         return;
       }
 
-    const response = await fetch("http://192.168.0.214:5001/enroll", {
+    const response = await fetch("http://localhost:5001/enroll", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

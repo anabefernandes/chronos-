@@ -141,7 +141,7 @@ def verify_face():
 # INÍCIO DO SERVIDOR
 # =========================================
 if __name__ == "__main__":
-    print("Servidor Flask rodando em http://192.168.0.214:5001")
+    print("Servidor Flask rodando em http://localhost:5001")
     print("POST /enroll → cadastrar rosto")
     print("POST /verify → validar rosto e bater ponto")
     app.run(host="0.0.0.0", port=5001)
