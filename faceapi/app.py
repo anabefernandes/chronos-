@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 # Conexão com o MongoDB 
 MONGO_URI = "mongodb+srv://mariadudaeduardafds:PS5PZFS8fARRGH96@teste.jxs1hc9.mongodb.net/?appName=Teste" 
-DB_NAME = "chronos"
+DB_NAME = "Faces"
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 users = db["users"]  
