@@ -73,7 +73,6 @@ export default function Splash() {
 
   return (
     <AnimatedLinearGradient
-      // 💙💜 Gradiente vibrante e suave igual ao vídeo
       colors={['#4DC9EA', '#3C188F']}
       start={{ x: startX as any, y: startY as any }}
       end={{ x: endX as any, y: endY as any }}

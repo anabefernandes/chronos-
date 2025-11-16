@@ -14,6 +14,7 @@ import CriarTarefas from './criar-tarefas';
 import GerenciarPontos from './gerenciar-pontos';
 import Relatorio from '../telas-iniciais/relatorio';
 import EscalasAdmin from './escalas-admin';
+import EnrollScreen from '../telas-iniciais/enrolls-screen';
 
 type ScreenKey =
   | 'dashboard'
@@ -26,7 +27,8 @@ type ScreenKey =
   | 'relatorio'
   | 'gerenciar-funcionarios'
   | 'notificacoes'
-  | 'perfil';
+  | 'perfil'
+  | 'enrolls-screen';
 
 export default function PainelAdmin() {
   const { role } = useContext(AuthContext);
@@ -60,6 +62,8 @@ export default function PainelAdmin() {
         return <GerenciarFuncionarios />;
       case 'perfil':
         return <Perfil />;
+      case 'enrolls-screen':
+        return <EnrollScreen />;
       default:
         return <Dashboard setActiveScreen={handleScreenChange} />;
     }

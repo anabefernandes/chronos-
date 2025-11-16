@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const sendEmail = require("../mail");
 
+const resetTokens = {};
 //criar usuario chefe ou func (admin)
 exports.criarUsuario = async (req, res, next) => {
   try {
@@ -40,6 +42,58 @@ exports.criarUsuario = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.solicitar_redefinicao = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ mensagem: "Usuário não encontrado." });
+
+  // Geração do token
+  const token = Math.random().toString(36).substr(2, 8); 
+
+  // Salvar token de redefinição no objeto
+  resetTokens[token] = email;
+
+  // Enviar o e-mail com o token
+  const link = `${token}`;
+  const subject = 'Redefinição de senha';
+  const text = `Você solicitou a redefinição de senha. Clique no link para redefinir sua senha: ${link}`;
+
+  try {
+    await sendEmail(email, subject, text); // Envia o e-mail
+    res.json({ mensagem: "Token enviado por e-mail." });
+  } catch (error) {
+    res.status(500).json({ mensagem: "Erro ao enviar o e-mail." });
+  }
+};
+
+exports.redefinir_senha = async (req, res, next) => {
+  const { token, novaSenha } = req.body;
+
+  // Verificar se o token é válido
+  const email = resetTokens[token];
+  if (!email) {
+    return res.status(400).json({ mensagem: "Token inválido ou expirado." });
+  }
+
+  // Encontrar o usuário e atualizar a senha
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ mensagem: "Usuário não encontrado." });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const senhaHash = await bcrypt.hash(novaSenha, salt);
+  
+  user.senha = senhaHash;
+  await user.save({ validateBeforeSave: false });
+  
+  // Remover o token após a redefinição
+  delete resetTokens[token];
+
+  res.json({ mensagem: "Senha redefinida com sucesso!" });
+};
+
 
 //atualizar user (admin)
 exports.atualizarUsuario = async (req, res, next) => {

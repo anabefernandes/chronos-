@@ -59,7 +59,7 @@ export default function Relatorio() {
         carregarRelatorio();
       }
     } catch (err) {
-      console.log("Erro ao carregar usuário", err);
+      console.log('Erro ao carregar usuário', err);
     }
   }
 
@@ -68,7 +68,7 @@ export default function Relatorio() {
       const res = await api.get('/user/listarFuncionarios');
       setFuncionarios(res.data);
     } catch (err) {
-      console.log("Erro ao listar funcionários", err);
+      console.log('Erro ao listar funcionários', err);
     }
   }
 
@@ -78,7 +78,7 @@ export default function Relatorio() {
       const res = await api.get('/relatorio/me');
       setRelatorio(res.data);
     } catch (err) {
-      console.log("Erro ao carregar relatório", err);
+      console.log('Erro ao carregar relatório', err);
     }
   }
 
@@ -89,7 +89,7 @@ export default function Relatorio() {
       const res = await api.get(`/relatorio/funcionario/${id}`);
       setRelatorio(res.data);
     } catch (err) {
-      console.log("Erro ao carregar relatório do funcionário", err);
+      console.log('Erro ao carregar relatório do funcionário', err);
     }
   }
 
@@ -116,7 +116,7 @@ export default function Relatorio() {
   }
 
   // SE ADMIN: MOSTRA LISTA DE FUNCIONÁRIOS PRIMEIRO
-  if (user && (user.role === "admin" || user.role === "chefe") && !selectedId) {
+  if (user && (user.role === 'admin' || user.role === 'chefe') && !selectedId) {
     return (
       <View style={styles.container}>
         <Navbar />
@@ -125,12 +125,9 @@ export default function Relatorio() {
 
           <FlatList
             data={funcionarios}
-            keyExtractor={(item) => item._id}
+            keyExtractor={item => item._id}
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => carregarRelatorioFuncionario(item._id)}
-              >
+              <TouchableOpacity style={styles.card} onPress={() => carregarRelatorioFuncionario(item._id)}>
                 <Text style={styles.cardDate}>{item.nome}</Text>
               </TouchableOpacity>
             )}
@@ -171,7 +168,7 @@ export default function Relatorio() {
           chartConfig={{
             color: () => '#000',
             labelColor: () => '#000',
-            decimalPlaces: 1,
+            decimalPlaces: 1
           }}
         />
 
@@ -198,11 +195,8 @@ export default function Relatorio() {
           <Text style={styles.btnText}>📄 Baixar PDF</Text>
         </TouchableOpacity>
 
-        {(user?.role === "admin" || user?.role === "chefe") && (
-          <TouchableOpacity
-            style={[styles.btn, { backgroundColor: "#555" }]}
-            onPress={() => setSelectedId(null)}
-          >
+        {(user?.role === 'admin' || user?.role === 'chefe') && (
+          <TouchableOpacity style={[styles.btn, { backgroundColor: '#555' }]} onPress={() => setSelectedId(null)}>
             <Text style={styles.btnText}>⬅ Voltar</Text>
           </TouchableOpacity>
         )}
@@ -212,13 +206,48 @@ export default function Relatorio() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  subTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 20 },
-  card: { backgroundColor: '#eee', padding: 15, marginVertical: 8, borderRadius: 10 },
-  cardDate: { fontWeight: 'bold', marginBottom: 5 },
-  btn: { backgroundColor: '#212121', padding: 15, marginVertical: 5, borderRadius: 8 },
-  btnText: { color: '#fff', textAlign: 'center', fontWeight: 'bold' },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  content: {
+    flex: 1,
+    padding: 20
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20
+  },
+  subTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20
+  },
+  card: {
+    backgroundColor: '#eee',
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 10
+  },
+  cardDate: {
+    fontWeight: 'bold',
+    marginBottom: 5
+  },
+  btn: {
+    backgroundColor: '#212121',
+    padding: 15,
+    marginVertical: 5,
+    borderRadius: 8
+  },
+  btnText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });

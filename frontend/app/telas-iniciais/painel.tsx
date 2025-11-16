@@ -6,7 +6,7 @@ import Ponto from '../telas-iniciais/ponto';
 import Tarefas from '../telas-iniciais/tarefas';
 import Escalas from '../telas-iniciais/escalas';
 import Relatorio from './relatorio';
-import EnrollScreen from './enrollscreen';
+import EnrollScreen from './enrolls-screen';
 
 export default function Painel() {
   const { role } = useContext(AuthContext);

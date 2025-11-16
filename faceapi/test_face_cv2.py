@@ -1,7 +1,7 @@
-import cv2
-import face_recognition
-import numpy as np
-from PIL import Image
+import cv2 # type: ignore
+import face_recognition # type: ignore
+import numpy as np # type: ignore
+from PIL import Image # type: ignore
 
 # Caminho da imagem
 image_path = "faces/pessoa6.jpg"

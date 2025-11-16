@@ -14,6 +14,7 @@ type MenuKey =
   | 'gerenciar-funcionarios'
   | 'perfil'
   | 'notificacoes'
+  | 'enrolls-screen'
   | '';
 
 interface NavegacaoAdminProps {

@@ -13,7 +13,6 @@ export interface Funcionario {
   role: 'funcionario' | 'chefe';
   cargo?: string;
   cargaHorariaDiaria?: number;
-  salario: number;
   foto?: string;
   status?: 'Ativo' | 'Atraso' | 'Folga' | 'Almoço' | 'Inativo';
   horario?: string;
@@ -21,6 +20,7 @@ export interface Funcionario {
   tarefas?: string;
   escala?: string;
   setor: string;
+  salario?: number;
 }
 
 interface FuncionarioCardProps {

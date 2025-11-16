@@ -23,6 +23,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useToast } from '../../contexts/ToastContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function PerfilFuncionario() {
   const router = useRouter();
@@ -296,47 +297,51 @@ export default function PerfilFuncionario() {
           </View>
         </View>
       </LinearGradient>
-
       <View style={styles.options}>
-        <TouchableOpacity style={styles.option}>
-          <Ionicons name="calendar-outline" size={20} color="#3C188F" />
-          <Text style={styles.optionText}>Minha Escala</Text>
-          <Ionicons name="chevron-forward" size={18} color="#3C188F" />
+        <TouchableOpacity style={styles.option} onPress={() => router.push('/telas-iniciais/enrolls-screen')}>
+          <MaterialCommunityIcons name="face-recognition" size={24} color="#3C188F" />
+          <Text style={styles.optionText}>Cadastrar Facial</Text>
+          <MaterialCommunityIcons name="chevron-right" size={20} color="#3C188F" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => (editandoEmail ? salvarEmail() : setEditandoEmail(true))}
-        >
-          <Ionicons name="mail-outline" size={20} color="#3C188F" />
+        <TouchableOpacity style={styles.option} activeOpacity={1}>
+          <MaterialCommunityIcons name="email-outline" size={24} color="#3C188F" />
+
           {editandoEmail ? (
-            <TextInput
-              style={[styles.optionText, { borderBottomWidth: 1, borderColor: '#ccc' }]}
-              value={email}
-              onChangeText={setEmail}
-              autoFocus
-              keyboardType="email-address"
-              placeholder="Digite o novo e-mail"
-            />
+            <>
+              <TextInput
+                style={[styles.optionText, { borderBottomWidth: 1, borderColor: '#ccc', flex: 1 }]}
+                value={email}
+                onChangeText={setEmail}
+                autoFocus
+                keyboardType="email-address"
+                placeholder="Digite o novo e-mail"
+              />
+
+              {/* Botão de cancelar edição */}
+              <TouchableOpacity onPress={() => setEditandoEmail(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#3C188F" />
+              </TouchableOpacity>
+            </>
           ) : (
             <Text style={styles.optionText}>{email || `${nome?.toLowerCase() || 'usuario'}@email.com`}</Text>
           )}
-          <Ionicons name="chevron-forward" size={18} color="#3C188F" />
+
+          {!editandoEmail && <MaterialCommunityIcons name="chevron-right" size={20} color="#3C188F" />}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option} onPress={() => setModalSenha(true)}>
-          <Ionicons name="lock-closed-outline" size={20} color="#3C188F" />
+          <MaterialCommunityIcons name="lock-outline" size={24} color="#3C188F" />
           <Text style={styles.optionText}>Alterar Senha</Text>
-          <Ionicons name="chevron-forward" size={18} color="#3C188F" />
+          <MaterialCommunityIcons name="chevron-right" size={20} color="#3C188F" />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.option, styles.logout]} onPress={handleLogout}>
-          <Ionicons name="exit-outline" size={20} color="#3C188F" />
+          <MaterialCommunityIcons name="logout" size={24} color="#3C188F" />
           <Text style={[styles.optionText, styles.logoutText]}>Sair</Text>
-          <Ionicons name="chevron-forward" size={18} color="#3C188F" />
+          <MaterialCommunityIcons name="chevron-right" size={20} color="#3C188F" />
         </TouchableOpacity>
       </View>
-
       <Modal visible={modalSenha} transparent animationType="slide">
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>
@@ -347,7 +352,6 @@ export default function PerfilFuncionario() {
                   <Text style={styles.inputLabel}>Senha Atual</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Digite sua senha atual"
                     secureTextEntry
                     value={senhaAtual}
                     onChangeText={setSenhaAtual}
@@ -359,7 +363,6 @@ export default function PerfilFuncionario() {
                   <Text style={styles.inputLabel}>Nova Senha</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Digite a nova senha"
                     secureTextEntry
                     value={novaSenha}
                     onChangeText={setNovaSenha}
@@ -371,7 +374,6 @@ export default function PerfilFuncionario() {
                   <Text style={styles.inputLabel}>Confirmar Nova Senha</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Confirme a nova senha"
                     secureTextEntry
                     value={confirmarSenha}
                     onChangeText={setConfirmarSenha}
@@ -497,7 +499,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     color: '#3C188F',
-    fontSize: 14
+    fontSize: 14,
+    fontWeight: 'bold'
   },
   logout: {
     backgroundColor: '#eee'

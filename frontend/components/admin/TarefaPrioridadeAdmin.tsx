@@ -266,30 +266,13 @@ const TarefasPrioridadeAdmin: React.FC<Props> = ({ tarefas, usuarioLogadoId }) =
           </View>
           <TouchableOpacity
             style={styles.filterWrapper}
-            onPress={() => setShowFiltroModal(prev => !prev)}
+            onPress={() => setFiltro(filtro === 'todas' ? 'minhas' : 'todas')}
             activeOpacity={0.8}
           >
             <Text style={styles.inputLabel}>Filtrar</Text>
             <Text style={styles.inputFiltro}>{filtro === 'todas' ? 'Todas as tarefas' : 'Minhas tarefas'}</Text>
           </TouchableOpacity>
         </View>
-
-        {showFiltroModal && (
-          <View style={styles.modalFiltro}>
-            {opcoesFiltro.map(opt => (
-              <TouchableOpacity
-                key={opt.value}
-                style={styles.modalOption}
-                onPress={() => {
-                  setFiltro(opt.value as 'todas' | 'minhas');
-                  setShowFiltroModal(false);
-                }}
-              >
-                <Text style={styles.modalOptionText}>{opt.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
         <View style={{ position: 'relative' }}>
           {nenhumaTarefa && (
@@ -559,32 +542,6 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     lineHeight: 45
-  },
-  modalFiltro: {
-    position: 'absolute',
-    top: 180,
-    right: 29,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-    width: '40%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    zIndex: 1000
-  },
-  modalOption: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEE'
-  },
-  modalOptionText: {
-    fontSize: 14,
-    color: '#1B0A43',
-    textAlign: 'center'
   },
   inputLabel: {
     position: 'absolute',

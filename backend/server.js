@@ -89,7 +89,8 @@ const createAdmin = async () => {
   }
 };
 
-server.listen(PORT, async () => {
+server.listen(PORT, "0.0.0.0", async () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   await createAdmin();
 });
+

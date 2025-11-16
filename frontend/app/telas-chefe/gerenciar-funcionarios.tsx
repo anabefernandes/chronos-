@@ -156,7 +156,7 @@ export default function GerenciarFuncionarios() {
                     senha: dados.senha ?? '',
                     role: dados.role,
                     setor: dados.setor,
-                    cargaHorariaDiaria: dados.cargaHorariaDiaria, 
+                    cargaHorariaDiaria: dados.cargaHorariaDiaria,
                     salario: dados.salario
                   });
 

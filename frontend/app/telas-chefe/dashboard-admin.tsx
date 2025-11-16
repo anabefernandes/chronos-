@@ -47,7 +47,7 @@ export default function Dashboard({ setActiveScreen }: DashboardProps) {
           observacao: u.observacao,
           tarefas: u.tarefas,
           escala: u.escala,
-          setor: u.setor
+          setor: u.setor,
         }));
 
         setFuncionarios(usuariosFiltrados);

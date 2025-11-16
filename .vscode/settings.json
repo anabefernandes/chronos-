@@ -1,0 +1,3 @@
+{
+  "python.analysis.extraPaths": ["./faceapi/test_face_", "./faceapi/test_face_"]
+}

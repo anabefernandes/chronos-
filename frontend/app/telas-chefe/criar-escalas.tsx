@@ -67,7 +67,7 @@ interface MostrarPickerHora {
 
 // ---------------- COMPONENTE ----------------
 export default function CriarEscalas() {
-  const { usuarios } = useContext(AuthContext);
+  const { usuarios, carregarUsuarios, userId } = useContext(AuthContext);
   const [funcionarioSelecionado, setFuncionarioSelecionado] = useState<Funcionario | null>(null);
   const [modalFuncionarios, setModalFuncionarios] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -80,7 +80,6 @@ export default function CriarEscalas() {
   const [erroChefe, setErroChefe] = useState(false);
   const [animacao, setAnimacao] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
-  const { userId } = useContext(AuthContext);
 
   const [semana, setSemana] = useState<DiaSemana[]>([
     { dia: 'Domingo', data: null, entrada: null, saida: null, folga: false, modo: 'nenhum' },
@@ -91,13 +90,22 @@ export default function CriarEscalas() {
     { dia: 'Sexta', data: null, entrada: null, saida: null, folga: false, modo: 'nenhum' },
     { dia: 'Sábado', data: null, entrada: null, saida: null, folga: false, modo: 'nenhum' }
   ]);
+
+  // ---------------- CARREGAR USUÁRIOS AO ABRIR A TELA ----------------
+  useEffect(() => {
+    if (!usuarios || usuarios.length === 0) {
+      carregarUsuarios();
+    }
+  }, []);
+
+  // Atualiza lista filtrada quando modal abre ou usuários mudam
   useEffect(() => {
     if (modalFuncionarios && usuarios?.length) {
       setListaFiltrada(usuarios);
     }
   }, [modalFuncionarios, usuarios]);
 
-  // ✅ Atualiza busca em tempo real
+  // Atualiza busca em tempo real
   useEffect(() => {
     if (usuarios?.length) {
       const filtrados = usuarios.filter(u => u.nome.toLowerCase().includes(searchText.toLowerCase()));
@@ -109,17 +117,23 @@ export default function CriarEscalas() {
   const getUserImage = (foto?: string) => {
     if (!foto || foto.trim() === '') return require('../../assets/images/telas-public/sem_foto.png');
     if (foto.includes('sem_foto.png')) return require('../../assets/images/telas-public/sem_foto.png');
-
     let baseURL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
     if (baseURL?.endsWith('/api')) baseURL = baseURL.replace(/\/api$/, '');
     const cleanFoto = foto.replace(/^\/+/, '');
     return { uri: `${baseURL}/${cleanFoto}` };
   };
 
+  const abrirModalFuncionarios = () => {
+    if (!usuarios || usuarios.length === 0) {
+      carregarUsuarios();
+    }
+    setModalFuncionarios(true);
+  };
+
   const renderFuncionarioSelecionado = () => {
     if (!funcionarioSelecionado) {
       return (
-        <TouchableOpacity style={styles.selectFuncionario} onPress={() => setModalFuncionarios(true)}>
+        <TouchableOpacity style={styles.selectFuncionario} onPress={abrirModalFuncionarios}>
           <Text style={styles.selectText}>Selecione o funcionário</Text>
         </TouchableOpacity>
       );
@@ -308,55 +322,54 @@ export default function CriarEscalas() {
   };
 
   // ---------------- SALVAR ESCALA ----------------
-const salvarEscala = async () => {
-  if (!funcionarioSelecionado || !semanaInicio || !semanaFim) {
-    Alert.alert('Atenção', 'Selecione o funcionário e uma semana.');
-    return;
-  }
-
-  try {
-    for (const dia of semana) {
-      if (!dia.data) continue;
-
-      const dados: EscalaRequest = {
-        funcionario: funcionarioSelecionado._id,
-        data: dia.data.toISOString(),
-      };
-
-      if (dia.modo === 'folga') {
-        dados.folga = true;
-      } else if (dia.modo === 'horario' && dia.entrada && dia.saida) {
-        const formatarHora = (d: Date) =>
-          d.toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          });
-        dados.horaEntrada = formatarHora(dia.entrada);
-        dados.horaSaida = formatarHora(dia.saida);
-      }
-
-      await criarOuEditarEscala(dados);
+  const salvarEscala = async () => {
+    if (!funcionarioSelecionado || !semanaInicio || !semanaFim) {
+      Alert.alert('Atenção', 'Selecione o funcionário e uma semana.');
+      return;
     }
 
-    setMensagemSucesso('Escala criada com sucesso!');
-    setAnimacao(true);
-    setTimeout(() => {
-      setAnimacao(false);
-      setMensagemSucesso('');
-    }, 3000);
-  } catch (error: any) {
-    console.error('Erro ao criar escala:', error.response?.data || error.message);
+    try {
+      for (const dia of semana) {
+        if (!dia.data) continue;
 
-    const mensagemBackend =
-      error.response?.data?.message ||
-      error.response?.data?.msg ||
-      'Não foi possível criar a escala. Tente novamente.';
+        const dados: EscalaRequest = {
+          funcionario: funcionarioSelecionado._id,
+          data: dia.data.toISOString()
+        };
 
-    Alert.alert('Erro', mensagemBackend);
-  }
-};
+        if (dia.modo === 'folga') {
+          dados.folga = true;
+        } else if (dia.modo === 'horario' && dia.entrada && dia.saida) {
+          const formatarHora = (d: Date) =>
+            d.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            });
+          dados.horaEntrada = formatarHora(dia.entrada);
+          dados.horaSaida = formatarHora(dia.saida);
+        }
 
+        await criarOuEditarEscala(dados);
+      }
+
+      setMensagemSucesso('Escala criada com sucesso!');
+      setAnimacao(true);
+      setTimeout(() => {
+        setAnimacao(false);
+        setMensagemSucesso('');
+      }, 3000);
+    } catch (error: any) {
+      console.error('Erro ao criar escala:', error.response?.data || error.message);
+
+      const mensagemBackend =
+        error.response?.data?.message ||
+        error.response?.data?.msg ||
+        'Não foi possível criar a escala. Tente novamente.';
+
+      Alert.alert('Erro', mensagemBackend);
+    }
+  };
 
   // ---------------- RENDER ----------------
   const podeEditarDias = funcionarioSelecionado && semanaInicio && semanaFim;

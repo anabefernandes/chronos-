@@ -111,8 +111,8 @@ exports.registrarPonto = async (req, res, next) => {
     // 📍 Local fixo de trabalho
 
     const LOCAL_TRABALHO = {
-      latitude: -24.007753262182757,
-      longitude: -46.41291741795918
+      latitude: -23.999625827936196,
+      longitude: -46.43188383244882
     };
     const RAIO_PERMITIDO = 100; // metros
 

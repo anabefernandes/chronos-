@@ -10,7 +10,8 @@ import {
   Animated,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ScrollView
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Funcionario } from './FuncionarioCard';
@@ -35,13 +36,8 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
   const [senha, setSenha] = useState('');
   const [role, setRole] = useState<'funcionario' | 'chefe'>(funcionario?.role || 'funcionario');
   const [setor, setSetor] = useState(funcionario?.setor || '');
-  const [cargaHorariaDiaria, setCargaHorariaDiaria] = useState(
-    funcionario?.cargaHorariaDiaria?.toString() || '8'
-  );
-  const [salario, setSalario] = useState(
-  funcionario?.salario?.toString() || ''
-);
-
+  const [cargaHorariaDiaria, setCargaHorariaDiaria] = useState(funcionario?.cargaHorariaDiaria?.toString() || '8');
+  const [salario, setSalario] = useState(funcionario?.salario?.toString() || '');
 
   const slideAnim = useRef(new Animated.Value(300)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -62,7 +58,7 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
       role,
       setor,
       cargaHorariaDiaria: Number(cargaHorariaDiaria),
-      salario: Number(salario) || 0,
+      salario: Number(salario) || 0
     };
     onAdd(dados);
     onClose();
@@ -74,75 +70,81 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
         <View style={styles.overlay}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ width: '100%', alignItems: 'center' }}
+            style={{ width: '100%', alignItems: 'center', marginTop: 50 }}
           >
             <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }], opacity: opacityAnim }]}>
-              <Text style={styles.title}>{funcionario ? 'Atualizar Funcionário' : 'Novo Funcionário'}</Text>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <Text style={styles.title}>{funcionario ? 'Atualizar Funcionário' : 'Novo Funcionário'}</Text>
 
-              {/* Nome */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Nome</Text>
-                <TextInput
-                  placeholder=" "
-                  style={styles.input}
-                  value={nome}
-                  onChangeText={setNome}
-                  placeholderTextColor="#999"
-                />
-              </View>
+                {/* inputs... */}
+                {/* Nome */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Nome</Text>
+                  <TextInput
+                    placeholder=" "
+                    style={styles.input}
+                    value={nome}
+                    onChangeText={setNome}
+                    placeholderTextColor="#999"
+                  />
+                </View>
 
-              {/* Email */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Email</Text>
-                <TextInput
-                  placeholder=" "
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholderTextColor="#999"
-                  keyboardType="email-address"
-                />
-              </View>
+                {/* Email */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email</Text>
+                  <TextInput
+                    placeholder=" "
+                    style={styles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholderTextColor="#999"
+                    keyboardType="email-address"
+                  />
+                </View>
 
-              {/* Senha */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Senha</Text>
-                <TextInput
-                  placeholder=" "
-                  style={styles.input}
-                  value={senha}
-                  onChangeText={setSenha}
-                  placeholderTextColor="#999"
-                  secureTextEntry
-                />
-              </View>
+                {/* Senha */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Senha</Text>
+                  <TextInput
+                    placeholder=" "
+                    style={styles.input}
+                    value={senha}
+                    onChangeText={setSenha}
+                    placeholderTextColor="#999"
+                    secureTextEntry
+                  />
+                </View>
 
-              {/* Setor */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Setor</Text>
-                <TextInput
-                  placeholder=" "
-                  style={styles.input}
-                  value={setor}
-                  onChangeText={setSetor}
-                  placeholderTextColor="#999"
-                />
-              </View>
+                {/* Setor */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Setor</Text>
+                  <TextInput
+                    placeholder=" "
+                    style={styles.input}
+                    value={setor}
+                    onChangeText={setSetor}
+                    placeholderTextColor="#999"
+                  />
+                </View>
 
-              {/* Carga Horária Diária */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Carga Horária Diária (h)</Text>
-                <TextInput
-                  placeholder="8"
-                  style={styles.input}
-                  value={cargaHorariaDiaria}
-                  onChangeText={setCargaHorariaDiaria}
-                  placeholderTextColor="#999"
-                  keyboardType="numeric"
-                />
-              </View>
+                {/* Carga Horária Diária */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Carga Horária Diária (h)</Text>
+                  <TextInput
+                    placeholder="8"
+                    style={styles.input}
+                    value={cargaHorariaDiaria}
+                    onChangeText={setCargaHorariaDiaria}
+                    placeholderTextColor="#999"
+                    keyboardType="numeric"
+                  />
+                </View>
 
-              {/* Salário */}
+                {/* Salário */}
                 <View style={styles.inputWrapper}>
                   <Text style={styles.inputLabel}>Salário (R$)</Text>
                   <TextInput
@@ -155,32 +157,33 @@ export default function FormAdicionarFuncionario({ onClose, onAdd, funcionario }
                   />
                 </View>
 
-
-              {/* Cargo */}
-              <View style={styles.inputWrapper}>
-                <Text style={styles.inputLabel}>Cargo</Text>
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={role}
-                    onValueChange={value => setRole(value)}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                  >
-                    <Picker.Item label="Funcionário" value="funcionario" />
-                    <Picker.Item label="Chefe" value="chefe" />
-                  </Picker>
+                {/* Cargo */}
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Cargo</Text>
+                  <View style={styles.pickerWrapper}>
+                    <Picker
+                      selectedValue={role}
+                      onValueChange={value => setRole(value)}
+                      style={styles.picker}
+                      itemStyle={styles.pickerItem}
+                    >
+                      <Picker.Item label="Funcionário" value="funcionario" />
+                      <Picker.Item label="Chefe" value="chefe" />
+                    </Picker>
+                  </View>
                 </View>
-              </View>
 
-              {/* Botões */}
-              <View style={styles.buttonsRow}>
-                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                  <Text style={styles.buttonText}>{funcionario ? 'Atualizar' : 'Adicionar'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
-                  <Text style={styles.buttonText}>Cancelar</Text>
-                </TouchableOpacity>
-              </View>
+                {/* Botões */}
+                <View style={styles.buttonsRow}>
+                  <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                    <Text style={styles.buttonText}>{funcionario ? 'Atualizar' : 'Adicionar'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+              {/* ScrollView fechado corretamente */}
             </Animated.View>
           </KeyboardAvoidingView>
         </View>
@@ -200,7 +203,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
-    width: '90%'
+    width: '90%',
+    maxHeight: '100%' // IMPEDINDO QUE SUBA DEMAIS
   },
   title: {
     fontSize: 18,

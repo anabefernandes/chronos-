@@ -57,6 +57,66 @@ router.post('/criarUsuario', auth, requireRole('admin', 'chefe'), ctrl.criarUsua
 
 /**
  * @swagger
+ * /user/solicitar_redefinicao:
+ *   post:
+ *     summary: Solicitar redefinição de senha
+ *     tags: [User (ADMIN)]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: usuario@example.com
+ *     responses:
+ *       200:
+ *         description: Token enviado por e-mail
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro ao enviar o e-mail
+ */
+router.post('/solicitar_redefinicao', ctrl.solicitar_redefinicao);
+
+/**
+ * @swagger
+ * /user/redefinir_senha:
+ *   post:
+ *     summary: Redefinir senha usando token
+ *     tags: [User (ADMIN)]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - novaSenha
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: abcdef12
+ *               novaSenha:
+ *                 type: string
+ *                 example: minhaNovaSenha123
+ *     responses:
+ *       200:
+ *         description: Senha redefinida com sucesso
+ *       400:
+ *         description: Token inválido ou expirado
+ *       404:
+ *         description: Usuário não encontrado
+ */
+router.post('/redefinir_senha', ctrl.redefinir_senha);
+
+/**
+ * @swagger
  * /user/listarFuncionarios:
  *   get:
  *     summary: Listar todos os funcionários – apenas admin

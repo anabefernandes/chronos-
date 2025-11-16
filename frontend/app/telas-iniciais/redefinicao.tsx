@@ -47,7 +47,7 @@ export default function Redefinicao() {
     }
 
     try {
-      await api.post('/auth/redefinir-senha', { email, token, novaSenha });
+      await api.post('/user/redefinir_senha', { email, token, novaSenha });
       showToast('Senha redefinida com sucesso!', 'success');
       router.replace('/telas-public/login');
     } catch (err: any) {

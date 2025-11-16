@@ -7,17 +7,19 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
-  Alert,
   FlatList,
   Dimensions,
   ScrollView,
   Image,
+  Modal,
   NativeSyntheticEvent,
   NativeScrollEvent
 } from 'react-native';
 import PontoHeader from '../../components/public/PontoHeader';
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import { EXPO_PUBLIC_FACEAPI_URL } from '@env';
+import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -47,8 +49,8 @@ const colors: Record<string, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -24.007753262182757,
-  longitude: -46.41291741795918
+  latitude: -23.999625827936196,
+  longitude: -46.43188383244882
 };
 const RAIO_PERMITIDO = 100;
 
@@ -70,6 +72,11 @@ export default function Ponto() {
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
   const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
   const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalFailVisible, setModalFailVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: string) => pontos.some(p => p.status === status);
@@ -77,7 +84,8 @@ export default function Ponto() {
   const pedirPermissaoLocalizacao = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permissão negada', 'Precisamos da sua localização para registrar o ponto.');
+      setModalMessage('Precisamos da sua localização para registrar o ponto.');
+      setModalFailVisible(true);
       return null;
     }
     const location = await Location.getCurrentPositionAsync({});
@@ -86,70 +94,65 @@ export default function Ponto() {
     return coords;
   };
 
-  const handleTakePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      base64: true,
-      quality: 0.8,
-      cameraType: ImagePicker.CameraType.front,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      try {
-        const original = result.assets[0];
-        const manipulated = await ImageManipulator.manipulateAsync(
-          original.uri,
-          [{ flip: ImageManipulator.FlipType.Horizontal }],
-          { compress: 0.8, base64: true }
-        );
-
-        if (manipulated && manipulated.uri) {
-          const correctedPhoto = {
-            ...original,
-            uri: manipulated.uri,
-            base64: manipulated.base64,
-          };
-          setPhoto(correctedPhoto);
-        } else {
-          console.error("Falha: o ImageManipulator não retornou um URI válido");
-        }
-      } catch (error) {
-        console.error("Erro ao processar a imagem:", error);
-      }
-    }
-  };
-
   const handleVerifyAndRegister = async (status: string) => {
-    if (!photo?.base64) {
-      Alert.alert("Erro", "Por favor, tire uma foto antes de bater o ponto.");
-      return;
-    }
-
     try {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
-        Alert.alert("Erro", "Usuário não encontrado. Faça login novamente.");
+        setModalMessage('Usuário não encontrado. Faça login novamente.');
+        setModalFailVisible(true);
         return;
       }
 
-      // 1️⃣ Verifica o rosto
-      const verifyResponse = await fetch("http://192.168.0.214:5001/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          image: photo.base64,
-          user_id: userId,
-        }),
+      // Checa se o ponto já foi registrado localmente
+      if (pontos.find(p => p.status === status)) {
+        setModalMessage(`O ponto de ${capitalize(status)} já foi registrado hoje.`);
+        setModalFailVisible(true);
+        return;
+      }
+
+      // 1️⃣ Tirar foto
+      const result = await ImagePicker.launchCameraAsync({
+        base64: true,
+        quality: 0.8,
+        cameraType: ImagePicker.CameraType.front
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+
+      const original = result.assets[0];
+      const manipulated = await ImageManipulator.manipulateAsync(
+        original.uri,
+        [{ flip: ImageManipulator.FlipType.Horizontal }],
+        { compress: 0.8, base64: true }
+      );
+
+      const photoToVerify = manipulated?.base64
+        ? { ...original, uri: manipulated.uri, base64: manipulated.base64 }
+        : original;
+
+      setPhoto(photoToVerify);
+      setLoading(true);
+      setVerificationResult(null);
+
+      // 2️⃣ Verificação facial
+      const verifyResponse = await fetch(`${EXPO_PUBLIC_FACEAPI_URL}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: photoToVerify.base64, user_id: userId })
       });
 
       const verifyData = await verifyResponse.json();
-      if (!verifyResponse.ok) {
-        Alert.alert("Erro", verifyData.error || "Falha na verificação do rosto.");
+      setLoading(false);
+
+      if (!verifyResponse.ok || !verifyData.match) {
+        // Falha no reconhecimento
+        setVerificationResult('fail');
+        setModalMessage('Rosto não reconhecido. Tente novamente.');
+        setModalFailVisible(true);
         return;
       }
 
-      Alert.alert("Verificado", verifyData.message || "Rosto confirmado!");
-
-      // 2️⃣ Verifica localização
+      // 3️⃣ Verifica localização
       const coords = await pedirPermissaoLocalizacao();
       if (!coords) return;
 
@@ -161,25 +164,26 @@ export default function Ponto() {
       );
 
       if (distancia > RAIO_PERMITIDO) {
-        Alert.alert('Fora do local permitido', `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`);
+        setModalMessage(`Você precisa estar a até ${RAIO_PERMITIDO}m do local.`);
+        setModalFailVisible(true);
         return;
       }
 
-      // 3️⃣ Registra ponto
-      if (pontos.find(p => p.status === status)) {
-        Alert.alert('Aviso', `O ponto de ${capitalize(status)} já foi registrado hoje.`);
-        return;
-      }
-
+      // 4️⃣ Registrar ponto no backend
       const res = await api.post('/ponto', { status, localizacao: coords });
       const pontoRegistrado = res.data.ponto;
+
+      // Atualiza estado local imediatamente
       setPontos(prev => [...prev, pontoRegistrado]);
 
-      Alert.alert('Sucesso', `Ponto de ${capitalize(status)} registrado!`);
-
+      // 5️⃣ Mostrar overlay de sucesso
+      setVerificationResult('success');
+      setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
     } catch (err) {
       console.error(err);
-      Alert.alert("Erro", "Não foi possível conectar ao servidor ou registrar o ponto.");
+      setLoading(false);
+      setModalMessage('Não foi possível conectar ao servidor ou registrar o ponto.');
+      setModalFailVisible(true);
     }
   };
 
@@ -220,13 +224,49 @@ export default function Ponto() {
     <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
       <PontoHeader horario={undefined} data={undefined} />
 
-      {/* Botão para tirar foto */}
-      <View style={{ alignItems: 'center', marginVertical: 10 }}>
-        <TouchableOpacity style={styles.takePhotoButton} onPress={handleTakePhoto}>
-          <Text style={styles.buttonText}>{photo ? "Refazer Foto" : "Tirar Foto"}</Text>
-        </TouchableOpacity>
-        {photo && <Image source={{ uri: photo.uri }} style={styles.previewPhoto} />}
-      </View>
+      {/* Overlay de carregamento */}
+      <Modal transparent visible={loading}>
+        <View style={styles.overlayContainer}>
+          <LottieView
+            source={require('../../assets/lottie/reconhecimento.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+          <Text style={styles.overlayText}>Reconhecimento facial em andamento...</Text>
+        </View>
+      </Modal>
+
+      {/* Overlay de sucesso */}
+      <Modal transparent visible={verificationResult === 'success'}>
+        <View style={styles.overlayContainer}>
+          <LottieView
+            source={require('../../assets/lottie/success.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 200, height: 200 }}
+            onAnimationFinish={() => {
+              setVerificationResult(null);
+              setPhoto(null); // libera para bater outro ponto
+            }}
+          />
+          <Text style={styles.overlayText}>Rosto verificado! O ponto foi batido.</Text>
+        </View>
+      </Modal>
+
+      {/* Overlay de falha */}
+      <Modal transparent visible={verificationResult === 'fail'}>
+        <View style={styles.overlayContainer}>
+          <LottieView
+            source={require('../../assets/lottie/fail.json')}
+            autoPlay
+            loop={false}
+            style={{ width: 200, height: 200 }}
+            onAnimationFinish={() => setVerificationResult(null)}
+          />
+          <Text style={styles.overlayText}>Rosto não reconhecido, tente novamente.</Text>
+        </View>
+      </Modal>
 
       {/* Carrossel de status */}
       <FlatList
@@ -281,8 +321,8 @@ export default function Ponto() {
           const dateText = ponto
             ? new Date(ponto.horario).toLocaleDateString('pt-BR').replace(/\//g, '-')
             : isFirstAndEmpty
-            ? 'sem registros'
-            : '--/--/----';
+              ? 'sem registros'
+              : '--/--/----';
           const timeText = ponto ? new Date(ponto.horario).toLocaleTimeString('pt-BR') : '--:--';
 
           return (
@@ -302,6 +342,40 @@ export default function Ponto() {
           );
         })}
       </View>
+
+      {/* Modal de sucesso */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={modalSuccessVisible}
+        onRequestClose={() => setModalSuccessVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalBox, { backgroundColor: '#469348' }]}>
+            <Text style={styles.modalText}>{modalMessage}</Text>
+            <TouchableOpacity onPress={() => setModalSuccessVisible(false)}>
+              <Text style={styles.modalButton}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de falha */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={modalFailVisible}
+        onRequestClose={() => setModalFailVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalBox, { backgroundColor: '#AB3838' }]}>
+            <Text style={styles.modalText}>{modalMessage}</Text>
+            <TouchableOpacity onPress={() => setModalFailVisible(false)}>
+              <Text style={styles.modalButton}>Tentar Novamente</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -312,8 +386,17 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10
   },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  previewPhoto: { width: 120, height: 120, borderRadius: 10, marginTop: 10, marginBottom: 10 },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold'
+  },
+  previewPhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 10
+  },
   slide: {
     width,
     flexDirection: 'row',
@@ -403,5 +486,41 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 12,
     color: '#333'
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000066'
+  },
+  modalBox: {
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '80%'
+  },
+  modalText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 15,
+    textAlign: 'center'
+  },
+  modalButton: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  overlayContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(14, 14, 14, 0.87)'
+  },
+  overlayText: {
+    fontSize: 15,
+    color: '#fbfbfbff',
+    fontFamily: 'Poppins_600SemiBold',
+    marginTop: 15,
+    textAlign: 'center'
   }
 });

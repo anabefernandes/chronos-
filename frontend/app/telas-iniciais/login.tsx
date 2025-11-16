@@ -5,12 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Alert
 } from 'react-native';
 import { useFonts, Poppins_400Regular, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,6 +25,7 @@ import { useToast } from '../../contexts/ToastContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const { setUserId, setNome, setRole, setFoto, setSetor } = useContext(AuthContext);
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -39,35 +40,39 @@ export default function Login() {
     try {
       const res = await api.post('/auth/login', { email, senha });
       const token = res.data.token;
-      const roleBackend = res.data.user?.role;
-      const nome = res.data.user?.nome || 'NOVO USUÁRIO';
-      const userId = res.data.user?.id;
-      const setor = res.data.user?.setor || 'Setor não informado';
-      const foto = res.data.user?.foto ?? '';
+      const user = res.data.user;
 
-      if (!token || !roleBackend || !userId) {
+      if (!token || !user?.id || !user?.role) {
         Alert.alert('Erro', 'Resposta inválida do servidor.');
         console.log('Resposta inválida do backend:', res.data);
         return;
       }
 
+      const { id: userId, nome, role: roleBackend, setor, foto } = user;
       const role = roleBackend.toLowerCase();
 
-      // Salvar dados diretamente no AsyncStorage
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('userId', String(userId)); // garante que seja string
-      await AsyncStorage.setItem('role', role);
-      await AsyncStorage.setItem('nome', nome);
-      await AsyncStorage.setItem('foto', foto);
-      await AsyncStorage.setItem('setor', setor);
+      // Atualiza o AuthContext
+      setUserId(userId);
+      setNome(nome || 'NOVO USUÁRIO');
+      setRole(role);
+      setFoto(foto || '');
+      setSetor(setor || 'Setor não informado');
 
-      // Navegação de acordo com o papel do usuário
+      // Salva no AsyncStorage
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('userId', String(userId));
+      await AsyncStorage.setItem('role', role);
+      await AsyncStorage.setItem('nome', nome || 'NOVO USUÁRIO');
+      await AsyncStorage.setItem('foto', foto || '');
+      await AsyncStorage.setItem('setor', setor || 'Setor não informado');
+      await AsyncStorage.setItem('userEmail', email); // <-- salvar email
+
+      // Redireciona conforme papel do usuário
       if (role === 'chefe' || role === 'admin') {
         router.replace('/telas-chefe/painel-admin');
       } else {
         router.replace('/telas-iniciais/painel');
       }
-
     } catch (err: any) {
       console.error('Erro ao tentar logar:', err.response?.data || err.message);
       showToast('Erro', err.response?.data?.msg || 'Falha no login. Verifique seu email e senha.');
@@ -108,8 +113,6 @@ export default function Login() {
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
-                    multiline={false}
-                    scrollEnabled={false}
                     keyboardType="email-address"
                   />
                 </View>
@@ -123,12 +126,9 @@ export default function Login() {
                     value={senha}
                     onChangeText={setSenha}
                     secureTextEntry
-                    multiline={false}
-                    scrollEnabled={false}
                   />
                 </View>
 
-               
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
                 </TouchableOpacity>
@@ -167,14 +167,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3C188F',
     fontFamily: 'Poppins_600SemiBold',
-    marginRight: 5 // dá um espacinho entre o texto e o ícone
+    marginRight: 5
   },
   titleIcon: {
-    width: 30, // pode ajustar conforme o tamanho do PNG
+    width: 30,
     height: 30,
     resizeMode: 'contain'
   },
-
   subtitle: {
     textAlign: 'center',
     marginBottom: 40,
@@ -208,17 +207,6 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     textAlignVertical: 'center'
   },
-  infoContainer: {
-    width: '90%',
-    alignSelf: 'center',
-    alignItems: 'flex-end',
-    marginBottom: 10
-  },
-  infoText: {
-    color: '#6E6E8F',
-    fontSize: 13,
-    fontFamily: 'Poppins_400Regular'
-  },
   button: {
     backgroundColor: '#3C188F',
     padding: 12,
@@ -234,5 +222,5 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
-  },
+  }
 });

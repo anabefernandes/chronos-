@@ -37,6 +37,7 @@ export interface AuthContextType {
   setUsuarios: (usuarios: Funcionario[] | ((prev: Funcionario[]) => Funcionario[])) => void;
   carregarUsuarios: () => void;
   getFoto: () => any;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -54,7 +55,8 @@ export const AuthContext = createContext<AuthContextType>({
   setSetor: () => {},
   setUsuarios: () => {},
   carregarUsuarios: () => {},
-  getFoto: () => require('../assets/images/telas-public/sem_foto.png')
+  getFoto: () => require('../assets/images/telas-public/sem_foto.png'),
+  logout: async () => {}
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -91,6 +93,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   const setUsuarios = (u: Funcionario[] | ((prev: Funcionario[]) => Funcionario[])) => {
     setUsuariosState(u);
+  };
+
+  const logout = async () => {
+    try {
+      setUserIdState(null);
+      setRoleState(null);
+      setNomeState(null);
+      setFotoState(null);
+      setSetorState(null);
+      setUsuariosState([]);
+      setNotificacoesNaoLidas(0);
+
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.removeItem('role');
+      await AsyncStorage.removeItem('nome');
+      await AsyncStorage.removeItem('foto');
+      await AsyncStorage.removeItem('setor');
+    } catch (err) {
+      console.log('Erro ao fazer logout:', err);
+    }
   };
 
   const getFoto = () => {
@@ -182,7 +205,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSetor,
         setUsuarios,
         carregarUsuarios,
-        getFoto
+        getFoto,
+        logout
       }}
     >
       {children}

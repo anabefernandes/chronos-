@@ -169,8 +169,8 @@ export default function Escalas() {
                 horariosDoDia.length === 0
                   ? require('../../assets/images/telas-admin/icone_sem-registro.png')
                   : horariosDoDia[0]?.folga
-                  ? require('../../assets/images/telas-admin/icone_folga.png')
-                  : require('../../assets/images/telas-admin/icone_trabalho.png')
+                    ? require('../../assets/images/telas-admin/icone_folga.png')
+                    : require('../../assets/images/telas-admin/icone_trabalho.png')
               }
               style={styles.cardImage}
             />
@@ -374,19 +374,19 @@ const styles = StyleSheet.create({
   colunaCentro: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center' 
+    alignItems: 'center'
   },
   horariosContainer: {
     flexDirection: 'column',
     gap: 6,
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center'
   },
   tagBox: {
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 14,
-    width: 120, 
+    width: 120,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
     fontSize: 12,
-    textAlign: 'center' 
+    textAlign: 'center'
   },
   textFolga: {
     color: '#004d80',

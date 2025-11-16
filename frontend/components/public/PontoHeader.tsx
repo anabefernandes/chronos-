@@ -1,3 +1,4 @@
+// Mantive todos os imports
 import React, { useContext, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,7 +16,12 @@ interface PontoHeaderProps {
 export default function PontoHeader({ horario: backendHorario, data: backendData }: PontoHeaderProps) {
   const router = useRouter();
   const { nome, setor, getFoto, userId } = useContext(AuthContext);
-  const fotoURL = getFoto();
+
+  // 🔹 Normaliza a foto para aceitar require ou uri
+  const fotoURL = (() => {
+    const f = getFoto();
+    return typeof f === 'number' ? f : { uri: f.uri };
+  })();
 
   const now = new Date();
   const [horario, setHorario] = useState<string>(backendHorario || now.toLocaleTimeString());
@@ -31,6 +37,7 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
 
   const [notificacoesNaoLidas, setNotificacoesNaoLidas] = useState<number>(0);
   const shakeAnim = useRef(new Animated.Value(0)).current;
+  const socketRef = useRef<any>(null); // 🔹 Ref para socket
 
   const animarSininho = () => {
     Animated.sequence([
@@ -54,6 +61,7 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
     }
   };
 
+  // Atualiza horário e data a cada segundo
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -70,14 +78,14 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
     return () => clearInterval(timer);
   }, []);
 
-  // conecta socket
+  // 🔹 Conecta socket
   useEffect(() => {
     if (!userId) return;
 
-    const socket = io(process.env.EXPO_PUBLIC_API_URL || '', { transports: ['websocket'], reconnection: true });
-    socket.emit('join', userId);
+    socketRef.current = io(process.env.EXPO_PUBLIC_API_URL || '', { transports: ['websocket'], reconnection: true });
+    socketRef.current.emit('join', userId);
 
-    socket.on('nova_notificacao', async (data: any) => {
+    socketRef.current.on('nova_notificacao', async (data: any) => {
       if (data.usuario === userId) {
         await carregarNotificacoes();
       }
@@ -86,7 +94,7 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
     carregarNotificacoes();
 
     return () => {
-      socket.disconnect();
+      socketRef.current?.disconnect();
     };
   }, [userId]);
 

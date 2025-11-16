@@ -3,6 +3,13 @@ node_modules/
 npm-debug.log*
 .env
 .DS_Store
+faceapi/venv/
+faceapi/venv311/
+**/venv/
+**/.venv/
+venv/
+.venv/
+
 
 # Python
 __pycache__/
