@@ -43,8 +43,7 @@ export default function Login() {
       const user = res.data.user;
 
       if (!token || !user?.id || !user?.role) {
-        Alert.alert('Erro', 'Resposta inválida do servidor.');
-        console.log('Resposta inválida do backend:', res.data);
+        showToast('Resposta inválida do servidor.', 'error');
         return;
       }
 
@@ -74,8 +73,7 @@ export default function Login() {
         router.replace('/telas-iniciais/painel');
       }
     } catch (err: any) {
-      console.error('Erro ao tentar logar:', err.response?.data || err.message);
-      showToast('Erro', err.response?.data?.msg || 'Falha no login. Verifique seu email e senha.');
+      showToast('Falha no login. Verifique seu email e senha.', 'error');
     }
   };
 
@@ -128,6 +126,10 @@ export default function Login() {
                     secureTextEntry
                   />
                 </View>
+
+                <TouchableOpacity onPress={() => router.push('/telas-iniciais/redefinir-email')}>
+                  <Text style={styles.forgotPassword}>Esqueci a senha</Text>
+                </TouchableOpacity>
 
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
                   <Text style={styles.buttonText}>Entrar</Text>
@@ -222,5 +224,15 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: 'bold',
     fontFamily: 'Poppins_600SemiBold'
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginRight: 25,
+    marginTop: -10,
+    marginBottom: 20,
+    color: '#3C188F',
+    fontFamily: 'Poppins_400Regular',
+    fontSize: 14,
+    textDecorationLine: 'underline'
   }
 });

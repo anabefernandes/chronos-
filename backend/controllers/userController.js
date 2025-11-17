@@ -57,7 +57,7 @@ exports.solicitar_redefinicao = async (req, res, next) => {
   // Enviar o e-mail com o token
   const link = `${token}`;
   const subject = 'Redefinição de senha';
-  const text = `Você solicitou a redefinição de senha. Clique no link para redefinir sua senha: ${link}`;
+  const text = `Você solicitou a redefinição de senha. Token de redefinição: ${link}`;
 
   try {
     await sendEmail(email, subject, text); // Envia o e-mail

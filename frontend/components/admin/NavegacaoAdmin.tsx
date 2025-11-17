@@ -15,6 +15,7 @@ type MenuKey =
   | 'perfil'
   | 'notificacoes'
   | 'enrolls-screen'
+  | 'relatorios-admin'
   | '';
 
 interface NavegacaoAdminProps {

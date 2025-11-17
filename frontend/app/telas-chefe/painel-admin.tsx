@@ -12,7 +12,7 @@ import Notificacoes from '../telas-iniciais/notificacoes';
 import CriarEscalas from './criar-escalas';
 import CriarTarefas from './criar-tarefas';
 import GerenciarPontos from './gerenciar-pontos';
-import Relatorio from '../telas-iniciais/relatorio';
+import Relatorio from './relatorios-admin';
 import EscalasAdmin from './escalas-admin';
 import EnrollScreen from '../telas-iniciais/enrolls-screen';
 

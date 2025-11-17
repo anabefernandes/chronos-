@@ -17,6 +17,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { criarOuEditarEscala } from '../../services/userService';
 import { AuthContext, Funcionario } from '../../contexts/AuthContext';
 import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
+import { listarEscalasPorFuncionario } from '../../services/userService';
 import LottieView from 'lottie-react-native';
 
 // ---------------- CONFIGURAÇÃO DE LOCALE DO CALENDÁRIO ----------------
@@ -112,6 +113,16 @@ export default function CriarEscalas() {
       setListaFiltrada(filtrados);
     }
   }, [searchText, usuarios]);
+
+  useEffect(() => {
+    if (funcionarioSelecionado && semanaInicio) {
+      const atualizarSemana = async () => {
+        const semanaComEscalas = await marcarEscalasExistentes(funcionarioSelecionado, semana);
+        setSemana(semanaComEscalas);
+      };
+      atualizarSemana();
+    }
+  }, [funcionarioSelecionado, semanaInicio]);
 
   // ---------------- SELEÇÃO DE FUNCIONÁRIO ----------------
   const getUserImage = (foto?: string) => {
@@ -233,6 +244,48 @@ export default function CriarEscalas() {
     </Modal>
   );
 
+  // ---------------- MARCAR DIAS COM ESCALA EXISTENTE ----------------
+  const marcarEscalasExistentes = async (funcionario: Funcionario, semanaAtual: DiaSemana[]) => {
+    if (!funcionario) return semanaAtual;
+
+    try {
+      const escalas = await listarEscalasPorFuncionario(funcionario._id);
+
+      // Criar uma cópia da semana
+      const novaSemana = semanaAtual.map(dia => ({ ...dia }));
+
+      for (const escala of escalas) {
+        const dataEscala = new Date(escala.data);
+        const keyData = dataEscala.toDateString();
+
+        // Verifica se o dia da semana corresponde
+        const indexDia = novaSemana.findIndex(d => d.data && d.data.toDateString() === keyData);
+        if (indexDia >= 0) {
+          if (escala.folga) {
+            novaSemana[indexDia].modo = 'folga';
+            novaSemana[indexDia].folga = true;
+            novaSemana[indexDia].entrada = null;
+            novaSemana[indexDia].saida = null;
+          } else if (escala.horaEntrada && escala.horaSaida) {
+            novaSemana[indexDia].modo = 'horario';
+            novaSemana[indexDia].folga = false;
+            novaSemana[indexDia].entrada = new Date(dataEscala);
+            const [hE, mE] = escala.horaEntrada.split(':').map(Number);
+            novaSemana[indexDia].entrada.setHours(hE, mE);
+
+            novaSemana[indexDia].saida = new Date(dataEscala);
+            const [hS, mS] = escala.horaSaida.split(':').map(Number);
+            novaSemana[indexDia].saida.setHours(hS, mS);
+          }
+        }
+      }
+
+      return novaSemana;
+    } catch (err) {
+      console.error('Erro ao marcar escalas existentes:', err);
+      return semanaAtual;
+    }
+  };
   // ---------------- SELEÇÃO DE SEMANA ----------------
   const handleSelecionarData = (dateString: string) => {
     const [ano, mes, dia] = dateString.split('-').map(Number);

@@ -42,6 +42,6 @@ router.get('/me', auth, ctrl.relatorioFuncionario);
  *       200:
  *         description: Relatório do funcionário especificado
  */
-router.get('/funcionario/:id', auth, requireRole('admin'), ctrl.relatorioFuncionario);
+router.get('/funcionario/:id', auth, requireRole('admin', 'chefe'), ctrl.relatorioFuncionario);
 
 module.exports = router;

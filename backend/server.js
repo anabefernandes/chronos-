@@ -13,11 +13,21 @@ const { Server } = require('socket.io');
 const { startPython } = require("./pythonRunner.js");
 
 const app = express();
+
+// 🔧 Middlewares principais
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*'
+}));
+app.use(helmet());
+app.use(morgan('dev'));
+
 startPython();
 dbConnect();
 
+// 🔌 Servidor HTTP + Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -42,16 +52,13 @@ io.on('connection', socket => {
 
 module.exports.io = io;
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(helmet());
-app.use(express.json());
-app.use(morgan('dev'));
-
+// 📦 Rota base
 app.get('/', (req, res) => res.json({ ok: true }));
 
+// 📂 Pasta de uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-//ROTAS
+// 📌 ROTAS
 app.use('/auth', require('./routes/auth.routes'));
 app.use('/escala', require('./routes/escala.routes'));
 app.use('/holerite', require('./routes/holerite.routes'));
@@ -62,10 +69,12 @@ app.use('/ml', require('./routes/ml.routes'));
 app.use('/notificacoes', require('./routes/notificacao.routes'));
 app.use('/relatorio', require('./routes/relatorio.routes'));
 
+// 📚 Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const PORT = process.env.PORT || 5000;
 
+// 👤 Criar admin automaticamente
 const createAdmin = async () => {
   try {
     const exists = await User.findOne({ email: process.env.ADMIN_EMAIL });
@@ -93,4 +102,3 @@ server.listen(PORT, "0.0.0.0", async () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   await createAdmin();
 });
-
