@@ -89,6 +89,7 @@ export default function RedefinirToken() {
                     style={styles.input}
                     placeholder="Token"
                     value={token}
+                    placeholderTextColor="#1E1E1E"
                     onChangeText={setToken}
                     maxLength={8}
                   />
@@ -190,7 +191,9 @@ const styles = StyleSheet.create({
     height: 40,
     color: '#1B0A43',
     fontFamily: 'Poppins_400Regular',
-    fontSize: 18
+    fontSize: 18,
+    paddingVertical: 0,
+    textAlignVertical: 'center'
   },
   button: {
     backgroundColor: '#3C188F',

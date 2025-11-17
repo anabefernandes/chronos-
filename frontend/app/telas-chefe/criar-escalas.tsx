@@ -501,111 +501,135 @@ export default function CriarEscalas() {
             <Image source={require('../../assets/images/telas-admin/icone_aviso.png')} style={styles.avisoBalao} />
           </View>
         )}
-        <View style={{ opacity: podeEditarDias ? 1 : 0.5, pointerEvents: podeEditarDias ? 'auto' : 'none' }}>
-          {semana.map((dia, i) => (
-            <View key={i} style={styles.dayCard}>
-              <Text style={styles.dayTitle}>
-                {dia.dia}
-                {dia.data && ` - ${dia.data.toLocaleDateString('pt-BR')}`}
-              </Text>
 
-              {/* Modo Nenhum */}
-              {dia.modo === 'nenhum' && (
-                <View style={styles.optionRow}>
-                  <TouchableOpacity
-                    style={[styles.optionButton, { backgroundColor: '#a8e6cf89' }]}
-                    onPress={() => definirModo(i, 'horario')}
-                  >
-                    <Image source={require('../../assets/images/telas-admin/icone_ativo.png')} style={styles.icon} />
-                    <Text style={styles.optionText}>Definir horários</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.orText}>ou</Text>
-                  <TouchableOpacity
-                    style={[styles.optionButton, { backgroundColor: '#81d4fa8b' }]}
-                    onPress={() => definirModo(i, 'folga')}
-                  >
-                    <Image source={require('../../assets/images/telas-admin/icone_folga.png')} style={styles.icon} />
-                    <Text style={styles.optionText}>Definir folga</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+        <View style={{ position: 'relative' }}>
+          {/* Conteúdo normal dos dias */}
+          <View pointerEvents={podeEditarDias ? 'auto' : 'none'}>
+            {semana.map((dia, i) => (
+              <View key={i} style={styles.dayCard}>
+                <Text style={styles.dayTitle}>
+                  {dia.dia}
+                  {dia.data && ` - ${dia.data.toLocaleDateString('pt-BR')}`}
+                </Text>
 
-              {/* Modo Horário */}
-              {dia.modo === 'horario' && (
-                <>
-                  <View style={styles.timeRow}>
+                {/* Modo Nenhum */}
+                {dia.modo === 'nenhum' && (
+                  <View style={styles.optionRow}>
                     <TouchableOpacity
-                      style={styles.horaBtn}
-                      onPress={() => setMostrarPickerHora({ index: i, tipo: 'entrada' })}
+                      style={[styles.optionButton, { backgroundColor: '#a8e6cf89' }]}
+                      onPress={() => definirModo(i, 'horario')}
                     >
-                      <Text>
-                        {dia.entrada
-                          ? `Entrada: ${dia.entrada.toLocaleTimeString('pt-BR', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}`
-                          : 'Definir Entrada'}
-                      </Text>
+                      <Image source={require('../../assets/images/telas-admin/icone_ativo.png')} style={styles.icon} />
+                      <Text style={styles.optionText}>Definir horários</Text>
                     </TouchableOpacity>
+
+                    <Text style={styles.orText}>ou</Text>
+
                     <TouchableOpacity
-                      style={styles.horaBtn}
-                      onPress={() => setMostrarPickerHora({ index: i, tipo: 'saida' })}
+                      style={[styles.optionButton, { backgroundColor: '#81d4fa8b' }]}
+                      onPress={() => definirModo(i, 'folga')}
                     >
-                      <Text>
-                        {dia.saida
-                          ? `Saída: ${dia.saida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
-                          : 'Definir Saída'}
-                      </Text>
+                      <Image source={require('../../assets/images/telas-admin/icone_folga.png')} style={styles.icon} />
+                      <Text style={styles.optionText}>Definir folga</Text>
                     </TouchableOpacity>
                   </View>
+                )}
 
-                  {dia.entrada && (
-                    <View style={styles.sugestaoContainer}>
-                      <Image
-                        source={require('../../assets/images/telas-admin/icone_sugestao.png')}
-                        style={styles.sugestaoIcon}
-                      />
-                      <Text style={styles.sugestaoText}>Sugestão de saída baseada na carga horária do funcionário</Text>
+                {/* Modo Horário */}
+                {dia.modo === 'horario' && (
+                  <>
+                    <View style={styles.timeRow}>
+                      <TouchableOpacity
+                        style={styles.horaBtn}
+                        onPress={() => setMostrarPickerHora({ index: i, tipo: 'entrada' })}
+                      >
+                        <Text>
+                          {dia.entrada
+                            ? `Entrada: ${dia.entrada.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                            : 'Definir Entrada'}
+                        </Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.horaBtn}
+                        onPress={() => setMostrarPickerHora({ index: i, tipo: 'saida' })}
+                      >
+                        <Text>
+                          {dia.saida
+                            ? `Saída: ${dia.saida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                            : 'Definir Saída'}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
-                  )}
 
-                  {mostrarPickerHora.tipo && mostrarPickerHora.index === i && (
-                    <DateTimePicker
-                      value={
-                        mostrarPickerHora.tipo === 'entrada'
-                          ? dia.entrada || new Date()
-                          : dia.saida || dia.entrada || new Date()
-                      }
-                      mode="time"
-                      is24Hour={true}
-                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                      onChange={(_: DateTimePickerEvent, hora?: Date) => {
-                        if (hora && mostrarPickerHora.tipo)
-                          handleHoraChange(mostrarPickerHora.index, mostrarPickerHora.tipo, hora);
-                        setMostrarPickerHora({ index: -1, tipo: null });
-                      }}
+                    {dia.entrada && (
+                      <View style={styles.sugestaoContainer}>
+                        <Image
+                          source={require('../../assets/images/telas-admin/icone_sugestao.png')}
+                          style={styles.sugestaoIcon}
+                        />
+                        <Text style={styles.sugestaoText}>
+                          Sugestão de saída baseada na carga horária do funcionário
+                        </Text>
+                      </View>
+                    )}
+
+                    {mostrarPickerHora.tipo && mostrarPickerHora.index === i && (
+                      <DateTimePicker
+                        value={
+                          mostrarPickerHora.tipo === 'entrada'
+                            ? dia.entrada || new Date()
+                            : dia.saida || dia.entrada || new Date()
+                        }
+                        mode="time"
+                        is24Hour={true}
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        onChange={(_, hora) => {
+                          if (hora && mostrarPickerHora.tipo)
+                            handleHoraChange(mostrarPickerHora.index, mostrarPickerHora.tipo, hora);
+                          setMostrarPickerHora({ index: -1, tipo: null });
+                        }}
+                      />
+                    )}
+
+                    <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
+                      <Text style={styles.redefinirText}>Redefinir</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
+                {/* Modo Folga */}
+                {dia.modo === 'folga' && (
+                  <View style={styles.folgaRow}>
+                    <Image
+                      source={require('../../assets/images/telas-admin/icone_folga.png')}
+                      style={styles.iconFolga}
                     />
-                  )}
+                    <Text style={styles.folgaText}>Folga definida</Text>
+                    <View style={{ flex: 1 }} />
+                    <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
+                      <Text style={styles.redefinirText}>Redefinir</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
 
-                  <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
-                    <Text style={styles.redefinirText}>Redefinir</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-
-              {/* Modo Folga */}
-              {dia.modo === 'folga' && (
-                <View style={styles.folgaRow}>
-                  <Image source={require('../../assets/images/telas-admin/icone_folga.png')} style={styles.iconFolga} />
-                  <Text style={styles.folgaText}>Folga definida</Text>
-                  <View style={{ flex: 1 }} />
-                  <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
-                    <Text style={styles.redefinirText}>Redefinir</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          ))}
+          {!podeEditarDias && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#ffffff82', // mesma opacidade do iOS
+                borderRadius: 20,
+                zIndex: 10,
+              }}
+            />
+          )}
         </View>
 
         {/* Botão Salvar */}
@@ -840,7 +864,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 30,
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular'
+    fontFamily: 'Poppins_400Regular',
+    paddingVertical: 0,
+    textAlignVertical: 'center'
   },
   cardFuncionarioSelect: {
     backgroundColor: '#fff',

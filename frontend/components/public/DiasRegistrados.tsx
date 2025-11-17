@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
-import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toZonedTime, format } from 'date-fns-tz';
 
 export interface PontoDetalhado {
   data: string;
@@ -9,7 +9,7 @@ export interface PontoDetalhado {
   almoco?: string;
   retorno?: string;
   saida?: string;
-  horasTrabalhadas: number; // agora number
+  horasTrabalhadas: number; 
   horasExtras?: number;
   horasFaltantes?: number;
 }
@@ -25,11 +25,18 @@ const pontoCores = {
   Saída: '#F44336'
 };
 
+// Fuso horário local
+const timeZone = 'America/Sao_Paulo';
+
 export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
-  const formatHora = (hora?: string) => (hora ? hora.slice(11, 16) : '-/-');
+  // formata hora considerando timezone
+  const formatHora = (hora?: string) => {
+    if (!hora) return '-/-';
+    const local = toZonedTime(hora, timeZone);
+    return format(local, 'HH:mm');
+  };
 
   const formatHorasTrabalhadas = (horas: number) => {
-    // arredonda para 2 casas decimais ou converte para h:min
     if (horas < 0.01) return '0h';
     const h = Math.floor(horas);
     const m = Math.round((horas - h) * 60);
@@ -37,8 +44,9 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
   };
 
   const renderItem = ({ item }: { item: PontoDetalhado }) => {
-    const diaSemana = format(parseISO(item.data), 'EEEE', { locale: ptBR });
-    const dataFormatada = format(parseISO(item.data), 'dd-MM-yyyy');
+    const dataLocal = toZonedTime(item.data, timeZone);
+    const diaSemana = format(dataLocal, 'EEEE', { locale: ptBR });
+    const dataFormatada = format(dataLocal, 'dd/MM/yyyy', { locale: ptBR });
 
     const pontosDia = [
       { tipo: 'Entrada', hora: item.entrada },
@@ -53,13 +61,9 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
 
         {pontosDia.map((ponto, index) => (
           <View key={index} style={styles.linha}>
-            {/* Linha vertical roxa conectando os pontos */}
             {index < pontosDia.length - 1 && <View style={[styles.verticalLine, { backgroundColor: '#3C188F' }]} />}
-
-            {/* Bolinha com cor específica */}
             <View style={[styles.circle, { backgroundColor: pontoCores[ponto.tipo as keyof typeof pontoCores] }]} />
 
-            {/* Tipo de ponto e horário */}
             <View style={styles.infoPonto}>
               <View style={styles.tipoHora}>
                 <Text style={styles.label}>{ponto.tipo}</Text>
@@ -72,7 +76,7 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
 
         <View style={styles.horasContainer}>
           <Image
-            source={require('../../assets/images/telas-admin/icone_relogio.png')} // caminho do seu PNG
+            source={require('../../assets/images/telas-admin/icone_relogio.png')}
             style={styles.horasIcon}
           />
           <Text style={styles.horasLabel}>Horas Trabalhadas:</Text>
@@ -93,7 +97,6 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
     />
   );
 }
-
 const styles = StyleSheet.create({
   card: {
     width: 250,
@@ -102,11 +105,11 @@ const styles = StyleSheet.create({
     padding: 15,
     marginRight: 10,
     borderRadius: 12,
-    borderWidth: 1, // adiciona borda
-    borderColor: '#ddd', // cor da borda
+    borderWidth: 1, 
+    borderColor: '#ddd', 
     shadowColor: '#000',
-    shadowOpacity: 0.2, // aumenta um pouco a opacidade da sombra
-    shadowOffset: { width: 0, height: 4 }, // deixa a sombra mais visível
+    shadowOpacity: 0.2, 
+    shadowOffset: { width: 0, height: 4 }, 
     shadowRadius: 6,
     elevation: 5
   },

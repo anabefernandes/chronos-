@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     height: 140,
     backgroundColor: '#ffffffff',
-    elevation: 15
+    elevation: 0
   },
   background: {
     flex: 1,

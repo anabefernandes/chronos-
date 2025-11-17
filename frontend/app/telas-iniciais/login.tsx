@@ -28,6 +28,7 @@ export default function Login() {
   const { setUserId, setNome, setRole, setFoto, setSetor } = useContext(AuthContext);
   const router = useRouter();
   const { showToast } = useToast();
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -123,8 +124,18 @@ export default function Login() {
                     placeholderTextColor="#1E1E1E"
                     value={senha}
                     onChangeText={setSenha}
-                    secureTextEntry
+                    secureTextEntry={!mostrarSenha} // alterna a visibilidade
                   />
+                  <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
+                    <Image
+                      source={
+                        mostrarSenha
+                          ? require('../../assets/images/telas-admin/icone_olho-aberto.png')
+                          : require('../../assets/images/telas-admin/icone_olho-fechado.png')
+                      }
+                      style={{ width: 22, height: 22, marginLeft: 10, tintColor: '#1E1E1E' }}
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity onPress={() => router.push('/telas-iniciais/redefinir-email')}>

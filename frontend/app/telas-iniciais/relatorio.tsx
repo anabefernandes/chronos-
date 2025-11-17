@@ -125,20 +125,30 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
         const diaSemana = format(parseISO(item.data), 'EEEE', { locale: ptBR });
         const dataFormatada = format(parseISO(item.data), 'dd/MM/yyyy', { locale: ptBR });
 
+        // Função bolinha compatível iOS/Android
         const bolinha = (tipo?: string) =>
-          `<span style="display:inline-block; width:12px; height:12px; border-radius:6px; background-color:${tipo ? pontoCores[tipo as keyof typeof pontoCores] : '#ccc'}; margin-right:5px;"></span>`;
+          `<div style="
+        display:inline-block;
+        width:14px;
+        height:14px;
+        border-radius:7px;
+        background-color:${tipo ? pontoCores[tipo as keyof typeof pontoCores] : '#ccc'};
+        margin-right:5px;
+      "></div>`;
 
         return `
-        <tr style="background-color:#f9f9f9;">
-          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${dataFormatada}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Entrada')}${item.entrada ? format(parseISO(item.entrada), 'HH:mm') : '-/-'}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Almoço')}${item.almoco ? format(parseISO(item.almoco), 'HH:mm') : '-/-'}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Retorno')}${item.retorno ? format(parseISO(item.retorno), 'HH:mm') : '-/-'}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Saída')}${item.saida ? format(parseISO(item.saida), 'HH:mm') : '-/-'}</td>
-          <td style="padding:8px; border:1px solid #ddd;">${formatHoras(item.horasTrabalhadas)}</td>
-        </tr>
-      `;
+      <tr style="background-color:#f9f9f9;">
+        <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">
+          ${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">${dataFormatada}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Entrada')}${item.entrada ? format(parseISO(item.entrada), 'HH:mm') : '-/-'}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Almoço')}${item.almoco ? format(parseISO(item.almoco), 'HH:mm') : '-/-'}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Retorno')}${item.retorno ? format(parseISO(item.retorno), 'HH:mm') : '-/-'}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Saída')}${item.saida ? format(parseISO(item.saida), 'HH:mm') : '-/-'}</td>
+        <td style="padding:8px; border:1px solid #ddd;">${formatHoras(item.horasTrabalhadas)}</td>
+      </tr>   
+    `;
       })
       .join('');
 

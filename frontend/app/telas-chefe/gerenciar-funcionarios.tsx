@@ -259,7 +259,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 30,
     fontSize: 14,
-    fontFamily: 'Poppins_400Regular'
+    fontFamily: 'Poppins_400Regular',
+    paddingVertical: 0,
+    textAlignVertical: 'center'
   },
   addButton: {
     flexDirection: 'row',

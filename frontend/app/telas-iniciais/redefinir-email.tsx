@@ -84,8 +84,8 @@ export default function RedefinirEmail() {
                     placeholderTextColor="#1E1E1E"
                     value={email}
                     onChangeText={setEmail}
-                    keyboardType="email-address"
                     autoCapitalize="none"
+                    keyboardType="email-address"
                   />
                 </View>
 
@@ -93,7 +93,6 @@ export default function RedefinirEmail() {
                   <Text style={styles.buttonText}>Enviar Token</Text>
                 </TouchableOpacity>
 
-                {/* 🔥 BLOCO QUE SÓ APARECE DEPOIS DE ENVIAR O TOKEN */}
                 {success && (
                   <View style={styles.successContainer}>
                     <LottieView
@@ -183,7 +182,9 @@ const styles = StyleSheet.create({
     height: 40,
     color: '#1B0A43',
     fontFamily: 'Poppins_400Regular',
-    fontSize: 18
+    fontSize: 18,
+    paddingVertical: 0,
+    textAlignVertical: 'center'
   },
   button: {
     backgroundColor: '#3C188F',

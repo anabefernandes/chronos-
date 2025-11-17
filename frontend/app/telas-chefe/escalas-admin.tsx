@@ -141,7 +141,7 @@ export default function EscalasAdmin() {
           <Image source={require('../../assets/images/telas-admin/icone_lupa.png')} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Pesquisar nome ou setor"
+            placeholder="Pesquisar..."
             placeholderTextColor="#777"
             value={search}
             onChangeText={setSearch}

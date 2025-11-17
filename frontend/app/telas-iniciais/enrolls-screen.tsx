@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useRouter } from 'expo-router';
@@ -13,42 +13,34 @@ export default function EnrollScreen() {
   const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayType, setOverlayType] = useState<'success' | 'error'>('success');
-
-  const animatedValues = useRef([new Animated.Value(0), new Animated.Value(0), new Animated.Value(0)]).current;
   const infoAnimated = useRef(new Animated.Value(0)).current;
+  const msg1Anim = useRef(new Animated.Value(0)).current;
+  const msg2Anim = useRef(new Animated.Value(0)).current;
+  const animatedValues = useRef([new Animated.Value(0), new Animated.Value(0), new Animated.Value(0)]).current;
 
-  // BLOQUEIO se já houver cadastro facial
   useEffect(() => {
-    const checkIfAlreadyEnrolled = async () => {
-      try {
-        const userId = await AsyncStorage.getItem('userId');
-        if (!userId) return;
+    if (photo) {
+      // Reseta antes de animar
+      msg1Anim.setValue(0);
+      msg2Anim.setValue(0);
 
-        const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/check-enrolled/${userId}`);
+      Animated.sequence([
+        Animated.timing(msg1Anim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.ease) ?? undefined,
+          useNativeDriver: true
+        }),
 
-        // Evita crash se a API retornar HTML ao invés de JSON
-        const text = await response.text();
-        let data: any;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          console.error('Resposta inválida da API:', text);
-          toast.showToast('Erro ao verificar cadastro facial.', 'error');
-          return;
-        }
-
-        if (data.enrolled) {
-          toast.showToast('Você já possui cadastro facial.', 'error');
-          router.replace('/telas-iniciais/perfil');
-        }
-      } catch (err) {
-        console.error('Erro ao verificar cadastro facial:', err);
-        toast.showToast('Erro ao verificar cadastro facial.', 'error');
-      }
-    };
-
-    checkIfAlreadyEnrolled();
-  }, []);
+        Animated.timing(msg2Anim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.ease) ?? undefined,
+          useNativeDriver: true
+        })
+      ]).start();
+    }
+  }, [photo]);
 
   const startAnimations = () => {
     animatedValues.forEach((anim, i) => {
@@ -147,7 +139,6 @@ export default function EnrollScreen() {
         showOverlayFunc();
       }
     } catch (err) {
-      console.error(err);
       setOverlayType('error');
       showOverlayFunc();
     }
@@ -234,21 +225,36 @@ export default function EnrollScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* --- PRIMEIRA MENSAGEM (robô no canto superior) --- */}
           <Animated.View
             style={[
-              styles.infoCard,
+              styles.msgBubble,
               {
-                opacity: infoAnimated,
-                transform: [{ scale: infoAnimated.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }]
+                opacity: msg1Anim,
+                transform: [{ translateY: msg1Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
               }
             ]}
           >
-            <Image source={require('../../assets/images/telas-public/icone_robo.png')} style={styles.infoIcon} />
+            <Image source={require('../../assets/images/telas-public/icone_robo.png')} style={styles.robotFloat} />
+
             <Text style={styles.infoTitle}>Você sabia?</Text>
-            <Text style={styles.infoText}>
-              O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso. Além de agilizar seus
-              pontos e manter seus dados seguros!
+
+            <Text style={styles.msgText}>
+              O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso.
             </Text>
+          </Animated.View>
+
+          {/* --- SEGUNDA MENSAGEM --- */}
+          <Animated.View
+            style={[
+              styles.msgBubble,
+              {
+                opacity: msg2Anim,
+                transform: [{ translateY: msg2Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
+              }
+            ]}
+          >
+            <Text style={styles.msgText}>Além de agilizar seus pontos e manter seus dados seguros!</Text>
           </Animated.View>
         </>
       )}
@@ -276,7 +282,11 @@ export default function EnrollScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f2f2f7' },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f2f2f7'
+  },
   title: {
     fontSize: 22,
     fontFamily: 'Poppins_600SemiBold',
@@ -292,7 +302,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3C188F',
     textAlign: 'center',
-    marginTop: 100,
+    marginTop: 70,
     marginBottom: 20
   },
   card: {
@@ -350,7 +360,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 20,
     marginTop: 20,
-    marginBottom: 28
+    marginBottom: 35
   },
   cancelButton: {
     flex: 1,
@@ -376,34 +386,50 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6
   },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  preview: { width: 300, height: 300, borderRadius: 20, alignSelf: 'center', marginBottom: 20 },
-  infoCard: {
-    backgroundColor: '#e8e8ff',
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16
+  },
+  preview: {
+    width: 300,
+    height: 300,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 20
+  },
+  msgBubble: {
+    backgroundColor: '#dfeaf5ff',
     padding: 16,
-    borderRadius: 16,
-    marginVertical: 20,
-    marginHorizontal: 10,
-    shadowColor: '#3C188F',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
-    overflow: 'visible',
-    position: 'relative'
+    borderRadius: 18,
+    width: '88%',
+    alignSelf: 'center',
+    marginTop: 14,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 3 }
   },
   infoIcon: {
-    width: 50,
-    height: 50,
-    position: 'absolute',
-    top: -10,
-    right: -10
+    width: 55,
+    height: 55,
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  msgText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#3C188F',
+    textAlign: 'center',
+    fontFamily: 'Poppins_400Regular'
   },
   infoTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#3C188F',
-    marginBottom: 6
+    color: '#4c24a9ff',
+    marginBottom: 15,
+    marginLeft: 3,
+    textAlign: 'center'
   },
   infoText: {
     fontSize: 15,
@@ -427,5 +453,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     textAlign: 'center'
+  },
+  robotFloat: {
+    width: 60,
+    height: 60,
+    position: 'absolute',
+    top: -25,
+    right: 1,
+    zIndex: 99
   }
 });
