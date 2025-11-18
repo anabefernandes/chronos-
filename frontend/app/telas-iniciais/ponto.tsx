@@ -13,19 +13,23 @@ import {
   Image,
   Modal,
   NativeSyntheticEvent,
-  NativeScrollEvent
+  NativeScrollEvent,
+  Alert
 } from 'react-native';
 import PontoHeader from '../../components/public/PontoHeader';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { CameraCapturedPicture } from 'expo-camera';
 import { EXPO_PUBLIC_FACEAPI_URL } from '@env';
 import LottieView from 'lottie-react-native';
 
 const { width } = Dimensions.get('window');
 
+type status = 'entrada' | 'almoco' | 'retorno' | 'saida';
+
 interface Ponto {
   _id: string;
-  status: string;
+  status: status;
   horario: string;
 }
 
@@ -39,9 +43,11 @@ const statusDoDia: StatusDoDia[] = [
   { label: 'Almoço', value: 'almoco' },
   { label: 'Retorno', value: 'retorno' },
   { label: 'Saída', value: 'saida' }
-];
+]as const;
+type Status = typeof statusDoDia[number]['value'];
 
-const colors: Record<string, string> = {
+
+const colors: Record<Status, string> = {
   entrada: '#469348',
   almoco: '#c8951eff',
   retorno: '#3493B4',
@@ -49,10 +55,11 @@ const colors: Record<string, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -23.999625827936196,
-  longitude: -46.43188383244882
+  latitude: -24.00499845450938, 
+  longitude: -46.412365233301664
 };
 const RAIO_PERMITIDO = 100;
+type CapturedPhoto = { uri: string; base64?: string };
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
@@ -71,7 +78,7 @@ export default function Ponto() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
   const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [photo, setPhoto] = useState<CapturedPhoto | null>(null);
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalFailVisible, setModalFailVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -79,7 +86,7 @@ export default function Ponto() {
   const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const isRegistered = (status: string) => pontos.some(p => p.status === status);
+  const isRegistered = (status: Status) => pontos.some(p => p.status === status);
 
   const pedirPermissaoLocalizacao = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -94,63 +101,57 @@ export default function Ponto() {
     return coords;
   };
 
-  const handleVerifyAndRegister = async (status: string) => {
+  const handleTakePhoto = async (): Promise<CapturedPhoto | null> => {
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        setModalMessage('Usuário não encontrado. Faça login novamente.');
-        setModalFailVisible(true);
-        return;
-      }
-
-      // Checa se o ponto já foi registrado localmente
-      if (pontos.find(p => p.status === status)) {
-        setModalMessage(`O ponto de ${capitalize(status)} já foi registrado hoje.`);
-        setModalFailVisible(true);
-        return;
-      }
-
-      // 1️⃣ Tirar foto
       const result = await ImagePicker.launchCameraAsync({
         base64: true,
         quality: 0.8,
-        cameraType: ImagePicker.CameraType.front
+        cameraType: ImagePicker.CameraType.front,
+        allowsEditing: false
       });
 
-      if (result.canceled || !result.assets || result.assets.length === 0) return;
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const original = result.assets[0];
+        const manipulated = await ImageManipulator.manipulateAsync(
+          original.uri,
+          [{ flip: ImageManipulator.FlipType.Horizontal }],
+          { compress: 0.8, base64: true }
+        );
+        return { uri: manipulated.uri, base64: manipulated.base64 };
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro ao capturar foto:", error);
+      return null;
+    }
+  };
 
-      const original = result.assets[0];
-      const manipulated = await ImageManipulator.manipulateAsync(
-        original.uri,
-        [{ flip: ImageManipulator.FlipType.Horizontal }],
-        { compress: 0.8, base64: true }
-      );
-
-      const photoToVerify = manipulated?.base64
-        ? { ...original, uri: manipulated.uri, base64: manipulated.base64 }
-        : original;
-
-      setPhoto(photoToVerify);
-      setLoading(true);
-      setVerificationResult(null);
-
-      // 2️⃣ Verificação facial
-      const verifyResponse = await fetch(`${EXPO_PUBLIC_FACEAPI_URL}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: photoToVerify.base64, user_id: userId })
-      });
-
-      const verifyData = await verifyResponse.json();
-      setLoading(false);
-
-      if (!verifyResponse.ok || !verifyData.match) {
-        // Falha no reconhecimento
-        setVerificationResult('fail');
-        setModalMessage('Rosto não reconhecido. Tente novamente.');
-        setModalFailVisible(true);
+  const handleVerifyAndRegister = async (status: Status) => {
+    try {
+      const capturedPhoto = await handleTakePhoto();
+      if (!capturedPhoto?.base64) {
+        Alert.alert("Erro", "Falha ao capturar a foto. Tente novamente.");
         return;
       }
+      setPhoto(capturedPhoto);
+
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        Alert.alert("Erro", "Usuário não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId }),
+      });
+      const verifyData = await verifyResponse.json();
+      if (!verifyResponse.ok) {
+        Alert.alert("Erro", verifyData.error || "Falha na verificação do rosto.");
+        return;
+      }
+      Alert.alert("Verificado", verifyData.message || "Rosto confirmado!");
 
       // 3️⃣ Verifica localização
       const coords = await pedirPermissaoLocalizacao();
@@ -164,8 +165,10 @@ export default function Ponto() {
       );
 
       if (distancia > RAIO_PERMITIDO) {
-        setModalMessage(`Você precisa estar a até ${RAIO_PERMITIDO}m do local.`);
-        setModalFailVisible(true);
+        Alert.alert(
+          "Fora do local permitido",
+          `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`
+        );
         return;
       }
 

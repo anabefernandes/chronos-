@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing, ScrollView, SafeAreaView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useRouter } from 'expo-router';
@@ -13,6 +13,7 @@ export default function EnrollScreen() {
   const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayType, setOverlayType] = useState<'success' | 'error'>('success');
+
   const infoAnimated = useRef(new Animated.Value(0)).current;
   const msg1Anim = useRef(new Animated.Value(0)).current;
   const msg2Anim = useRef(new Animated.Value(0)).current;
@@ -23,30 +24,15 @@ export default function EnrollScreen() {
       msg1Anim.setValue(0);
       msg2Anim.setValue(0);
       Animated.sequence([
-        Animated.timing(msg1Anim, { 
-            toValue: 1, 
-            duration: 400, 
-            easing: Easing.out(Easing.ease), 
-            useNativeDriver: true }),
-        
-        Animated.timing(msg2Anim, { 
-            toValue: 1, 
-            duration: 400, 
-            easing: Easing.out(Easing.ease), 
-            useNativeDriver: true }),
+        Animated.timing(msg1Anim, { toValue: 1, duration: 400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(msg2Anim, { toValue: 1, duration: 400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
       ]).start();
     }
   }, [photo]);
 
   const startAnimations = () => {
     animatedValues.forEach((anim, i) => {
-      Animated.spring(anim, { 
-        toValue: 1, 
-        friction: 6, 
-        tension: 40, 
-        delay: i * 400, 
-        useNativeDriver: true 
-        }).start();
+      Animated.spring(anim, { toValue: 1, friction: 6, tension: 40, delay: i * 400, useNativeDriver: true }).start();
     });
   };
 
@@ -56,12 +42,7 @@ export default function EnrollScreen() {
 
   useEffect(() => {
     if (photo) {
-      Animated.spring(infoAnimated, { 
-        toValue: 1, 
-        friction: 6, 
-        tension: 40, 
-        useNativeDriver: true 
-        }).start();
+      Animated.spring(infoAnimated, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }).start();
     }
   }, [photo]);
 
@@ -72,32 +53,17 @@ export default function EnrollScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ 
-        base64: false, 
-        quality: 0.8, 
-        cameraType: ImagePicker.CameraType.front 
-        });
+    const result = await ImagePicker.launchCameraAsync({ base64: false, quality: 1, cameraType: ImagePicker.CameraType.front });
 
     if (!result.canceled && result.assets.length > 0) {
       const original = result.assets[0];
-
-      const visual = await ImageManipulator.manipulateAsync(
-        original.uri, 
-      [{ flip: ImageManipulator.FlipType.Horizontal }], 
-      { compress: 0.8 });
-      
-      const resizedForAPI = await ImageManipulator.manipulateAsync(original.uri, 
-      [{ resize: { width: 600 } }], { compress: 0.8, base64: true });
+      const visual = await ImageManipulator.manipulateAsync(original.uri, [{ flip: ImageManipulator.FlipType.Horizontal }], { compress: 1 });
+      const resizedForAPI = await ImageManipulator.manipulateAsync(original.uri, [{ resize: { width: 600 } }], { compress: 0.8, base64: true });
 
       let base64ForAPI = resizedForAPI.base64 || '';
-      if (base64ForAPI.startsWith('data:image')) 
-      base64ForAPI = base64ForAPI.split(',')[1];
+      if (base64ForAPI.startsWith('data:image')) base64ForAPI = base64ForAPI.split(',')[1];
 
-      setPhoto({ 
-        ...original, 
-        uri: visual.uri, 
-        base64: base64ForAPI 
-        });
+      setPhoto({ ...original, uri: visual.uri, base64: base64ForAPI });
     }
   };
 
@@ -117,23 +83,18 @@ export default function EnrollScreen() {
       const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/enroll`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          user_id: userId, 
-          image: photo.base64 }),
+        body: JSON.stringify({ user_id: userId, image: photo.base64 }),
       });
 
       const data = await response.json();
-      
-      if (response.ok) {
-      Alert.alert("Sucesso", data.message || "Rosto cadastrado com sucesso!");
-    } else {
-      Alert.alert("Erro", data.error || "Falha ao cadastrar rosto.");
+      setOverlayType(response.ok ? 'success' : 'error');
+      showOverlayFunc();
+      if (response.ok) await AsyncStorage.setItem('faceEnrolled', 'true');
+    } catch (err) {
+      setOverlayType('error');
+      showOverlayFunc();
     }
-  } catch (error) {
-    Alert.alert("Erro", "Não foi possível conectar ao servidor.");
-    console.error(error);
-  }
-};
+  };
 
   const showOverlayFunc = () => {
     setShowOverlay(true);
@@ -274,3 +235,203 @@ const styles = StyleSheet.create({
   overlay: { position: 'absolute', top: '40%', left: '10%', right: '10%', backgroundColor: '#fff', borderRadius: 12, alignItems: 'center', padding: 20, elevation: 5, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10 },
   overlayText: { marginTop: 10, fontWeight: 'bold', fontSize: 16, textAlign: 'center' },
 });
+
+
+const styles = StyleSheet.create({
+  container: {
+  flexGrow: 1,               // permite que o ScrollView ocupe todo o conteúdo
+  padding: 20,
+  paddingBottom: 50,         // garante espaço extra no final para rolagem
+  backgroundColor: '#f2f2f7',
+  justifyContent: 'flex-start',
+  alignItems: 'center'
+},
+  title: {
+    fontSize: 22,
+    fontFamily: 'Poppins_600SemiBold',
+    fontWeight: 'bold',
+    color: '#3C188F',
+    textAlign: 'center',
+    marginTop: 60,
+    marginBottom: 20
+  },
+  titleVisualizacao: {
+    fontSize: 22,
+    fontFamily: 'Poppins_600SemiBold',
+    fontWeight: 'bold',
+    color: '#3C188F',
+    textAlign: 'center',
+    marginTop: 70,
+    marginBottom: 20
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: 16,
+    marginHorizontal: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5
+  },
+  subtitle: {
+    fontSize: 17,
+    fontFamily: 'Poppins_400Regular',
+    color: '#3C188F',
+    textAlign: 'center',
+    lineHeight: 22
+  },
+  faceImage: {
+    width: 300,
+    height: 270,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 30
+  },
+  instructions: {
+    marginHorizontal: 5,
+    marginBottom: 30
+  },
+  instructionCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 14,
+    flex: 1,
+    shadowColor: '#3C188F',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8
+  },
+  instructionText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#333'
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    marginRight: 12
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 35
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#B0B0B0',
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginRight: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4
+  },
+  startButton: {
+    flex: 1,
+    backgroundColor: '#3C188F',
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginLeft: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16
+  },
+  preview: {
+    width: 300,
+    height: 300,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 20
+  },
+  msgBubble: {
+    backgroundColor: '#dfeaf5ff',
+    padding: 16,
+    borderRadius: 18,
+    width: '88%',
+    alignSelf: 'center',
+    marginTop: 14,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  infoIcon: {
+    width: 55,
+    height: 55,
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  msgText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#3C188F',
+    textAlign: 'center',
+    fontFamily: 'Poppins_400Regular'
+  },
+  infoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4c24a9ff',
+    marginBottom: 15,
+    marginLeft: 3,
+    textAlign: 'center'
+  },
+  infoText: {
+    fontSize: 15,
+    color: '#3C188F',
+    lineHeight: 20
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.79)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000
+  },
+  overlayText: {
+    marginTop: 20,
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center'
+  },
+  robotFloat: {
+    width: 60,
+    height: 60,
+    position: 'absolute',
+    top: -25,
+    right: 1,
+    zIndex: 99
+  }
+});
+
+
+ANIMAÇÃO AO CADASTRAR A FACE 
+  if (response.ok) {
+      Alert.alert("Sucesso", data.message || "Rosto cadastrado com sucesso!");
+    } else {
+      Alert.alert("Erro", data.error || "Falha ao cadastrar rosto.");
+    }
+   catch (error) {
+    Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    console.error(error);
+  }
+;  

@@ -95,6 +95,16 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// -----------------------------
+// Aux: converte "07:00" em Date (mesma data)
+function gerarHorarioEsperado(dataBase, horarioStr) {
+  if (!horarioStr) return null;
+  const [h, m] = horarioStr.split(':').map(Number);
+  const d = new Date(dataBase);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
 exports.registrarPonto = async (req, res, next) => {
   try {
     const { status, localizacao } = req.body;
@@ -109,10 +119,9 @@ exports.registrarPonto = async (req, res, next) => {
     }
 
     // 📍 Local fixo de trabalho
-
     const LOCAL_TRABALHO = {
-      latitude: -23.999625827936196,
-      longitude: -46.43188383244882
+      latitude: -24.00499845450938,
+      longitude: -46.412365233301664
     };
     const RAIO_PERMITIDO = 100; // metros
 
@@ -136,7 +145,54 @@ exports.registrarPonto = async (req, res, next) => {
       localizacao
     });
 
-    // ✅ 2. Define novo status
+    // --- BUSCA O FUNCIONÁRIO AQUI (apenas uma vez, para usar horários e folgas) ---
+    const funcionario = await User.findById(funcionarioId);
+
+    // -----------------------------
+    // Lógica mínima para gerar flagHorario
+    // -----------------------------
+    let flagHorario = null;
+
+    // Verifica folga semanal primeiro (se configurada)
+    const hoje = new Date(ponto.horario);
+    const diaSemana = hoje.getDay(); // 0 = domingo, 6 = sábado
+    if (funcionario && Array.isArray(funcionario.folgaSemana) && funcionario.folgaSemana.includes(diaSemana)) {
+      flagHorario = 'Dia de Folga';
+    } else if (funcionario && funcionario.horarioEntrada && funcionario.horarioSaida) {
+      // Só calcula se usuário tiver horários configurados
+      const horarioEntradaEsperado = gerarHorarioEsperado(hoje, funcionario.horarioEntrada);
+      const horarioSaidaEsperada = gerarHorarioEsperado(hoje, funcionario.horarioSaida);
+
+      // limites em minutos (padrão, você pode ajustar)
+      const LIMITE_ATRASO = 5; // >5min = atraso
+      const LIMITE_ADIANTADO = 10; // <-10min = adiantado
+      const LIMITE_SAIDA_CEDO = 10; // saiu >10min antes = saída cedo
+      const LIMITE_EXTRA = 10; // saiu >10min depois = hora extra
+
+      if (status === 'entrada' && horarioEntradaEsperado) {
+        const diffEntrada = (new Date(ponto.horario) - horarioEntradaEsperado) / 60000; // min
+        if (diffEntrada > LIMITE_ATRASO) {
+          flagHorario = 'Entrada Atrasada';
+        } else if (diffEntrada < -LIMITE_ADIANTADO) {
+          flagHorario = 'Entrada Antecipada';
+        } else {
+          flagHorario = 'Entrada no Horário';
+        }
+      }
+
+      if (status === 'saida' && horarioSaidaEsperada) {
+        const diffSaida = (new Date(ponto.horario) - horarioSaidaEsperada) / 60000; // min
+        if (diffSaida < -LIMITE_SAIDA_CEDO) {
+          flagHorario = 'Saída Cedo';
+        } else if (diffSaida > LIMITE_EXTRA) {
+          flagHorario = 'Hora Extra';
+        } else {
+          flagHorario = 'Saída no Horário';
+        }
+      }
+    }
+
+    // ✅ 2. Define novo status (mantendo seu switch, mas com pequenos overrides)
     let novoStatus = 'Inativo';
     switch (status) {
       case 'entrada':
@@ -155,6 +211,13 @@ exports.registrarPonto = async (req, res, next) => {
       case 'atraso':
         novoStatus = 'Atraso';
         break;
+    }
+
+    // Overrides mínimos:
+    if (flagHorario === 'Dia de Folga') {
+      novoStatus = 'Folga';
+    } else if (flagHorario === 'Entrada Atrasada') {
+      novoStatus = 'Atraso';
     }
 
     await User.findByIdAndUpdate(funcionarioId, { status: novoStatus });
@@ -190,7 +253,7 @@ exports.registrarPonto = async (req, res, next) => {
     });
 
     // 🧮 Calcular horas, extras e descontos
-    const funcionario = await User.findById(funcionarioId);
+    // (aqui usamos o funcionario já carregado acima)
     const cargaHoraria = funcionario?.cargaHorariaDiaria || 8;
 
     let totalHoras = 0;
@@ -288,11 +351,12 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    // ✅ 4. Retorna resultado completo
+    // ✅ 4. Retorna resultado completo (agora com flagHorario)
     res.status(201).json({
       msg: 'Ponto registrado, status atualizado e holerite recalculado',
       ponto,
       novoStatus,
+      flagHorario,
       holerite
     });
   } catch (err) {

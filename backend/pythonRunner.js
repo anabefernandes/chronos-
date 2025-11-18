@@ -3,10 +3,10 @@ const path = require("path");
 const fs = require("fs");
 
 function startPython() {
-  const scriptPath = path.resolve(__dirname, "../faceapi/app-face.py");
+  const scriptPath = path.resolve(__dirname, "../faceapi/app.py");
 
   // Detecta automaticamente o Python do venv
-  const venvPython = path.resolve(__dirname, "../faceapi/venv311/Scripts/python.exe");
+  const venvPython = path.resolve(__dirname, "../faceapi/venv/Scripts/python.exe");
 
   const pythonExecutable = fs.existsSync(venvPython) ? venvPython : "python";
 
@@ -23,7 +23,7 @@ function startPython() {
   });
 
   pyProcess.on("close", (code) => {
-    console.log(`[PYTHON] app-face.py finalizado com código ${code}`);
+    console.log(`[PYTHON] app.py finalizado com código ${code}`);
   });
 
   return pyProcess;
