@@ -114,5 +114,6 @@ router.get('/:funcionarioId', auth, requireRole('chefe', 'admin'), ctrl.escalasP
 
 router.get('/horario-do-dia', auth, ctrl.horarioDoDia);
 
+router.delete('/:id', auth, ctrl.excluirEscala);
 
 module.exports = router;
