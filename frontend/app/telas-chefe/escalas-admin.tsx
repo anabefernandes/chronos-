@@ -7,11 +7,12 @@ import {
   TextInput,
   TouchableOpacity,
   Text,
-  Image
+  Image,
+  Alert // <--- IMPORTANTE: Adicionado Alert
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import Navbar from '../../components/public/Navbar';
-import { listarTodasEscalas, minhasEscalas, getUserRole } from '../../services/userService';
+import { listarTodasEscalas, minhasEscalas, getUserRole, excluirEscala } from '../../services/userService';
 import CardDiaSelecionado from '../../components/admin/CardDiaSelecionado';
 import ListaSemanal from '../../components/admin/ListaSemanal';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -50,6 +51,7 @@ export default function EscalasAdmin() {
 
   const carregarEscalas = async () => {
     try {
+      setCarregando(true); // Garante loading ao recarregar
       const userRole = await getUserRole();
       setRole(userRole);
 
@@ -73,6 +75,48 @@ export default function EscalasAdmin() {
       setCarregando(false);
     }
   };
+
+  // ✅ NOVA FUNÇÃO: Lógica para excluir a semana inteira
+const handleExcluirSemana = (escalaSemana: any) => {
+    
+  // 💡 1. EXTRAIA O ID DO DOCUMENTO SEMANAL
+  const idDaEscalaSemanal = escalaSemana._id; 
+
+  if (!idDaEscalaSemanal) {
+      Alert.alert("Erro", "ID da escala semanal não encontrado. Impossível excluir.");
+      console.error("ID da Escala Semanal faltando:", escalaSemana);
+      return;
+  }
+  
+  Alert.alert(
+    "Excluir Escala Semanal",
+    "Tem certeza que deseja excluir todas as escalas desta semana para este funcionário?",
+    [
+      { text: "Cancelar", style: "cancel" },
+      { 
+        text: "Excluir", 
+        style: "destructive", 
+        onPress: async () => {
+          try {
+            // 💡 2. CHAME A FUNÇÃO DE EXCLUSÃO APENAS UMA VEZ COM O ID SEMANAL
+            // O Backend (exports.excluirEscala) vai deletar o documento inteiro.
+            await excluirEscala(idDaEscalaSemanal);
+
+            Alert.alert("Sucesso", "Escala semanal excluída com sucesso!");
+            
+            // Recarrega a lista para sumir o card da tela
+            carregarEscalas(); 
+          } catch (error) {
+            console.error("Erro ao excluir semana", error);
+            // Se o 404 persistir, pode ser que o ID não tenha sido encontrado, mas 
+            // como você quer a semana excluída, pode tratar como sucesso após o log.
+            Alert.alert("Erro", "Não foi possível excluir a semana.");
+          }
+        }
+      }
+    ]
+  );
+};
 
   const filtrarEscalas = () => {
     return escalas
@@ -185,8 +229,12 @@ export default function EscalasAdmin() {
         />
       )}
 
-      {/* Lista semanal */}
-      <ListaSemanal escalas={filtrarEscalas()} role={role} />
+      {/* ✅ AQUI: Passei a função onDelete para o componente filho */}
+      <ListaSemanal 
+        escalas={filtrarEscalas()} 
+        role={role} 
+        onDelete={handleExcluirSemana} 
+      />
     </ScrollView>
   );
 }

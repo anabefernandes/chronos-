@@ -153,6 +153,27 @@ exports.criarOuEditarEscala = async (req, res, next) => {
   }
 };
 
+// Função para excluir uma escala pelo ID
+exports.excluirEscala = async (req, res) => {
+  try {
+    const Escala = require('../models/Escala'); // Certifique-se de importar o Model aqui se não estiver no topo
+    const { id } = req.params;
+
+    const escala = await Escala.findById(id);
+
+    if (!escala) {
+      return res.status(404).json({ msg: 'Escala não encontrada.' });
+    }
+
+    await Escala.findByIdAndDelete(id);
+
+    return res.status(200).json({ msg: 'Escala excluída com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao excluir escala:', error);
+    return res.status(500).json({ msg: 'Erro interno do servidor.' });
+  }
+};
+
 // ✅ Listar escalas do funcionário logado
 exports.minhasEscalas = async (req, res, next) => {
   try {

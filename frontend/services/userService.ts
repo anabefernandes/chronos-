@@ -109,6 +109,22 @@ export const excluirNotificacao = async (id: string) => {
   }
 };
 
+// userService.ts
+
+export interface Escala {
+  _id: string;
+  data: string;
+  horaEntrada?: string;
+  horaSaida?: string;
+  folga?: boolean;
+}
+
+export const excluirEscala = async (idEscala: string) => {
+  const response = await api.delete(`/escala/${idEscala}`);
+  return response.data;
+};
+
+
 // Tipo base para uma escala
 export interface EscalaRequest {
   funcionario: string;
@@ -152,6 +168,8 @@ export const minhasEscalas = async () => {
     throw error;
   }
 };
+
+
 
 export const getUserRole = async (): Promise<'admin' | 'chefe' | 'funcionario'> => {
   try {

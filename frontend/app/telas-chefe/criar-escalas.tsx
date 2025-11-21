@@ -17,24 +17,14 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { criarOuEditarEscala } from '../../services/userService';
 import { AuthContext, Funcionario } from '../../contexts/AuthContext';
 import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
-import { listarEscalasPorFuncionario } from '../../services/userService';
+import { listarEscalasPorFuncionario, Escala } from '../../services/userService';
 import LottieView from 'lottie-react-native';
 
 // ---------------- CONFIGURAÇÃO DE LOCALE DO CALENDÁRIO ----------------
 LocaleConfig.locales['pt-br'] = {
   monthNames: [
-    'Janeiro',
-    'Fevereiro',
-    'Março',
-    'Abril',
-    'Maio',
-    'Junho',
-    'Julho',
-    'Agosto',
-    'Setembro',
-    'Outubro',
-    'Novembro',
-    'Dezembro'
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ],
   monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
   dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
@@ -51,6 +41,7 @@ interface DiaSemana {
   saida: Date | null;
   folga: boolean;
   modo: 'nenhum' | 'horario' | 'folga';
+  // idEscala removido pois não vamos excluir aqui
 }
 
 interface EscalaRequest {
@@ -81,6 +72,16 @@ export default function CriarEscalas() {
   const [erroChefe, setErroChefe] = useState(false);
   const [animacao, setAnimacao] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
+
+  const [semanasBloqueadas, setSemanasBloqueadas] = useState<string[]>([]);
+
+  // Função para garantir que a string da data seja sempre YYYY-MM-DD local
+  const formatDataLocal = (data: Date) => {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
 
   const [semana, setSemana] = useState<DiaSemana[]>([
     { dia: 'Domingo', data: null, entrada: null, saida: null, folga: false, modo: 'nenhum' },
@@ -139,6 +140,30 @@ export default function CriarEscalas() {
       carregarUsuarios();
     }
     setModalFuncionarios(true);
+  };
+
+  const carregarSemanasBloqueadas = async (idFuncionario: string) => {
+    try {
+      const escalas: Escala[] = await listarEscalasPorFuncionario(idFuncionario);
+      const semanasSet = new Set<string>();
+
+      escalas.forEach((e: Escala) => {
+        const dataString = e.data.includes('T') ? e.data : `${e.data}T12:00:00`;
+        const data = new Date(dataString);
+
+        if (isNaN(data.getTime())) return;
+
+        const domingo = new Date(data);
+        domingo.setDate(data.getDate() - data.getDay());
+
+        const chave = formatDataLocal(domingo);
+        semanasSet.add(chave);
+      });
+
+      setSemanasBloqueadas([...semanasSet]);
+    } catch (erro: unknown) {
+      console.log("Erro ao carregar semanas:", erro);
+    }
   };
 
   const renderFuncionarioSelecionado = () => {
@@ -222,6 +247,7 @@ export default function CriarEscalas() {
                       setErroChefe(true);
                     } else {
                       setFuncionarioSelecionado(f);
+                      carregarSemanasBloqueadas(f._id);
                     }
                     setModalFuncionarios(false);
                   }}
@@ -251,15 +277,27 @@ export default function CriarEscalas() {
     try {
       const escalas = await listarEscalasPorFuncionario(funcionario._id);
 
-      // Criar uma cópia da semana
+      // Criar uma cópia da semana (Sem ID, apenas visualização)
       const novaSemana = semanaAtual.map(dia => ({ ...dia }));
 
       for (const escala of escalas) {
-        const dataEscala = new Date(escala.data);
-        const keyData = dataEscala.toDateString();
+        const dataString = escala.data.includes('T') ? escala.data : `${escala.data}T12:00:00`;
+        const dataEscala = new Date(dataString);
 
-        // Verifica se o dia da semana corresponde
-        const indexDia = novaSemana.findIndex(d => d.data && d.data.toDateString() === keyData);
+        const ano = dataEscala.getFullYear();
+        const mes = String(dataEscala.getMonth() + 1).padStart(2, '0');
+        const dia = String(dataEscala.getDate()).padStart(2, '0');
+        const keyEscala = `${ano}-${mes}-${dia}`;
+
+        const indexDia = novaSemana.findIndex(d => {
+          if (!d.data) return false;
+          const anoD = d.data.getFullYear();
+          const mesD = String(d.data.getMonth() + 1).padStart(2, '0');
+          const diaD = String(d.data.getDate()).padStart(2, '0');
+          const keyDia = `${anoD}-${mesD}-${diaD}`;
+          return keyDia === keyEscala;
+        });
+
         if (indexDia >= 0) {
           if (escala.folga) {
             novaSemana[indexDia].modo = 'folga';
@@ -269,13 +307,16 @@ export default function CriarEscalas() {
           } else if (escala.horaEntrada && escala.horaSaida) {
             novaSemana[indexDia].modo = 'horario';
             novaSemana[indexDia].folga = false;
-            novaSemana[indexDia].entrada = new Date(dataEscala);
-            const [hE, mE] = escala.horaEntrada.split(':').map(Number);
-            novaSemana[indexDia].entrada.setHours(hE, mE);
 
-            novaSemana[indexDia].saida = new Date(dataEscala);
+            const dataEntrada = new Date(dataEscala);
+            const [hE, mE] = escala.horaEntrada.split(':').map(Number);
+            dataEntrada.setHours(hE, mE, 0, 0);
+            novaSemana[indexDia].entrada = dataEntrada;
+
+            const dataSaida = new Date(dataEscala);
             const [hS, mS] = escala.horaSaida.split(':').map(Number);
-            novaSemana[indexDia].saida.setHours(hS, mS);
+            dataSaida.setHours(hS, mS, 0, 0);
+            novaSemana[indexDia].saida = dataSaida;
           }
         }
       }
@@ -286,20 +327,34 @@ export default function CriarEscalas() {
       return semanaAtual;
     }
   };
+
   // ---------------- SELEÇÃO DE SEMANA ----------------
-  const handleSelecionarData = (dateString: string) => {
+  const handleSelecionarData = (dateString: string, day?: any) => {
     const [ano, mes, dia] = dateString.split('-').map(Number);
     const dataSelecionada = new Date(ano, mes - 1, dia);
 
     const domingo = new Date(dataSelecionada);
     domingo.setDate(dataSelecionada.getDate() - dataSelecionada.getDay());
+
+    const chaveSemana = formatDataLocal(domingo);
+
+    // ❌ VERIFICAÇÃO DE BLOQUEIO
+    if (semanasBloqueadas.includes(chaveSemana)) {
+      Alert.alert("Semana Indisponível", "Já existe uma escala criada para este funcionário nesta semana.");
+      return;
+    }
+
     const sabado = new Date(domingo);
     sabado.setDate(domingo.getDate() + 6);
 
-    const novaSemana = semana.map((d, i) => ({
-      ...d,
-      data: new Date(domingo.getTime() + i * 24 * 60 * 60 * 1000)
-    }));
+    const novaSemana = semana.map((d, i) => {
+      const dataDia = new Date(domingo);
+      dataDia.setDate(domingo.getDate() + i);
+      return {
+        ...d,
+        data: dataDia
+      };
+    });
 
     setSemanaInicio(domingo);
     setSemanaFim(sabado);
@@ -308,19 +363,47 @@ export default function CriarEscalas() {
   };
 
   const gerarMarcacoesSemana = () => {
-    if (!semanaInicio || !semanaFim) return {};
-    const datasMarcadas: any = {};
-    const dataAtual = new Date(semanaInicio);
-    while (dataAtual <= semanaFim) {
-      const key = dataAtual.toISOString().split('T')[0];
-      datasMarcadas[key] = { color: '#a286e3ff', textColor: '#fff' };
-      dataAtual.setDate(dataAtual.getDate() + 1);
+    const marcacoes: any = {};
+
+    semanasBloqueadas.forEach(domingoStr => {
+      const [ano, mes, dia] = domingoStr.split('-').map(Number);
+      const domingo = new Date(ano, mes - 1, dia);
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(domingo);
+        d.setDate(domingo.getDate() + i);
+        const key = formatDataLocal(d);
+
+        marcacoes[key] = {
+          color: "#E0E0E0",
+          textColor: "#9E9E9E",
+          disabled: true,
+          disableTouchEvent: true
+        };
+      }
+    });
+
+    if (semanaInicio && semanaFim) {
+      const dataAtual = new Date(semanaInicio);
+      while (dataAtual <= semanaFim) {
+        const key = formatDataLocal(dataAtual);
+
+        marcacoes[key] = {
+          ...(marcacoes[key] || {}),
+          color: "#3C188F",
+          textColor: "#fff",
+          disabled: false,
+          disableTouchEvent: false
+        };
+
+        if (key === formatDataLocal(semanaInicio)) marcacoes[key].startingDay = true;
+        if (key === formatDataLocal(semanaFim)) marcacoes[key].endingDay = true;
+
+        dataAtual.setDate(dataAtual.getDate() + 1);
+      }
     }
-    const inicioKey = semanaInicio.toISOString().split('T')[0];
-    const fimKey = semanaFim.toISOString().split('T')[0];
-    datasMarcadas[inicioKey].startingDay = true;
-    datasMarcadas[fimKey].endingDay = true;
-    return datasMarcadas;
+
+    return marcacoes;
   };
 
   // ---------------- GERENCIAR HORÁRIOS ----------------
@@ -328,11 +411,8 @@ export default function CriarEscalas() {
     const novaSemana = [...semana];
     novaSemana[index][tipo] = hora;
 
-    // ✅ Se for hora de entrada, salvar como última hora usada
     if (tipo === 'entrada') {
       setUltimaEntrada(hora);
-
-      // Define saída automaticamente se o funcionário tiver carga horária
       if (funcionarioSelecionado?.cargaHorariaDiaria) {
         const saida = new Date(hora);
         saida.setHours(saida.getHours() + funcionarioSelecionado.cargaHorariaDiaria);
@@ -352,11 +432,8 @@ export default function CriarEscalas() {
       novaSemana[index].saida = null;
       novaSemana[index].folga = true;
     } else if (modo === 'horario') {
-      // ✅ Puxa a última entrada automaticamente
       if (ultimaEntrada) {
         novaSemana[index].entrada = new Date(ultimaEntrada);
-
-        // Define saída com base na carga horária do funcionário
         if (funcionarioSelecionado?.cargaHorariaDiaria) {
           const saida = new Date(ultimaEntrada);
           saida.setHours(saida.getHours() + funcionarioSelecionado.cargaHorariaDiaria);
@@ -430,7 +507,6 @@ export default function CriarEscalas() {
   return (
     <View style={styles.container}>
       <Navbar />
-      {/* ✅ Animação de sucesso (substitui mensagem de alerta) */}
       {animacao && (
         <View style={[styles.successOverlay, { bottom: 60, top: 100 }]} pointerEvents="box-none">
           <LottieView
@@ -449,7 +525,6 @@ export default function CriarEscalas() {
         {/* Seleção de Funcionário */}
         <View style={styles.inputWrapper}>
           {renderFuncionarioSelecionado()}
-          {/* Mensagem de erro se o chefe se selecionar */}
           {erroChefe && (
             <View style={styles.erroChefeBox}>
               <Text style={styles.erroChefeText}>Um chefe não pode criar sua própria escala!</Text>
@@ -463,7 +538,6 @@ export default function CriarEscalas() {
           )}
         </View>
 
-        {/* Modal Funcionários */}
         {renderModalFuncionarios()}
 
         {/* Seleção de Semana */}
@@ -478,7 +552,7 @@ export default function CriarEscalas() {
           </TouchableOpacity>
           {mostrarCalendario && (
             <Calendar
-              onDayPress={day => handleSelecionarData(day.dateString)}
+              onDayPress={day => handleSelecionarData(day.dateString, day)}
               markedDates={gerarMarcacoesSemana()}
               markingType="period"
               theme={{
@@ -492,7 +566,6 @@ export default function CriarEscalas() {
           )}
         </View>
 
-        {/* Dias da Semana com Opacidade */}
         {!podeEditarDias && (
           <View style={styles.avisoWrapper}>
             <View style={styles.avisoBox}>
@@ -503,7 +576,6 @@ export default function CriarEscalas() {
         )}
 
         <View style={{ position: 'relative' }}>
-          {/* Conteúdo normal dos dias */}
           <View pointerEvents={podeEditarDias ? 'auto' : 'none'}>
             {semana.map((dia, i) => (
               <View key={i} style={styles.dayCard}>
@@ -512,7 +584,6 @@ export default function CriarEscalas() {
                   {dia.data && ` - ${dia.data.toLocaleDateString('pt-BR')}`}
                 </Text>
 
-                {/* Modo Nenhum */}
                 {dia.modo === 'nenhum' && (
                   <View style={styles.optionRow}>
                     <TouchableOpacity
@@ -535,7 +606,6 @@ export default function CriarEscalas() {
                   </View>
                 )}
 
-                {/* Modo Horário */}
                 {dia.modo === 'horario' && (
                   <>
                     <View style={styles.timeRow}>
@@ -592,13 +662,13 @@ export default function CriarEscalas() {
                       />
                     )}
 
+                    {/* Botão Redefinir - Sem lógica de exclusão */}
                     <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
                       <Text style={styles.redefinirText}>Redefinir</Text>
                     </TouchableOpacity>
                   </>
                 )}
 
-                {/* Modo Folga */}
                 {dia.modo === 'folga' && (
                   <View style={styles.folgaRow}>
                     <Image
@@ -607,6 +677,7 @@ export default function CriarEscalas() {
                     />
                     <Text style={styles.folgaText}>Folga definida</Text>
                     <View style={{ flex: 1 }} />
+                    {/* Botão Redefinir - Sem lógica de exclusão */}
                     <TouchableOpacity style={styles.redefinirBtn} onPress={() => redefinirModo(i)}>
                       <Text style={styles.redefinirText}>Redefinir</Text>
                     </TouchableOpacity>
@@ -624,7 +695,7 @@ export default function CriarEscalas() {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: '#ffffff82', // mesma opacidade do iOS
+                backgroundColor: '#ffffff82',
                 borderRadius: 20,
                 zIndex: 10,
               }}
@@ -632,7 +703,6 @@ export default function CriarEscalas() {
           )}
         </View>
 
-        {/* Botão Salvar */}
         <TouchableOpacity style={styles.saveBtn} onPress={salvarEscala}>
           <Text style={styles.saveText}>Salvar Escala</Text>
         </TouchableOpacity>
@@ -885,11 +955,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
-  fotoFuncionario: {
-    width: 50,
-    height: 50,
-    borderRadius: 25
-  },
   nomeFuncionario: {
     fontSize: 16,
     fontFamily: 'Poppins_600SemiBold',
@@ -906,108 +971,115 @@ const styles = StyleSheet.create({
     borderRadius: 25
   },
   infoIconFuncionario: {
-    width: 16,
-    height: 16,
-    marginRight: 4
+    width: 14,
+    height: 14,
+    marginRight: 6,
+    resizeMode: 'contain'
   },
   infoTextFuncionario: {
-    fontSize: 14,
-    color: '#333',
-    fontFamily: 'Poppins_400Regular'
-  },
-  iconRemover: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain'
+    fontSize: 12,
+    fontFamily: 'Poppins_400Regular',
+    color: '#555'
   },
   selectFuncionario: {
     borderWidth: 1.5,
     borderColor: '#3C188F',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    alignItems: 'center'
+    borderRadius: 28,
+    height: 55,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    backgroundColor: '#fff'
   },
   selectText: {
-    color: '#3C188F',
-    fontFamily: 'Poppins_400Regular'
+    fontSize: 16,
+    color: '#333'
   },
-  avisoWrapper: {
-    marginBottom: 10,
-    position: 'relative',
-    alignItems: 'flex-start'
-  },
-  avisoBox: {
-    backgroundColor: '#fff3cd',
-    borderWidth: 1,
-    borderColor: '#ffeeba',
-    borderRadius: 10,
-    padding: 15,
-    paddingTop: 25
-  },
-  avisoText: {
-    color: '#856404',
-    fontSize: 14
-  },
-  avisoBalao: {
-    position: 'absolute',
-    top: -12,
-    left: 10,
+  iconRemover: {
     width: 24,
     height: 24,
-    resizeMode: 'contain'
+    tintColor: '#ff4d4d'
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20
+  },
+  emptyText: {
+    fontFamily: 'Poppins_500Medium',
+    color: '#888',
+    marginTop: 10
   },
   erroChefeBox: {
-    backgroundColor: '#ffdede',
-    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffe6e6',
+    padding: 10,
     borderRadius: 8,
-    marginVertical: 10,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center'
+    marginTop: 8,
+    justifyContent: 'space-between'
   },
   erroChefeText: {
-    color: '#d8000c',
-    fontWeight: 'bold',
-    textAlign: 'center'
+    color: '#d32f2f',
+    fontSize: 13,
+    flex: 1,
+    fontFamily: 'Poppins_500Medium'
   },
   fecharErroBtn: {
-    position: 'absolute',
-    top: 11,
-    right: 6
+    padding: 4
   },
   fecharErroIcon: {
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
+    tintColor: '#d32f2f'
+  },
+  avisoWrapper: {
+    position: 'absolute',
+    top: '40%',
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    alignItems: 'center'
+  },
+  avisoBox: {
+    backgroundColor: '#3C188F',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 10,
+    maxWidth: '80%'
+  },
+  avisoText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontFamily: 'Poppins_600SemiBold'
+  },
+  avisoBalao: {
+    width: 50,
+    height: 50,
     resizeMode: 'contain'
   },
   successOverlay: {
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    paddingVertical: 20
+    zIndex: 1000
   },
   successText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#3C188F',
+    marginTop: -40,
+    fontSize: 18,
     fontFamily: 'Poppins_600SemiBold',
-    textAlign: 'center'
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 50
-  },
-  emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#858383ff',
-    fontFamily: 'Poppins_600SemiBold'
+    color: '#27ae60',
+    textAlign: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4
   }
 });
