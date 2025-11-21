@@ -50,6 +50,21 @@ export const meusPontos = async (_id: string) => {
   }
 };
 
+export const todosPontos = async () => {
+  try {
+    const response = await api.get('/ponto/todos');
+    return response.data;
+  } catch (err) {
+    console.error('Erro ao buscar todos os pontos:', err);
+    throw err;
+  }
+};
+
+export const pontosDoFuncionario = async (funcionarioId: string) => {
+  const pontos = await todosPontos();
+  return pontos.filter((p: { funcionario?: { _id: string } }) => p.funcionario?._id === funcionarioId);
+};
+
 export const atualizarTarefa = async (id: string, status: 'pendente' | 'em_andamento' | 'concluida') => {
   try {
     const response = await api.put(`/tarefas/minha/${id}`, { status });

@@ -19,9 +19,8 @@ import {
 import PontoHeader from '../../components/public/PontoHeader';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { CameraCapturedPicture } from 'expo-camera';
-import { EXPO_PUBLIC_FACEAPI_URL } from '@env';
 import LottieView from 'lottie-react-native';
+import HistoricoPontos from '../../components/public/HistoricoPontos';
 
 const { width } = Dimensions.get('window');
 
@@ -43,9 +42,8 @@ const statusDoDia: StatusDoDia[] = [
   { label: 'Almoço', value: 'almoco' },
   { label: 'Retorno', value: 'retorno' },
   { label: 'Saída', value: 'saida' }
-]as const;
-type Status = typeof statusDoDia[number]['value'];
-
+] as const;
+type Status = (typeof statusDoDia)[number]['value'];
 
 const colors: Record<Status, string> = {
   entrada: '#469348',
@@ -55,8 +53,8 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -24.00499845450938, 
-  longitude: -46.412365233301664
+  latitude: -23.99978264876472,
+  longitude: -46.43184091710669
 };
 const RAIO_PERMITIDO = 100;
 type CapturedPhoto = { uri: string; base64?: string };
@@ -84,6 +82,7 @@ export default function Ponto() {
   const [modalMessage, setModalMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
+  const [historico, setHistorico] = useState<any[]>([]);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: Status) => pontos.some(p => p.status === status);
@@ -121,39 +120,58 @@ export default function Ponto() {
       }
       return null;
     } catch (error) {
-      console.error("Erro ao capturar foto:", error);
+      console.error('Erro ao capturar foto:', error);
       return null;
     }
   };
 
   const handleVerifyAndRegister = async (status: Status) => {
     try {
+      // 1️⃣ Tira a foto (sem loading)
       const capturedPhoto = await handleTakePhoto();
       if (!capturedPhoto?.base64) {
-        Alert.alert("Erro", "Falha ao capturar a foto. Tente novamente.");
+        setVerificationResult('fail');
+        setModalMessage('Falha ao capturar a foto');
         return;
       }
-      setPhoto(capturedPhoto);
 
-      const userId = await AsyncStorage.getItem("userId");
+      // 2️⃣ Ativar overlay de carregamento
+      setLoading(true);
+
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
-        Alert.alert("Erro", "Usuário não encontrado. Faça login novamente.");
+        setLoading(false);
+        setVerificationResult('fail');
+        setModalMessage('Usuário não encontrado. Faça login novamente.');
         return;
       }
 
+      // 3️⃣ Verificar rosto
       const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId })
       });
+
       const verifyData = await verifyResponse.json();
+
+      // ❌ Falha → overlay fail
       if (!verifyResponse.ok) {
-        Alert.alert("Erro", verifyData.error || "Falha na verificação do rosto.");
+        setLoading(false);
+        setVerificationResult('fail');
+        setModalMessage(verifyData.error || 'Rosto não reconhecido, tente novamente.');
         return;
       }
-      Alert.alert("Verificado", verifyData.message || "Rosto confirmado!");
 
-      // 3️⃣ Verifica localização
+      // 4️⃣ Reconhecimento OK → remove loading e ativa overlay de sucesso
+      setLoading(false);
+      setVerificationResult('success');
+      setModalMessage(`Rosto verificado! Registrando ponto de ${capitalize(status)}...`);
+
+      // ⚠️ Pequeno delay só pra exibir o success antes de seguir
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // 5️⃣ Verificar localização
       const coords = await pedirPermissaoLocalizacao();
       if (!coords) return;
 
@@ -165,28 +183,26 @@ export default function Ponto() {
       );
 
       if (distancia > RAIO_PERMITIDO) {
-        Alert.alert(
-          "Fora do local permitido",
-          `Você precisa estar a até ${RAIO_PERMITIDO}m do local.`
-        );
+        setVerificationResult('fail');
+        setModalMessage(`Você está fora do raio permitido de ${RAIO_PERMITIDO}m.`);
         return;
       }
 
-      // 4️⃣ Registrar ponto no backend
+      // 6️⃣ Registrar ponto
       const res = await api.post('/ponto', { status, localizacao: coords });
       const pontoRegistrado = res.data.ponto;
 
-      // Atualiza estado local imediatamente
+      // Atualiza lista instantaneamente
       setPontos(prev => [...prev, pontoRegistrado]);
 
-      // 5️⃣ Mostrar overlay de sucesso
+      // 7️⃣ Overlay de sucesso final
       setVerificationResult('success');
       setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
     } catch (err) {
       console.error(err);
       setLoading(false);
-      setModalMessage('Não foi possível conectar ao servidor ou registrar o ponto.');
-      setModalFailVisible(true);
+      setVerificationResult('fail');
+      setModalMessage('Erro ao conectar ao servidor.');
     }
   };
 
@@ -210,6 +226,23 @@ export default function Ponto() {
       const hoje = new Date().toISOString().slice(0, 10);
       const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
       setPontos(pontosHoje);
+      // Montar histórico agrupado por dia
+      const agrupado: any = {};
+
+      res.data.forEach((p: Ponto) => {
+        const data = new Date(p.horario).toISOString().slice(0, 10); // yyyy-mm-dd
+        const hora = new Date(p.horario).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if (!agrupado[data]) {
+          agrupado[data] = {
+            data,
+            registros: {}
+          };
+        }
+        agrupado[data].registros[p.status] = hora;
+      });
+
+      const historicoArray = Object.values(agrupado).sort((a: any, b: any) => b.data.localeCompare(a.data));
+      setHistorico(historicoArray);
     } catch (err) {
       console.log('Erro ao buscar pontos:', err);
     }
@@ -236,7 +269,7 @@ export default function Ponto() {
             loop
             style={{ width: 200, height: 200 }}
           />
-          <Text style={styles.overlayText}>Reconhecimento facial em andamento...</Text>
+          <Text style={styles.overlayText}>Reconhecimento em andamento...</Text>
         </View>
       </Modal>
 
@@ -253,7 +286,7 @@ export default function Ponto() {
               setPhoto(null); // libera para bater outro ponto
             }}
           />
-          <Text style={styles.overlayText}>Rosto verificado! O ponto foi batido.</Text>
+          <Text style={styles.overlayText}>Rosto verificado! {'\n'}O ponto foi batido.</Text>
         </View>
       </Modal>
 
@@ -267,7 +300,7 @@ export default function Ponto() {
             style={{ width: 200, height: 200 }}
             onAnimationFinish={() => setVerificationResult(null)}
           />
-          <Text style={styles.overlayText}>Rosto não reconhecido, tente novamente.</Text>
+          <Text style={styles.overlayText}>Rosto não reconhecido,{'\n'} tente novamente.</Text>
         </View>
       </Modal>
 
@@ -345,6 +378,7 @@ export default function Ponto() {
           );
         })}
       </View>
+      <HistoricoPontos historico={historico} />
 
       {/* Modal de sucesso */}
       <Modal

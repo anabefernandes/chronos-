@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing, ScrollView, SafeAreaView, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Easing,
+  ScrollView,
+  SafeAreaView,
+  Alert
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useRouter } from 'expo-router';
@@ -23,30 +34,32 @@ export default function EnrollScreen() {
       msg1Anim.setValue(0);
       msg2Anim.setValue(0);
       Animated.sequence([
-        Animated.timing(msg1Anim, { 
-            toValue: 1, 
-            duration: 400, 
-            easing: Easing.out(Easing.ease), 
-            useNativeDriver: true }),
-        
-        Animated.timing(msg2Anim, { 
-            toValue: 1, 
-            duration: 400, 
-            easing: Easing.out(Easing.ease), 
-            useNativeDriver: true }),
+        Animated.timing(msg1Anim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true
+        }),
+
+        Animated.timing(msg2Anim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true
+        })
       ]).start();
     }
   }, [photo]);
 
   const startAnimations = () => {
     animatedValues.forEach((anim, i) => {
-      Animated.spring(anim, { 
-        toValue: 1, 
-        friction: 6, 
-        tension: 40, 
-        delay: i * 400, 
-        useNativeDriver: true 
-        }).start();
+      Animated.spring(anim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        delay: i * 400,
+        useNativeDriver: true
+      }).start();
     });
   };
 
@@ -56,12 +69,12 @@ export default function EnrollScreen() {
 
   useEffect(() => {
     if (photo) {
-      Animated.spring(infoAnimated, { 
-        toValue: 1, 
-        friction: 6, 
-        tension: 40, 
-        useNativeDriver: true 
-        }).start();
+      Animated.spring(infoAnimated, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true
+      }).start();
     }
   }, [photo]);
 
@@ -72,32 +85,34 @@ export default function EnrollScreen() {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ 
-        base64: false, 
-        quality: 0.8, 
-        cameraType: ImagePicker.CameraType.front 
-        });
+    const result = await ImagePicker.launchCameraAsync({
+      base64: false,
+      quality: 0.8,
+      cameraType: ImagePicker.CameraType.front
+    });
 
     if (!result.canceled && result.assets.length > 0) {
       const original = result.assets[0];
 
       const visual = await ImageManipulator.manipulateAsync(
-        original.uri, 
-      [{ flip: ImageManipulator.FlipType.Horizontal }], 
-      { compress: 0.8 });
-      
-      const resizedForAPI = await ImageManipulator.manipulateAsync(original.uri, 
-      [{ resize: { width: 600 } }], { compress: 0.8, base64: true });
+        original.uri,
+        [{ flip: ImageManipulator.FlipType.Horizontal }],
+        { compress: 0.8 }
+      );
+
+      const resizedForAPI = await ImageManipulator.manipulateAsync(original.uri, [{ resize: { width: 600 } }], {
+        compress: 0.8,
+        base64: true
+      });
 
       let base64ForAPI = resizedForAPI.base64 || '';
-      if (base64ForAPI.startsWith('data:image')) 
-      base64ForAPI = base64ForAPI.split(',')[1];
+      if (base64ForAPI.startsWith('data:image')) base64ForAPI = base64ForAPI.split(',')[1];
 
-      setPhoto({ 
-        ...original, 
-        uri: visual.uri, 
-        base64: base64ForAPI 
-        });
+      setPhoto({
+        ...original,
+        uri: visual.uri,
+        base64: base64ForAPI
+      });
     }
   };
 
@@ -117,23 +132,27 @@ export default function EnrollScreen() {
       const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/enroll`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          user_id: userId, 
-          image: photo.base64 }),
+        body: JSON.stringify({
+          user_id: userId,
+          image: photo.base64
+        })
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
-      Alert.alert("Sucesso", data.message || "Rosto cadastrado com sucesso!");
-    } else {
-      Alert.alert("Erro", data.error || "Falha ao cadastrar rosto.");
+        setOverlayType('success');
+        showOverlayFunc(); // ◀️ MOSTRA O SUCESSO E REDIRECIONA
+      } else {
+        setOverlayType('error');
+        showOverlayFunc(); // ◀️ MOSTRA O ERRO
+      }
+    } catch (error) {
+      setOverlayType('error');
+      showOverlayFunc(); // ◀️ MOSTRA O ERRO
+      console.error(error);
     }
-  } catch (error) {
-    Alert.alert("Erro", "Não foi possível conectar ao servidor.");
-    console.error(error);
-  }
-};
+  };
 
   const showOverlayFunc = () => {
     setShowOverlay(true);
@@ -145,8 +164,14 @@ export default function EnrollScreen() {
 
   const instructions = [
     { icon: require('../../assets/images/telas-public/icone_lampada.png'), text: 'Prefira ambientes bem iluminados.' },
-    { icon: require('../../assets/images/telas-public/icone_scan.png'), text: 'Mantenha o celular na altura do rosto e olhe diretamente para a câmera.' },
-    { icon: require('../../assets/images/telas-public/icone_semacessorio.png'), text: 'Remova óculos escuros, chapéus, bonés ou qualquer objeto que cubra o rosto.' }
+    {
+      icon: require('../../assets/images/telas-public/icone_scan.png'),
+      text: 'Mantenha o celular na altura do rosto e olhe diretamente para a câmera.'
+    },
+    {
+      icon: require('../../assets/images/telas-public/icone_semacessorio.png'),
+      text: 'Remova óculos escuros, chapéus, bonés ou qualquer objeto que cubra o rosto.'
+    }
   ];
 
   return (
@@ -167,13 +192,18 @@ export default function EnrollScreen() {
                   key={index}
                   style={{
                     opacity: animatedValues[index],
-                    transform: [{ scale: animatedValues[index].interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
+                    transform: [
+                      { scale: animatedValues[index].interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }
+                    ],
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginVertical: 10,
+                    marginVertical: 10
                   }}
                 >
-                  <Image source={item.icon} style={[styles.icon, index === instructions.length - 1 && { width: 30, height: 30 }]} />
+                  <Image
+                    source={item.icon}
+                    style={[styles.icon, index === instructions.length - 1 && { width: 30, height: 30 }]}
+                  />
                   <View style={styles.instructionCard}>
                     <Text style={styles.instructionText}>{item.text}</Text>
                   </View>
@@ -204,13 +234,31 @@ export default function EnrollScreen() {
               </TouchableOpacity>
             </View>
 
-            <Animated.View style={[styles.msgBubble, { opacity: msg1Anim, transform: [{ translateY: msg1Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
+            <Animated.View
+              style={[
+                styles.msgBubble,
+                {
+                  opacity: msg1Anim,
+                  transform: [{ translateY: msg1Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
+                }
+              ]}
+            >
               <Image source={require('../../assets/images/telas-public/icone_robo.png')} style={styles.robotFloat} />
               <Text style={styles.infoTitle}>Você sabia?</Text>
-              <Text style={styles.msgText}>O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso.</Text>
+              <Text style={styles.msgText}>
+                O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso.
+              </Text>
             </Animated.View>
 
-            <Animated.View style={[styles.msgBubble, { opacity: msg2Anim, transform: [{ translateY: msg2Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
+            <Animated.View
+              style={[
+                styles.msgBubble,
+                {
+                  opacity: msg2Anim,
+                  transform: [{ translateY: msg2Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
+                }
+              ]}
+            >
               <Text style={styles.msgText}>Além de agilizar seus pontos e manter seus dados seguros!</Text>
             </Animated.View>
           </>
@@ -219,7 +267,11 @@ export default function EnrollScreen() {
         {showOverlay && (
           <View style={styles.overlay}>
             <LottieView
-              source={overlayType === 'success' ? require('../../assets/lottie/success.json') : require('../../assets/lottie/fail.json')}
+              source={
+                overlayType === 'success'
+                  ? require('../../assets/lottie/success.json')
+                  : require('../../assets/lottie/fail.json')
+              }
               autoPlay
               loop={false}
               style={{ width: 200, height: 200 }}
@@ -235,35 +287,53 @@ export default function EnrollScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flexGrow: 1, 
-    justifyContent: 'flex-start', 
-    alignItems: 'center', 
-    padding: 16, 
-    paddingBottom: 50, 
-    backgroundColor: '#fff' },
-  title: { 
-    fontSize: 22, 
-    fontWeight: 'bold', 
-    marginBottom: 20 },
-  faceImage: { 
-    width: 200, 
-    height: 200, 
-    borderRadius: 12, 
-    marginBottom: 20 },
-  card: { 
-    backgroundColor: '#f5f5f5', 
-    padding: 16, 
-    borderRadius: 10, 
-    marginBottom: 20 },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    padding: 16,
+    paddingBottom: 50,
+    backgroundColor: '#fff'
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20
+  },
+  faceImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 20
+  },
+  card: {
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 20
+  },
   subtitle: { fontSize: 16, textAlign: 'center' },
   instructions: { width: '100%' },
   icon: { width: 40, height: 40, marginRight: 10 },
   instructionCard: { flex: 1 },
   instructionText: { fontSize: 14 },
   buttonRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 20 },
-  cancelButton: { flex: 1, backgroundColor: '#ccc', padding: 12, borderRadius: 10, marginRight: 10, alignItems: 'center' },
-  startButton: { flex: 1, backgroundColor: '#ff69b4', padding: 12, borderRadius: 10, marginLeft: 10, alignItems: 'center' },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#ccc',
+    padding: 12,
+    borderRadius: 10,
+    marginRight: 10,
+    alignItems: 'center'
+  },
+  startButton: {
+    flex: 1,
+    backgroundColor: '#ff69b4',
+    padding: 12,
+    borderRadius: 10,
+    marginLeft: 10,
+    alignItems: 'center'
+  },
   buttonText: { color: '#fff', fontWeight: 'bold' },
   titleVisualizacao: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
   preview: { width: 250, height: 250, borderRadius: 12, marginBottom: 20 },
@@ -271,6 +341,19 @@ const styles = StyleSheet.create({
   robotFloat: { width: 40, height: 40, position: 'absolute', top: -20, left: -20 },
   infoTitle: { fontWeight: 'bold', marginBottom: 4 },
   msgText: { fontSize: 14 },
-  overlay: { position: 'absolute', top: '40%', left: '10%', right: '10%', backgroundColor: '#fff', borderRadius: 12, alignItems: 'center', padding: 20, elevation: 5, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10 },
-  overlayText: { marginTop: 10, fontWeight: 'bold', fontSize: 16, textAlign: 'center' },
+  overlay: {
+    position: 'absolute',
+    top: '40%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    alignItems: 'center',
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10
+  },
+  overlayText: { marginTop: 10, fontWeight: 'bold', fontSize: 16, textAlign: 'center' }
 });

@@ -69,6 +69,6 @@ router.get('/meus', auth, ctrl.meusPontos);
  *       200:
  *         description: Lista de pontos
  */
-router.get('/todos', auth, requireRole('admin'), ctrl.todosPontos);
+router.get('/todos', auth, requireRole('admin', 'chefe'), ctrl.todosPontos);
 
 module.exports = router;
