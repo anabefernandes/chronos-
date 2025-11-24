@@ -5,7 +5,15 @@ const diaSchema = new mongoose.Schema({
   data: { type: Date, required: true },
   horaEntrada: { type: String, required: false },
   horaSaida: { type: String, required: false },
-  folga: { type: Boolean, default: false }
+  folga: { type: Boolean, default: false },
+  pontoEntrada: { type: String, default: null },
+  pontoAlmoco: { type: String, default: null },
+  pontoRetorno: { type: String, default: null },
+  pontoSaida: { type: String, default: null },
+  atrasoEntrada: { type: Number, default: 0 },   // minutos
+  atrasoRetorno: { type: Number, default: 0 },   // minutos
+  saidaAntecipada: { type: Number, default: 0 },
+  horasExtras: { type: Number, default: 0 }
 });
 
 const escalaSchema = new mongoose.Schema(

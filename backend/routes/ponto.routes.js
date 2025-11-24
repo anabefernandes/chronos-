@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/pontoController');
 const { auth, requireRole } = require('../middlewares/auth');
+console.log(ctrl);
+
 
 /**
  * @swagger

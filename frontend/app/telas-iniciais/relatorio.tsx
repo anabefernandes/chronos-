@@ -91,14 +91,17 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
     }
   }
 
-  async function carregarRelatorio() {
-    try {
-      const res = await api.get('/relatorio/me');
-      setRelatorio(res.data);
-    } catch (err) {
-      console.log('Erro ao carregar relatório', err);
-    }
+ async function carregarRelatorio() {
+  try {
+    const res = await api.get('/relatorio/me');
+    setRelatorio(res.data);
+  } catch (err) {
+    console.log('Erro ao carregar relatório', err);
+  } finally {
+    setCarregando(false);
   }
+}
+
 
   async function carregarRelatorioFuncionario(id: string) {
     try {
@@ -217,7 +220,7 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
     );
   }
 
-  const temPontos =
+const temPontos =
     relatorio?.pontosDetalhados.length &&
     (relatorio.totais.horasTrabalhadasDecimal > 0 ||
       relatorio.totais.horasExtrasDecimal > 0 ||
@@ -234,66 +237,88 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
       ];
 
   return (
-    <>
-      <Navbar />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 30 }}>
-        {/* Título + botão Voltar */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-          <Text style={styles.title}>Relatório do Funcionário</Text>
-          {voltar && (
-            <TouchableOpacity onPress={voltar} style={styles.btnSmall}>
-              <Text style={styles.btnSmallText}>Voltar</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+  <>
+    <Navbar />
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 30 }}>
 
-        <View style={styles.infoContainer}>
+      {/* Título + botão Voltar */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+        <Text style={styles.title}>Relatório do Funcionário</Text>
+        {voltar && (
+          <TouchableOpacity onPress={voltar} style={styles.btnSmall}>
+            <Text style={styles.btnSmallText}>Voltar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Se NÃO tiver escalas — mostrar aviso e parar aqui */}
+      {relatorio && relatorio.pontosDetalhados.length === 0 ? (
+        <View style={{ alignItems: 'center', marginTop: 40 }}>
+          <LottieView
+            source={require('../../assets/lottie/sem_dados.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#555', marginBottom: 30 }}>
+            Não há escalas registradas.
+          </Text>
+
+          <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
+            <Text style={styles.btnText}>📄 Baixar PDF</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
           {/* Informações do funcionário */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-            <Image
-              source={getUserImage(relatorio!.funcionario.foto)}
-              style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{relatorio!.funcionario.nome}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <Image
-                  source={getRoleIcon(relatorio!.funcionario.role)}
-                  style={{ width: 18, height: 18, marginRight: 6 }}
-                />
-                <Text style={{ fontSize: 14 }}>
-                  {relatorio!.funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                <Image source={setorIcon} style={{ width: 18, height: 18, marginRight: 6 }} />
-                <Text style={{ fontSize: 14 }}>{relatorio!.funcionario.setor || 'Sem setor'}</Text>
+          <View style={styles.infoContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+              <Image
+                source={getUserImage(relatorio!.funcionario.foto)}
+                style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{relatorio!.funcionario.nome}</Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                  <Image source={getRoleIcon(relatorio!.funcionario.role)} style={{ width: 18, height: 18, marginRight: 6 }} />
+                  <Text style={{ fontSize: 14 }}>
+                    {relatorio!.funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <Image source={setorIcon} style={{ width: 18, height: 18, marginRight: 6 }} />
+                  <Text style={{ fontSize: 14 }}>{relatorio!.funcionario.setor || 'Sem setor'}</Text>
+                </View>
               </View>
             </View>
+
+            <View style={styles.divider} />
+
+            {/* Gráfico só aparece se tiver escalas */}
+            {relatorio && relatorio.pontosDetalhados.length > 0 && (
+              <View style={{ alignItems: 'center', marginTop: 10 }}>
+                <PieChart
+                  data={chartData}
+                  width={screenWidth - 20}
+                  height={180}
+                  accessor="population"
+                  backgroundColor="transparent"
+                  paddingLeft="-15"
+                  hasLegend={true}
+                  chartConfig={{ color: () => '#000', labelColor: () => '#000', decimalPlaces: 1 }}
+                  center={[0, 0]}
+                />
+              </View>
+            )}
           </View>
 
-          <View style={styles.divider} />
+          <Text style={styles.subTitle}>Registrados Semanais</Text>
 
-          <View style={{ alignItems: 'center', marginTop: 10 }}>
-            <PieChart
-              data={chartData}
-              width={screenWidth - 20}
-              height={180}
-              accessor="population"
-              backgroundColor="transparent"
-              paddingLeft="-15"
-              hasLegend={true}
-              chartConfig={{ color: () => '#000', labelColor: () => '#000', decimalPlaces: 1 }}
-              center={[0, 0]}
-            />
-          </View>
-        </View>
-
-        <Text style={styles.subTitle}>Registrados Semanais</Text>
-
-        {relatorio && relatorio.pontosDetalhados.length > 0 ? (
           <FlatList
-            data={relatorio.pontosDetalhados}
+            data={relatorio!.pontosDetalhados}
             keyExtractor={(item, index) => item.data + index}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -304,28 +329,16 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
               </View>
             )}
           />
-        ) : (
-          <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <LottieView
-              source={require('../../assets/lottie/sem_dados.json')}
-              autoPlay
-              loop
-              style={{ width: 200, height: 200 }}
-            />
-            <Text style={{ marginTop: 10, fontSize: 16, color: '#555', marginBottom: 30 }}>
-              Nenhum relatório disponível.
-            </Text>
-          </View>
-        )}
 
-        <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
-          <Text style={styles.btnText}>📄 Baixar PDF</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </>
-  );
+          <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
+            <Text style={styles.btnText}>📄 Baixar PDF</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </ScrollView>
+  </>
+);
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -53,9 +53,10 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -23.99978264876472,
-  longitude: -46.43184091710669
+  latitude: -23.997922760582988, 
+  longitude: -46.40699630498622
 };
+
 const RAIO_PERMITIDO = 100;
 type CapturedPhoto = { uri: string; base64?: string };
 
@@ -129,85 +130,82 @@ export default function Ponto() {
   };
 
   const handleVerifyAndRegister = async (status: Status) => {
-    try {
-      // 1️⃣ Tira a foto (sem loading)
-      const capturedPhoto = await handleTakePhoto();
-      if (!capturedPhoto?.base64) {
-        setVerificationResult('fail');
-        setModalMessage('Falha ao capturar a foto');
-        return;
-      }
+  try {
+    // 1️⃣ FOTO
+    const capturedPhoto = await handleTakePhoto();
+    if (!capturedPhoto?.base64) {
+      setVerificationResult('fail');
+      setModalMessage('Falha ao capturar a foto.');
+      return;
+    }
 
-      // 2️⃣ Ativar overlay de carregamento
-      setLoading(true);
+    setLoading(true);
 
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        setLoading(false);
-        setVerificationResult('fail');
-        setModalMessage('Usuário não encontrado. Faça login novamente.');
-        return;
-      }
-
-      // 3️⃣ Verificar rosto
-      const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId })
-      });
-
-      const verifyData = await verifyResponse.json();
-
-      // ❌ Falha → overlay fail
-      if (!verifyResponse.ok) {
-        setLoading(false);
-        setVerificationResult('fail');
-        setModalMessage(verifyData.error || 'Rosto não reconhecido, tente novamente.');
-        return;
-      }
-
-      // 4️⃣ Reconhecimento OK → remove loading e ativa overlay de sucesso
+    // 2️⃣ VERIFICAR LOCALIZAÇÃO ANTES DE QUALQUER COISA
+    const coords = await pedirPermissaoLocalizacao();
+    if (!coords) {
       setLoading(false);
-      setVerificationResult('success');
-      setModalMessage(`Rosto verificado! Registrando ponto de ${capitalize(status)}...`);
+      return;
+    }
 
-      // ⚠️ Pequeno delay só pra exibir o success antes de seguir
-      await new Promise(resolve => setTimeout(resolve, 800));
+    const distancia = getDistanceFromLatLonInMeters(
+      coords.latitude,
+      coords.longitude,
+      LOCAL_FIXO.latitude,
+      LOCAL_FIXO.longitude
+    );
 
-      // 5️⃣ Verificar localização
-      const coords = await pedirPermissaoLocalizacao();
-      if (!coords) return;
+    if (distancia > RAIO_PERMITIDO) {
+      // ❌ FORA DO RAIO — PARAR TUDO!
+      setLoading(false);
+      setModalFailVisible(true);
+      setModalMessage("Você está fora da localização permitida!");
+      return;
+    }
 
-      const distancia = getDistanceFromLatLonInMeters(
-        coords.latitude,
-        coords.longitude,
-        LOCAL_FIXO.latitude,
-        LOCAL_FIXO.longitude
-      );
+    // 3️⃣ LOCALIZAÇÃO CORRETA → AGORA SIM VERIFICAR ROSTO
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      setLoading(false);
+      setModalFailVisible(true);
+      setModalMessage('Usuário não encontrado. Faça login novamente.');
+      return;
+    }
 
-      if (distancia > RAIO_PERMITIDO) {
-        setVerificationResult('fail');
-        setModalMessage(`Você está fora do raio permitido de ${RAIO_PERMITIDO}m.`);
-        return;
-      }
+    const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId })
+    });
 
-      // 6️⃣ Registrar ponto
-      const res = await api.post('/ponto', { status, localizacao: coords });
-      const pontoRegistrado = res.data.ponto;
+    const verifyData = await verifyResponse.json();
 
-      // Atualiza lista instantaneamente
-      setPontos(prev => [...prev, pontoRegistrado]);
-
-      // 7️⃣ Overlay de sucesso final
-      setVerificationResult('success');
-      setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
-    } catch (err) {
-      console.error(err);
+    if (!verifyResponse.ok) {
+      // ❌ RECONHECIMENTO FALHOU → overlay de falha
       setLoading(false);
       setVerificationResult('fail');
-      setModalMessage('Erro ao conectar ao servidor.');
+      setModalMessage("Falha de reconhecimento!");
+      return;
     }
-  };
+
+    // 4️⃣ SE LOCALIZAÇÃO + ROSTO OK → REGISTRAR PONTO
+    const res = await api.post('/ponto', { status, localizacao: coords });
+    const pontoRegistrado = res.data.ponto;
+    setPontos(prev => [...prev, pontoRegistrado]);
+
+    setLoading(false);
+
+    // ✔ Sucesso → overlay verde
+    setVerificationResult('success');
+    setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false);
+    setModalFailVisible(true);
+    setModalMessage("Erro ao conectar ao servidor.");
+  }
+};
 
   useEffect(() => {
     fetchUser();
