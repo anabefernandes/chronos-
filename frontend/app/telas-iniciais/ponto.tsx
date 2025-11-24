@@ -53,8 +53,8 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -23.99978264876472,
-  longitude: -46.43184091710669
+  latitude: -24.025110400842813, 
+  longitude: -46.48851252645827
 };
 const RAIO_PERMITIDO = 100;
 type CapturedPhoto = { uri: string; base64?: string };
