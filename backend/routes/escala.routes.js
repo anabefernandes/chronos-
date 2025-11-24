@@ -55,6 +55,22 @@ router.post('/criarOuEditarEscala', auth, requireRole('chefe', 'admin'), ctrl.cr
 
 /**
  * @swagger
+ * /escala/horario-do-dia:
+ *   get:
+ *     summary: Obter o horário da escala do dia para o funcionário logado
+ *     tags: [Escala]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Horário encontrado
+ *       404:
+ *         description: Nenhuma escala encontrada para hoje
+ */
+router.get('/horario-do-dia', auth, ctrl.horarioDoDia);
+
+/**
+ * @swagger
  * /escala/minhasEscalas:
  *   get:
  *     summary: Listar escalas do funcionário logado
@@ -73,7 +89,7 @@ router.get('/minhasEscalas', auth, ctrl.minhasEscalas);
  * @swagger
  * /escala/todasEscalas:
  *   get:
- *     summary: Listar todas as escalas (somente admin)
+ *     summary: Listar todas as escalas (admin e chefe)
  *     tags: [Escala]
  *     security:
  *       - bearerAuth: []
@@ -112,8 +128,27 @@ router.get('/todasEscalas', auth, requireRole('admin', 'chefe'), ctrl.todasEscal
  */
 router.get('/:funcionarioId', auth, requireRole('chefe', 'admin'), ctrl.escalasPorFuncionario);
 
-router.get('/horario-do-dia', auth, ctrl.horarioDoDia);
-
+/**
+ * @swagger
+ * /escala/{id}:
+ *   delete:
+ *     summary: Excluir escala pelo ID
+ *     tags: [Escala]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da escala
+ *     responses:
+ *       200:
+ *         description: Escala excluída
+ *       404:
+ *         description: Escala não encontrada
+ */
 router.delete('/:id', auth, ctrl.excluirEscala);
 
 module.exports = router;

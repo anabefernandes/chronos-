@@ -27,7 +27,14 @@ export const listarChefe = async () => {
 
 export const atualizarUsuario = async (
   id: string,
-  dados: { nome?: string; email?: string; senha?: string; role?: 'funcionario' | 'chefe'; setor?: string; cargaHorariaDiaria?: number }
+  dados: {
+    nome?: string;
+    email?: string;
+    senha?: string;
+    role?: 'funcionario' | 'chefe';
+    setor?: string;
+    cargaHorariaDiaria?: number;
+  }
 ) => {
   const response = await api.put(`/user/atualizarUsuario/${id}`, dados, {
     headers: { 'Content-Type': 'application/json' }
@@ -88,7 +95,10 @@ export const listarNotificacoes = async (usuarioId: string) => {
   try {
     const response = await api.get(`/notificacoes/${usuarioId}`);
     return response.data;
-  } catch (err) {
+  } catch (err: any) {
+    if (err.response?.status === 401) {
+      return [];
+    }
     console.error('Erro ao listar notificações:', err);
     throw err;
   }
@@ -139,7 +149,6 @@ export const excluirEscala = async (idEscala: string) => {
   return response.data;
 };
 
-
 // Tipo base para uma escala
 export interface EscalaRequest {
   funcionario: string;
@@ -153,7 +162,7 @@ export interface EscalaRequest {
 export const criarOuEditarEscala = async (dados: EscalaRequest) => {
   try {
     const response = await api.post('/escala/criarOuEditarEscala', dados, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' }
     });
     return response.data;
   } catch (error: any) {
@@ -184,8 +193,6 @@ export const minhasEscalas = async () => {
   }
 };
 
-
-
 export const getUserRole = async (): Promise<'admin' | 'chefe' | 'funcionario'> => {
   try {
     const response = await api.get('/user/me'); // rota que retorna info do usuário logado
@@ -199,14 +206,14 @@ export const getUserRole = async (): Promise<'admin' | 'chefe' | 'funcionario'> 
 export interface NotificacaoRequest {
   titulo: string;
   descricao: string;
-  destinatario: string; 
+  destinatario: string;
   tipo?: 'escala' | 'tarefa' | 'geral';
 }
 
 export const criarNotificacao = async (dados: NotificacaoRequest) => {
   try {
     const response = await api.post('/notificacoes/criar', dados, {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' }
     });
     return response.data;
   } catch (err: any) {

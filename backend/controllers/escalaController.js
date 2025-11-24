@@ -1,9 +1,9 @@
+const mongoose = require('mongoose');
 const Escala = require('../models/Escala');
 const User = require('../models/User');
 const Notificacao = require('../models/Notificacao');
 
-// ✅ Criar ou editar escala semanal
-exports.criarOuEditarEscala = async (req, res, next) => {
+exports.criarOuEditarEscala = async (req, res) => {
   try {
     const { funcionario, data, horaEntrada, horaSaida, folga } = req.body;
 
@@ -20,60 +20,33 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     }
 
     const dataBase = new Date(data);
-    const nomesDias = [
-      'domingo',
-      'segunda-feira',
-      'terça-feira',
-      'quarta-feira',
-      'quinta-feira',
-      'sexta-feira',
-      'sábado'
-    ];
-    const diaSemana = nomesDias[dataBase.getDay()];
 
+    // 🔹 Semana: domingo e sábado em UTC
     const semanaInicio = new Date(dataBase);
-    semanaInicio.setDate(dataBase.getDate() - dataBase.getDay());
-    semanaInicio.setHours(0, 0, 0, 0);
+    semanaInicio.setUTCDate(dataBase.getUTCDate() - dataBase.getUTCDay());
+    semanaInicio.setUTCHours(0, 0, 0, 0);
 
     const semanaFim = new Date(semanaInicio);
-    semanaFim.setDate(semanaInicio.getDate() + 6);
-    semanaFim.setHours(23, 59, 59, 999);
+    semanaFim.setUTCDate(semanaInicio.getUTCDate() + 6);
+    semanaFim.setUTCHours(23, 59, 59, 999);
 
+    const nomesDias = [
+      'domingo', 'segunda-feira', 'terça-feira', 'quarta-feira',
+      'quinta-feira', 'sexta-feira', 'sábado'
+    ];
+    const diaSemana = nomesDias[dataBase.getUTCDay()];
+
+    // 🔹 Formatar hora
     const formatarHora = h => {
       if (!h) return null;
       if (typeof h === 'string') return h;
       return h.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
     };
 
-    // 🔒 Verificação: funcionário já tem escala criada para esta semana?
-    const escalaExistenteSemana = await Escala.findOne({
-      funcionario,
-      semanaInicio: { $lte: dataBase },
-      semanaFim: { $gte: dataBase }
-    });
-
-    if (escalaExistenteSemana) {
-      // Verifica se o mesmo dia já foi cadastrado
-      const jaTemDia = escalaExistenteSemana.dias.some(
-        d => new Date(d.data).toDateString() === dataBase.toDateString()
-      );
-
-      if (jaTemDia) {
-        return res.status(400).json({ msg: 'Esse dia já está cadastrado nesta escala semanal.' });
-      }
-
-      // Caso a semana já tenha 7 dias cadastrados, bloqueia criação
-      if (escalaExistenteSemana.dias.length >= 7) {
-        return res.status(400).json({
-          msg: `Essa semana (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}) já está completa. Crie uma nova semana.`
-        });
-      }
-    }
-
+    // 🔹 Buscar escala da mesma semana exata
     let escala = await Escala.findOne({
       funcionario,
-      semanaInicio: { $lte: dataBase },
-      semanaFim: { $gte: dataBase }
+      semanaInicio
     });
 
     let tipo = 'nova';
@@ -81,7 +54,9 @@ exports.criarOuEditarEscala = async (req, res, next) => {
     if (escala) {
       tipo = 'atualizacao';
 
-      const diaIndex = escala.dias.findIndex(d => new Date(d.data).toDateString() === dataBase.toDateString());
+      const diaIndex = escala.dias.findIndex(
+        d => new Date(d.data).toUTCString() === dataBase.toUTCString()
+      );
 
       if (diaIndex >= 0) {
         escala.dias[diaIndex] = {
@@ -92,6 +67,12 @@ exports.criarOuEditarEscala = async (req, res, next) => {
           folga: !!folga
         };
       } else {
+        if (escala.dias.length >= 7) {
+          return res.status(400).json({
+            msg: `Essa semana (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}) já está completa.`
+          });
+        }
+
         escala.dias.push({
           dia: diaSemana,
           data: dataBase,
@@ -103,6 +84,7 @@ exports.criarOuEditarEscala = async (req, res, next) => {
 
       await escala.save();
     } else {
+      // 🔹 Criar nova semana
       escala = await Escala.create({
         funcionario,
         semanaInicio,
@@ -119,14 +101,14 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       });
     }
 
-    // 🔔 Criar ou atualizar notificação
+    // 🔔 Notificação
     const titulo = 'Escala atualizada';
     const descricao =
       tipo === 'nova'
         ? `Sua escala semanal foi criada (${semanaInicio.toLocaleDateString()} - ${semanaFim.toLocaleDateString()}).`
         : 'Sua escala semanal foi atualizada.';
 
-    let notificacao = await Notificacao.findOne({ usuario: funcionario, titulo: 'Escala atualizada' });
+    let notificacao = await Notificacao.findOne({ usuario: funcionario, titulo });
 
     if (notificacao) {
       notificacao.descricao = descricao;
@@ -142,21 +124,28 @@ exports.criarOuEditarEscala = async (req, res, next) => {
       });
     }
 
+    // Enviar via socket
     const io = req.app.get('io');
     io.to(funcionario.toString()).emit('nova_notificacao', notificacao);
 
-    const msg = tipo === 'nova' ? 'Escala semanal criada com sucesso!' : 'Escala semanal atualizada!';
-    res.status(201).json({ msg, escala });
+    return res.status(201).json({
+      msg: tipo === 'nova' ? 'Escala semanal criada com sucesso!' : 'Escala semanal atualizada!',
+      escala
+    });
+
   } catch (err) {
     console.error('Erro ao criar/editar escala semanal:', err);
     res.status(500).json({ msg: 'Erro interno ao criar/editar escala semanal' });
   }
 };
 
-// Função para excluir uma escala pelo ID
+
+
+//
+//  🗑️ EXCLUIR ESCALA
+//
 exports.excluirEscala = async (req, res) => {
   try {
-    const Escala = require('../models/Escala'); // Certifique-se de importar o Model aqui se não estiver no topo
     const { id } = req.params;
 
     const escala = await Escala.findById(id);
@@ -168,69 +157,89 @@ exports.excluirEscala = async (req, res) => {
     await Escala.findByIdAndDelete(id);
 
     return res.status(200).json({ msg: 'Escala excluída com sucesso!' });
+
   } catch (error) {
     console.error('Erro ao excluir escala:', error);
     return res.status(500).json({ msg: 'Erro interno do servidor.' });
   }
 };
 
-// ✅ Listar escalas do funcionário logado
-exports.minhasEscalas = async (req, res, next) => {
+
+
+//
+//  📌 MINHAS ESCALAS
+//
+exports.minhasEscalas = async (req, res) => {
   try {
     const funcionarioId = req.user.id;
+
     const escalas = await Escala.find({ funcionario: funcionarioId })
-      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos necessários
+      .populate('funcionario', 'nome foto setor role')
       .sort({ semanaInicio: 1 });
 
     res.json(escalas);
+
   } catch (err) {
     console.error('Erro ao listar escalas do funcionário:', err);
     res.status(500).json({ msg: 'Erro ao listar suas escalas' });
   }
 };
 
-// ✅ Listar todas as escalas
-exports.todasEscalas = async (req, res, next) => {
+exports.todasEscalas = async (req, res) => {
   try {
     const escalas = await Escala.find()
-      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos
+      .populate('funcionario', 'nome foto setor role')
       .sort({ semanaInicio: -1 });
 
     res.json(escalas);
+
   } catch (err) {
     console.error('Erro ao listar todas as escalas:', err);
     res.status(500).json({ msg: 'Erro ao listar escalas' });
   }
 };
 
-// ✅ Listar escalas de um funcionário específico
-exports.escalasPorFuncionario = async (req, res, next) => {
+
+
+//
+//  📌 ESCALAS POR FUNCIONÁRIO (usada pela rota /:funcionarioId)
+//
+exports.escalasPorFuncionario = async (req, res) => {
   try {
     const { funcionarioId } = req.params;
 
-    if (!funcionarioId) {
-      return res.status(400).json({ msg: 'ID do funcionário é obrigatório.' });
+    if (!mongoose.Types.ObjectId.isValid(funcionarioId)) {
+      return res.status(400).json({ msg: 'ID inválido.' });
     }
 
     const escalas = await Escala.find({ funcionario: funcionarioId })
-      .populate('funcionario', 'nome foto setor role') // ✅ populando todos os campos
+      .populate('funcionario', 'nome foto setor role')
       .sort({ semanaInicio: 1 });
 
     res.json(escalas);
+
   } catch (err) {
     console.error('Erro ao buscar escalas do funcionário:', err);
     res.status(500).json({ msg: 'Erro ao buscar escalas do funcionário.' });
   }
 };
 
-// 🔎 Retornar horário do dia para o funcionário logado
+
+
+//
+//  ⏰ HORÁRIO DO DIA
+//
 exports.horarioDoDia = async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ msg: 'Usuário não autenticado.' });
+    }
+
     const funcionarioId = req.user.id;
+
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    // Buscar escala onde HOJE está dentro da semana
     const escala = await Escala.findOne({
       funcionario: funcionarioId,
       semanaInicio: { $lte: hoje },
@@ -241,8 +250,11 @@ exports.horarioDoDia = async (req, res) => {
       return res.status(404).json({ msg: 'Nenhuma escala encontrada para esta semana.' });
     }
 
-    // Procurar o dia dentro da escala
-    const dia = escala.dias.find(d => new Date(d.data).toDateString() === hoje.toDateString());
+    const dia = escala.dias.find(d => {
+      const dataDia = new Date(d.data);
+      dataDia.setHours(0, 0, 0, 0);
+      return dataDia.getTime() === hoje.getTime();
+    });
 
     if (!dia) {
       return res.status(404).json({ msg: 'Nenhuma escala encontrada para hoje.' });
@@ -255,6 +267,7 @@ exports.horarioDoDia = async (req, res) => {
       horaEntrada: dia.horaEntrada,
       horaSaida: dia.horaSaida
     });
+
   } catch (err) {
     console.error('Erro ao buscar horário do dia:', err);
     res.status(500).json({ msg: 'Erro ao buscar horário do dia.' });

@@ -45,10 +45,10 @@ export default function Escalas() {
           const dateStr = formatarDataLocal(dia.data);
           marks[dateStr] = {
             marked: true,
-            dotColor: dia.folga ? '#2196F3' : '#7B1FA2',
+            dotColor: dia.folga ? '#81d4fa8b' : '#a8e6cf89',
             customStyles: {
               container: {
-                backgroundColor: dia.folga ? '#bbdefb' : '#e1bee7',
+                backgroundColor: dia.folga ? '#81d4fa8b' : '#a8e6cf89',
                 borderRadius: 6
               },
               text: {
@@ -153,7 +153,12 @@ export default function Escalas() {
           style={[
             styles.cardDiaSelecionado,
             {
-              backgroundColor: horariosDoDia.length === 0 ? '#ddd' : horariosDoDia[0]?.folga ? '#cceeff' : '#e6d4ff',
+              backgroundColor:
+                horariosDoDia.length === 0 ? '#ddd' : horariosDoDia[0]?.folga ? '#eaf2f8ff' : '#f3f0f9ff',
+              borderWidth: 1,
+              borderColor:
+                horariosDoDia.length === 0 ? '#cdcdcdff' : horariosDoDia[0]?.folga ? '#e3edfdff' : '#ece3fdff',
+
               opacity: fadeAnim,
               transform: [{ translateY: slideAnim }]
             }
@@ -341,10 +346,14 @@ const styles = StyleSheet.create({
     padding: 10
   },
   trabalhoLinha: {
-    backgroundColor: '#ede3ff'
+    backgroundColor: '#f3f0f9ff',
+    borderWidth: 1,
+    borderColor: '#d6c9faff'
   },
   folgaLinha: {
-    backgroundColor: '#d4eeff'
+    backgroundColor: '#eaf2f8ff',
+    borderWidth: 1,
+    borderColor: '#c9e1faff'
   },
   colunaData: {
     width: 68,
@@ -383,27 +392,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   tagBox: {
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    width: 120,
+    borderRadius: 14,
+    paddingVertical: 4, // 🔥 MENOR
+    paddingHorizontal: 10,
+    width: 110, // 🔥 MENOR
     alignItems: 'center',
     justifyContent: 'center'
   },
   tagEntrada: {
-    backgroundColor: '#c6edc6ff'
+    backgroundColor: '#C7F4C7'
   },
   tagSaida: {
-    backgroundColor: '#ffc8a8ff'
+    backgroundColor: '#CFCFCF'
   },
   tagFolgaBox: {
-    backgroundColor: '#a8dbff',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    backgroundColor: '#B8E1FF',
+    borderRadius: 14,
+    paddingVertical: 4, 
+    paddingHorizontal: 10,
+    width: 110,
     alignItems: 'center',
-    justifyContent: 'center',
-    width: 120
+    justifyContent: 'center'
   },
   textHora: {
     color: '#333',
@@ -492,15 +501,15 @@ const styles = StyleSheet.create({
     height: 24
   },
   entradaBox: {
-    backgroundColor: '#a6e0a6',
+    backgroundColor: '#C7F4C7',
     width: '70%'
   },
   saidaBox: {
-    backgroundColor: '#ffc8a8ff',
+    backgroundColor: '#CFCFCF',
     width: '70%'
   },
   folgaBox: {
-    backgroundColor: '#9fcfff',
+    backgroundColor: '#B8E1FF',
     width: '70%',
     marginTop: 10
   },

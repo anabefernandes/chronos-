@@ -181,7 +181,10 @@ const HistoricoPontos = ({ historico }: Props) => {
                     {ORDEM.map(tipo => (
                       <View key={tipo} style={styles.linhaInfo}>
                         <View style={[styles.bolinhaTipo, { backgroundColor: cores[tipo] }]} />
-                        <Text style={styles.tipo}>{tipo.toUpperCase()}</Text>
+                        <Text style={styles.tipo}>
+                          {tipo === 'almoco' ? 'ALMOÇO' : tipo === 'saida' ? 'SAÍDA' : tipo.toUpperCase()}
+                        </Text>
+
                         <Text style={styles.hora}>{item.registros[tipo] ?? '--:--'}</Text>
                       </View>
                     ))}

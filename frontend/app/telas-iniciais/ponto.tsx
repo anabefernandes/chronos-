@@ -83,6 +83,9 @@ export default function Ponto() {
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
   const [historico, setHistorico] = useState<any[]>([]);
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
+  const historicoRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollView>(null);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: Status) => pontos.some(p => p.status === status);
@@ -257,7 +260,7 @@ export default function Ponto() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+    <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 20 }}>
       <PontoHeader horario={undefined} data={undefined} />
 
       {/* Overlay de carregamento */}
@@ -378,7 +381,20 @@ export default function Ponto() {
           );
         })}
       </View>
-      <HistoricoPontos historico={historico} />
+      <TouchableOpacity style={styles.botaoHistorico} onPress={() => setMostrarHistorico(prev => !prev)}>
+        <Text style={styles.botaoHistoricoTexto}>{mostrarHistorico ? 'Ocultar histórico ▲' : 'Ver histórico ▼'}</Text>
+      </TouchableOpacity>
+
+      {mostrarHistorico && (
+        <View
+          onLayout={event => {
+            const { y } = event.nativeEvent.layout;
+            scrollRef.current?.scrollTo({ y, animated: true });
+          }}
+        >
+          <HistoricoPontos historico={historico} />
+        </View>
+      )}
 
       {/* Modal de sucesso */}
       <Modal
@@ -418,11 +434,6 @@ export default function Ponto() {
 }
 
 const styles = StyleSheet.create({
-  takePhotoButton: {
-    backgroundColor: '#ff69b4',
-    padding: 12,
-    borderRadius: 10
-  },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold'
@@ -559,5 +570,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     marginTop: 15,
     textAlign: 'center'
+  },
+  botaoHistorico: {
+    marginTop: 20,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#3C188F',
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    borderRadius: 10,
+    alignSelf: 'center'
+  },
+  botaoHistoricoTexto: {
+    color: '#3C188F',
+    fontSize: 16,
+    fontWeight: 'bold'
   }
 });
