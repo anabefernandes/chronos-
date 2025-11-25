@@ -1,0 +1,38 @@
+const handleTakePhoto = async (): Promise<CapturedPhoto | null> => {
+  // 1️⃣ Solicita permissão para câmera
+  const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+  if (cameraStatus !== 'granted') {
+    Alert.alert('Permissão necessária', 'Por favor, habilite a câmera para continuar.');
+    return null;
+  }
+
+  // 2️⃣ Solicita permissão para galeria (se for salvar a foto depois)
+  const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (mediaStatus !== 'granted') {
+    Alert.alert('Permissão necessária', 'Por favor, habilite a galeria para continuar.');
+    return null;
+  }
+
+  try {
+    const result = await ImagePicker.launchCameraAsync({
+      base64: true,
+      quality: 0.8,
+      cameraType: ImagePicker.CameraType.front,
+      allowsEditing: false
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const original = result.assets[0];
+      const manipulated = await ImageManipulator.manipulateAsync(
+        original.uri,
+        [{ flip: ImageManipulator.FlipType.Horizontal }],
+        { compress: 0.8, base64: true }
+      );
+      return { uri: manipulated.uri, base64: manipulated.base64 };
+    }
+    return null;
+  } catch (error) {
+    console.error('Erro ao capturar foto:', error);
+    return null;
+  }
+};
