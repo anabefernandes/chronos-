@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Image } from 'react-native';
 import { ptBR } from 'date-fns/locale';
-import { toZonedTime, format } from 'date-fns-tz';
+import { format } from 'date-fns';
 
 export interface PontoDetalhado {
   data: string;
@@ -9,7 +9,7 @@ export interface PontoDetalhado {
   almoco?: string;
   retorno?: string;
   saida?: string;
-  horasTrabalhadas: number; 
+  horasTrabalhadas: number;
   horasExtras?: number;
   horasFaltantes?: number;
 }
@@ -25,15 +25,18 @@ const pontoCores = {
   Saída: '#F44336'
 };
 
-// Fuso horário local
-const timeZone = 'America/Sao_Paulo';
+// Converte string ISO UTC para horário local de SP
+const toLocalDate = (iso: string) => {
+  const dataUTC = new Date(iso);
+  const dataLocal = new Date(dataUTC.getTime() - dataUTC.getTimezoneOffset() * 60000);
+  return dataLocal;
+};
 
 export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
-  // formata hora considerando timezone
   const formatHora = (hora?: string) => {
     if (!hora) return '-/-';
-    const local = toZonedTime(hora, timeZone);
-    return format(local, 'HH:mm');
+    const dataLocal = toLocalDate(hora);
+    return format(dataLocal, 'HH:mm');
   };
 
   const formatHorasTrabalhadas = (horas: number) => {
@@ -44,7 +47,7 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
   };
 
   const renderItem = ({ item }: { item: PontoDetalhado }) => {
-    const dataLocal = toZonedTime(item.data, timeZone);
+    const dataLocal = toLocalDate(item.data);
     const diaSemana = format(dataLocal, 'EEEE', { locale: ptBR });
     const dataFormatada = format(dataLocal, 'dd/MM/yyyy', { locale: ptBR });
 
@@ -97,6 +100,7 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
     />
   );
 }
+
 const styles = StyleSheet.create({
   card: {
     width: 250,

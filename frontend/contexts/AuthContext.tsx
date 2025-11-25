@@ -70,7 +70,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const prevNotificacoesRef = useRef<number>(0);
 
-  // Funções set + AsyncStorage
   const setUserId = (id: string) => {
     setUserIdState(id);
     AsyncStorage.setItem('userId', id);

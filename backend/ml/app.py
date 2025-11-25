@@ -1,7 +1,7 @@
 import sys
 import json
 import pickle
-import pandas as pd
+import pandas as pd 
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # pasta onde app.py está

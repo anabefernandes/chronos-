@@ -53,9 +53,10 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -24.025110400842813, 
-  longitude: -46.48851252645827
+latitude: -24.00288811327477,
+      longitude: -46.4125467782417
 };
+
 const RAIO_PERMITIDO = 100;
 type CapturedPhoto = { uri: string; base64?: string };
 
@@ -83,6 +84,9 @@ export default function Ponto() {
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
   const [historico, setHistorico] = useState<any[]>([]);
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
+  const historicoRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollView>(null);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: Status) => pontos.some(p => p.status === status);
@@ -126,85 +130,82 @@ export default function Ponto() {
   };
 
   const handleVerifyAndRegister = async (status: Status) => {
-    try {
-      // 1️⃣ Tira a foto (sem loading)
-      const capturedPhoto = await handleTakePhoto();
-      if (!capturedPhoto?.base64) {
-        setVerificationResult('fail');
-        setModalMessage('Falha ao capturar a foto');
-        return;
-      }
+  try {
+    // 1️⃣ FOTO
+    const capturedPhoto = await handleTakePhoto();
+    if (!capturedPhoto?.base64) {
+      setVerificationResult('fail');
+      setModalMessage('Falha ao capturar a foto.');
+      return;
+    }
 
-      // 2️⃣ Ativar overlay de carregamento
-      setLoading(true);
+    setLoading(true);
 
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        setLoading(false);
-        setVerificationResult('fail');
-        setModalMessage('Usuário não encontrado. Faça login novamente.');
-        return;
-      }
-
-      // 3️⃣ Verificar rosto
-      const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId })
-      });
-
-      const verifyData = await verifyResponse.json();
-
-      // ❌ Falha → overlay fail
-      if (!verifyResponse.ok) {
-        setLoading(false);
-        setVerificationResult('fail');
-        setModalMessage(verifyData.error || 'Rosto não reconhecido, tente novamente.');
-        return;
-      }
-
-      // 4️⃣ Reconhecimento OK → remove loading e ativa overlay de sucesso
+    // 2️⃣ VERIFICAR LOCALIZAÇÃO ANTES DE QUALQUER COISA
+    const coords = await pedirPermissaoLocalizacao();
+    if (!coords) {
       setLoading(false);
-      setVerificationResult('success');
-      setModalMessage(`Rosto verificado! Registrando ponto de ${capitalize(status)}...`);
+      return;
+    }
 
-      // ⚠️ Pequeno delay só pra exibir o success antes de seguir
-      await new Promise(resolve => setTimeout(resolve, 800));
+    const distancia = getDistanceFromLatLonInMeters(
+      coords.latitude,
+      coords.longitude,
+      LOCAL_FIXO.latitude,
+      LOCAL_FIXO.longitude
+    );
 
-      // 5️⃣ Verificar localização
-      const coords = await pedirPermissaoLocalizacao();
-      if (!coords) return;
+    if (distancia > RAIO_PERMITIDO) {
+      // ❌ FORA DO RAIO — PARAR TUDO!
+      setLoading(false);
+      setModalFailVisible(true);
+      setModalMessage("Você está fora da localização permitida!");
+      return;
+    }
 
-      const distancia = getDistanceFromLatLonInMeters(
-        coords.latitude,
-        coords.longitude,
-        LOCAL_FIXO.latitude,
-        LOCAL_FIXO.longitude
-      );
+    // 3️⃣ LOCALIZAÇÃO CORRETA → AGORA SIM VERIFICAR ROSTO
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      setLoading(false);
+      setModalFailVisible(true);
+      setModalMessage('Usuário não encontrado. Faça login novamente.');
+      return;
+    }
 
-      if (distancia > RAIO_PERMITIDO) {
-        setVerificationResult('fail');
-        setModalMessage(`Você está fora do raio permitido de ${RAIO_PERMITIDO}m.`);
-        return;
-      }
+    const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: capturedPhoto.base64, user_id: userId })
+    });
 
-      // 6️⃣ Registrar ponto
-      const res = await api.post('/ponto', { status, localizacao: coords });
-      const pontoRegistrado = res.data.ponto;
+    const verifyData = await verifyResponse.json();
 
-      // Atualiza lista instantaneamente
-      setPontos(prev => [...prev, pontoRegistrado]);
-
-      // 7️⃣ Overlay de sucesso final
-      setVerificationResult('success');
-      setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
-    } catch (err) {
-      console.error(err);
+    if (!verifyResponse.ok) {
+      // ❌ RECONHECIMENTO FALHOU → overlay de falha
       setLoading(false);
       setVerificationResult('fail');
-      setModalMessage('Erro ao conectar ao servidor.');
+      setModalMessage("Falha de reconhecimento!");
+      return;
     }
-  };
+
+    // 4️⃣ SE LOCALIZAÇÃO + ROSTO OK → REGISTRAR PONTO
+    const res = await api.post('/ponto', { status, localizacao: coords });
+    const pontoRegistrado = res.data.ponto;
+    setPontos(prev => [...prev, pontoRegistrado]);
+
+    setLoading(false);
+
+    // ✔ Sucesso → overlay verde
+    setVerificationResult('success');
+    setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
+
+  } catch (err) {
+    console.error(err);
+    setLoading(false);
+    setModalFailVisible(true);
+    setModalMessage("Erro ao conectar ao servidor.");
+  }
+};
 
   useEffect(() => {
     fetchUser();
@@ -257,7 +258,7 @@ export default function Ponto() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+    <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 20 }}>
       <PontoHeader horario={undefined} data={undefined} />
 
       {/* Overlay de carregamento */}
@@ -378,7 +379,20 @@ export default function Ponto() {
           );
         })}
       </View>
-      <HistoricoPontos historico={historico} />
+      <TouchableOpacity style={styles.botaoHistorico} onPress={() => setMostrarHistorico(prev => !prev)}>
+        <Text style={styles.botaoHistoricoTexto}>{mostrarHistorico ? 'Ocultar histórico ▲' : 'Ver histórico ▼'}</Text>
+      </TouchableOpacity>
+
+      {mostrarHistorico && (
+        <View
+          onLayout={event => {
+            const { y } = event.nativeEvent.layout;
+            scrollRef.current?.scrollTo({ y, animated: true });
+          }}
+        >
+          <HistoricoPontos historico={historico} />
+        </View>
+      )}
 
       {/* Modal de sucesso */}
       <Modal
@@ -418,11 +432,6 @@ export default function Ponto() {
 }
 
 const styles = StyleSheet.create({
-  takePhotoButton: {
-    backgroundColor: '#ff69b4',
-    padding: 12,
-    borderRadius: 10
-  },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold'
@@ -559,5 +568,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold',
     marginTop: 15,
     textAlign: 'center'
+  },
+  botaoHistorico: {
+    marginTop: 20,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#3C188F',
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    borderRadius: 10,
+    alignSelf: 'center'
+  },
+  botaoHistoricoTexto: {
+    color: '#3C188F',
+    fontSize: 16,
+    fontWeight: 'bold'
   }
 });

@@ -19,12 +19,23 @@ import { AuthContext, Funcionario } from '../../contexts/AuthContext';
 import FuncionarioCardSelect from '../../components/admin/FuncionarioCardSelect';
 import { listarEscalasPorFuncionario, Escala } from '../../services/userService';
 import LottieView from 'lottie-react-native';
+import { useToast } from '../../contexts/ToastContext';
 
 // ---------------- CONFIGURAÇÃO DE LOCALE DO CALENDÁRIO ----------------
 LocaleConfig.locales['pt-br'] = {
   monthNames: [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro'
   ],
   monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
   dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
@@ -72,6 +83,7 @@ export default function CriarEscalas() {
   const [erroChefe, setErroChefe] = useState(false);
   const [animacao, setAnimacao] = useState(false);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const { showToast } = useToast();
 
   const [semanasBloqueadas, setSemanasBloqueadas] = useState<string[]>([]);
 
@@ -115,15 +127,27 @@ export default function CriarEscalas() {
     }
   }, [searchText, usuarios]);
 
+  // ---------------- CARREGAR ESCALAS DO FUNCIONÁRIO SELECIONADO ----------------
   useEffect(() => {
-    if (funcionarioSelecionado && semanaInicio) {
-      const atualizarSemana = async () => {
-        const semanaComEscalas = await marcarEscalasExistentes(funcionarioSelecionado, semana);
-        setSemana(semanaComEscalas);
-      };
-      atualizarSemana();
-    }
-  }, [funcionarioSelecionado, semanaInicio]);
+    const carregarEscalasFuncionario = async () => {
+      if (funcionarioSelecionado) {
+        try {
+          const escalasExistentes: Escala[] = await listarEscalasPorFuncionario(funcionarioSelecionado._id);
+          const semanasExistentes = escalasExistentes.map(e => {
+            const data = new Date(e.data);
+            const domingo = new Date(data);
+            domingo.setDate(data.getDate() - data.getDay());
+            return formatDataLocal(domingo); // YYYY-MM-DD
+          });
+          setSemanasBloqueadas(semanasExistentes);
+        } catch (err) {
+          console.error('Erro ao carregar escalas do funcionário:', err);
+        }
+      }
+    };
+
+    carregarEscalasFuncionario();
+  }, [funcionarioSelecionado]);
 
   // ---------------- SELEÇÃO DE FUNCIONÁRIO ----------------
   const getUserImage = (foto?: string) => {
@@ -142,36 +166,16 @@ export default function CriarEscalas() {
     setModalFuncionarios(true);
   };
 
-  const carregarSemanasBloqueadas = async (idFuncionario: string) => {
-    try {
-      const escalas: Escala[] = await listarEscalasPorFuncionario(idFuncionario);
-      const semanasSet = new Set<string>();
-
-      escalas.forEach((e: Escala) => {
-        const dataString = e.data.includes('T') ? e.data : `${e.data}T12:00:00`;
-        const data = new Date(dataString);
-
-        if (isNaN(data.getTime())) return;
-
-        const domingo = new Date(data);
-        domingo.setDate(data.getDate() - data.getDay());
-
-        const chave = formatDataLocal(domingo);
-        semanasSet.add(chave);
-      });
-
-      setSemanasBloqueadas([...semanasSet]);
-    } catch (erro: unknown) {
-      console.log("Erro ao carregar semanas:", erro);
-    }
-  };
-
   const renderFuncionarioSelecionado = () => {
     if (!funcionarioSelecionado) {
       return (
-        <TouchableOpacity style={styles.selectFuncionario} onPress={abrirModalFuncionarios}>
-          <Text style={styles.selectText}>Selecione o funcionário</Text>
-        </TouchableOpacity>
+        <View style={styles.inputWrapper}>
+          <Text style={styles.inputLabel}>Selecionar Funcionário</Text>
+
+          <TouchableOpacity style={styles.input} onPress={abrirModalFuncionarios}>
+            <Text style={styles.inputPlaceholder}>Selecione o funcionário</Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
@@ -247,7 +251,6 @@ export default function CriarEscalas() {
                       setErroChefe(true);
                     } else {
                       setFuncionarioSelecionado(f);
-                      carregarSemanasBloqueadas(f._id);
                     }
                     setModalFuncionarios(false);
                   }}
@@ -270,90 +273,29 @@ export default function CriarEscalas() {
     </Modal>
   );
 
-  // ---------------- MARCAR DIAS COM ESCALA EXISTENTE ----------------
-  const marcarEscalasExistentes = async (funcionario: Funcionario, semanaAtual: DiaSemana[]) => {
-    if (!funcionario) return semanaAtual;
-
-    try {
-      const escalas = await listarEscalasPorFuncionario(funcionario._id);
-
-      // Criar uma cópia da semana (Sem ID, apenas visualização)
-      const novaSemana = semanaAtual.map(dia => ({ ...dia }));
-
-      for (const escala of escalas) {
-        const dataString = escala.data.includes('T') ? escala.data : `${escala.data}T12:00:00`;
-        const dataEscala = new Date(dataString);
-
-        const ano = dataEscala.getFullYear();
-        const mes = String(dataEscala.getMonth() + 1).padStart(2, '0');
-        const dia = String(dataEscala.getDate()).padStart(2, '0');
-        const keyEscala = `${ano}-${mes}-${dia}`;
-
-        const indexDia = novaSemana.findIndex(d => {
-          if (!d.data) return false;
-          const anoD = d.data.getFullYear();
-          const mesD = String(d.data.getMonth() + 1).padStart(2, '0');
-          const diaD = String(d.data.getDate()).padStart(2, '0');
-          const keyDia = `${anoD}-${mesD}-${diaD}`;
-          return keyDia === keyEscala;
-        });
-
-        if (indexDia >= 0) {
-          if (escala.folga) {
-            novaSemana[indexDia].modo = 'folga';
-            novaSemana[indexDia].folga = true;
-            novaSemana[indexDia].entrada = null;
-            novaSemana[indexDia].saida = null;
-          } else if (escala.horaEntrada && escala.horaSaida) {
-            novaSemana[indexDia].modo = 'horario';
-            novaSemana[indexDia].folga = false;
-
-            const dataEntrada = new Date(dataEscala);
-            const [hE, mE] = escala.horaEntrada.split(':').map(Number);
-            dataEntrada.setHours(hE, mE, 0, 0);
-            novaSemana[indexDia].entrada = dataEntrada;
-
-            const dataSaida = new Date(dataEscala);
-            const [hS, mS] = escala.horaSaida.split(':').map(Number);
-            dataSaida.setHours(hS, mS, 0, 0);
-            novaSemana[indexDia].saida = dataSaida;
-          }
-        }
-      }
-
-      return novaSemana;
-    } catch (err) {
-      console.error('Erro ao marcar escalas existentes:', err);
-      return semanaAtual;
-    }
-  };
-
   // ---------------- SELEÇÃO DE SEMANA ----------------
-  const handleSelecionarData = (dateString: string, day?: any) => {
+  const handleSelecionarData = (dateString: string) => {
     const [ano, mes, dia] = dateString.split('-').map(Number);
     const dataSelecionada = new Date(ano, mes - 1, dia);
 
     const domingo = new Date(dataSelecionada);
     domingo.setDate(dataSelecionada.getDate() - dataSelecionada.getDay());
-
-    const chaveSemana = formatDataLocal(domingo);
-
-    // ❌ VERIFICAÇÃO DE BLOQUEIO
-    if (semanasBloqueadas.includes(chaveSemana)) {
-      Alert.alert("Semana Indisponível", "Já existe uma escala criada para este funcionário nesta semana.");
-      return;
-    }
-
     const sabado = new Date(domingo);
     sabado.setDate(domingo.getDate() + 6);
+
+    // Checar se a semana está bloqueada
+    for (let d = new Date(domingo); d <= sabado; d.setDate(d.getDate() + 1)) {
+      const key = formatDataLocal(d);
+      if (semanasBloqueadas.includes(formatDataLocal(domingo))) {
+        Alert.alert('Semana Indisponível', 'Já existe uma escala criada para este funcionário nesta semana.');
+        return; // ❌ bloqueia seleção
+      }
+    }
 
     const novaSemana = semana.map((d, i) => {
       const dataDia = new Date(domingo);
       dataDia.setDate(domingo.getDate() + i);
-      return {
-        ...d,
-        data: dataDia
-      };
+      return { ...d, data: dataDia };
     });
 
     setSemanaInicio(domingo);
@@ -365,6 +307,7 @@ export default function CriarEscalas() {
   const gerarMarcacoesSemana = () => {
     const marcacoes: any = {};
 
+    // Marcar semanas bloqueadas
     semanasBloqueadas.forEach(domingoStr => {
       const [ano, mes, dia] = domingoStr.split('-').map(Number);
       const domingo = new Date(ano, mes - 1, dia);
@@ -375,26 +318,30 @@ export default function CriarEscalas() {
         const key = formatDataLocal(d);
 
         marcacoes[key] = {
-          color: "#E0E0E0",
-          textColor: "#9E9E9E",
+          color: '#E0E0E0',
+          textColor: '#9E9E9E',
           disabled: true,
-          disableTouchEvent: true
+          disableTouchEvent: true,
+          startingDay: i === 0,
+          endingDay: i === 6
         };
       }
     });
 
+    // Marcar semana selecionada
     if (semanaInicio && semanaFim) {
       const dataAtual = new Date(semanaInicio);
       while (dataAtual <= semanaFim) {
         const key = formatDataLocal(dataAtual);
 
-        marcacoes[key] = {
-          ...(marcacoes[key] || {}),
-          color: "#3C188F",
-          textColor: "#fff",
-          disabled: false,
-          disableTouchEvent: false
-        };
+        if (!marcacoes[key]) {
+          marcacoes[key] = {
+            color: '#3C188F',
+            textColor: '#fff',
+            disabled: false,
+            disableTouchEvent: false
+          };
+        }
 
         if (key === formatDataLocal(semanaInicio)) marcacoes[key].startingDay = true;
         if (key === formatDataLocal(semanaFim)) marcacoes[key].endingDay = true;
@@ -456,6 +403,13 @@ export default function CriarEscalas() {
     if (!funcionarioSelecionado || !semanaInicio || !semanaFim) {
       Alert.alert('Atenção', 'Selecione o funcionário e uma semana.');
       return;
+    }
+
+    // ❌ VERIFICAÇÃO DE BLOQUEIO ao salvar
+    const chaveSemana = formatDataLocal(semanaInicio);
+    if (semanasBloqueadas.includes(chaveSemana)) {
+      Alert.alert('Semana Indisponível', 'Já existe uma escala criada para este funcionário nesta semana.');
+      return; // impede seleção
     }
 
     try {
@@ -552,7 +506,7 @@ export default function CriarEscalas() {
           </TouchableOpacity>
           {mostrarCalendario && (
             <Calendar
-              onDayPress={day => handleSelecionarData(day.dateString, day)}
+              onDayPress={day => handleSelecionarData(day.dateString)}
               markedDates={gerarMarcacoesSemana()}
               markingType="period"
               theme={{
@@ -654,7 +608,7 @@ export default function CriarEscalas() {
                         mode="time"
                         is24Hour={true}
                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        onChange={(_, hora) => {
+                        onChange={(e: DateTimePickerEvent, hora?: Date) => {
                           if (hora && mostrarPickerHora.tipo)
                             handleHoraChange(mostrarPickerHora.index, mostrarPickerHora.tipo, hora);
                           setMostrarPickerHora({ index: -1, tipo: null });
@@ -697,7 +651,7 @@ export default function CriarEscalas() {
                 bottom: 0,
                 backgroundColor: '#ffffff82',
                 borderRadius: 20,
-                zIndex: 10,
+                zIndex: 10
               }}
             />
           )}
@@ -728,6 +682,10 @@ const styles = StyleSheet.create({
   inputWrapper: {
     marginBottom: 16,
     position: 'relative'
+  },
+  inputPlaceholder: {
+    color: '#555',
+    fontFamily: 'Poppins_400Regular'
   },
   inputLabel: {
     position: 'absolute',
@@ -1033,20 +991,18 @@ const styles = StyleSheet.create({
     tintColor: '#d32f2f'
   },
   avisoWrapper: {
-    position: 'absolute',
-    top: '40%',
-    left: 0,
-    right: 0,
-    zIndex: 20,
-    alignItems: 'center'
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20
   },
   avisoBox: {
     backgroundColor: '#3C188F',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 12,
-    marginBottom: 10,
-    maxWidth: '80%'
+    maxWidth: '80%',
+    alignItems: 'center'
   },
   avisoText: {
     color: '#fff',
@@ -1054,32 +1010,28 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins_600SemiBold'
   },
   avisoBalao: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain'
+    width: 30,
+    height: 30,
+    resizeMode: 'contain',
+    position: 'absolute',
+    top: -10,
+    right: 20
   },
   successOverlay: {
     position: 'absolute',
     left: 0,
     right: 0,
+    zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1000
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    paddingVertical: 20
   },
   successText: {
-    marginTop: -40,
-    fontSize: 18,
+    marginTop: 10,
+    fontSize: 16,
+    color: '#3C188F',
     fontFamily: 'Poppins_600SemiBold',
-    color: '#27ae60',
-    textAlign: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4
+    textAlign: 'center'
   }
 });

@@ -1,10 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Funcionario } from './FuncionarioCard';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface FuncionarioCardSelectProps {
   funcionario: Funcionario;
@@ -12,16 +8,8 @@ interface FuncionarioCardSelectProps {
 }
 
 export default function FuncionarioCardSelect({ funcionario, onSelect }: FuncionarioCardSelectProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  const toggleExpand = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(!expanded);
-  };
-
   const handlePress = () => {
     if (onSelect) onSelect(funcionario);
-    toggleExpand();
   };
 
   // Função para mapear status corretamente
@@ -72,7 +60,7 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
   };
 
   return (
-    <TouchableOpacity style={[styles.card, expanded && styles.cardExpanded]} activeOpacity={0.8} onPress={handlePress}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={handlePress}>
       <View style={styles.row}>
         <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
         <View style={{ flex: 1, marginLeft: 12 }}>
@@ -92,40 +80,7 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
         <View style={[styles.statusBox, { backgroundColor: statusColorMap[displayStatus()] || '#BDBDBD' }]}>
           <Text style={styles.statusText}>{displayStatus()}</Text>
         </View>
-
-        <TouchableOpacity onPress={toggleExpand} style={{ marginLeft: 8 }}>
-          <Image
-            source={
-              expanded
-                ? require('../../assets/images/telas-admin/icone_olho-aberto.png')
-                : require('../../assets/images/telas-admin/icone_olho-fechado.png')
-            }
-            style={{ width: 24, height: 24 }}
-          />
-        </TouchableOpacity>
       </View>
-
-      {expanded && (
-        <View style={styles.expandedContainer}>
-          <View style={styles.expandedBox}>
-            <View style={styles.row}>
-              <View style={styles.infoBox}>
-                <Text style={styles.label}>Horário:</Text>
-                <Text style={styles.value}>{funcionario.horario || '-'}</Text>
-                <Text style={styles.label}>Observação:</Text>
-                <Text style={styles.value}>{funcionario.observacao || '-'}</Text>
-              </View>
-
-              <View style={styles.infoBox}>
-                <Text style={styles.label}>Tarefas:</Text>
-                <Text style={styles.value}>{funcionario.tarefas || '-'}</Text>
-                <Text style={styles.label}>Escala:</Text>
-                <Text style={styles.value}>{funcionario.escala || '-'}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
     </TouchableOpacity>
   );
 }
@@ -141,10 +96,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2
-  },
-  cardExpanded: {
-    paddingBottom: 16
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E0E0E0'
   },
   row: {
     flexDirection: 'row',
@@ -186,26 +140,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     textAlign: 'center'
-  },
-  expandedContainer: {
-    marginTop: 12
-  },
-  expandedBox: {
-    backgroundColor: '#F8F8F8',
-    borderRadius: 8,
-    padding: 8
-  },
-  infoBox: {
-    flex: 1
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#555',
-    marginTop: 4
-  },
-  value: {
-    fontSize: 14,
-    color: '#333'
   }
 });

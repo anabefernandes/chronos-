@@ -120,8 +120,8 @@ exports.registrarPonto = async (req, res, next) => {
 
     // 📍 Local fixo de trabalho
     const LOCAL_TRABALHO = {
-      latitude: -24.025110400842813, 
-      longitude: -46.48851252645827
+      latitude: -24.00288811327477,
+      longitude: -46.4125467782417
     };
     const RAIO_PERMITIDO = 100; // metros
 
@@ -380,11 +380,10 @@ exports.meusPontos = async (req, res, next) => {
 exports.todosPontos = async (req, res, next) => {
   try {
     const pontos = await Ponto.find()
-      .populate('funcionario', 'nome email role setor foto cargaHorariaDiaria salario') 
+      .populate('funcionario', 'nome email role setor foto cargaHorariaDiaria salario')
       .sort({ horario: -1 });
     res.json(pontos);
   } catch (err) {
     next(err);
   }
 };
-

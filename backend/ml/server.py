@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify # type: ignore
 import pickle
-import pandas as pd
+import pandas as pd # type: ignore
 import os
 
 # Inicializa o Flask

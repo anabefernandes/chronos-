@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   modalFiltroOverlay: {
     position: 'absolute',
-    top: 600,
+    top: 620,
     right: 22,
     width: 150,
     zIndex: 1000

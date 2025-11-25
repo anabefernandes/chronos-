@@ -1,15 +1,26 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, FlatList } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ScrollView,
+  FlatList,
+  ActivityIndicator
+} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import api from '../../services/api';
 import Navbar from '../../components/public/Navbar';
 import DiasRegistrados, { PontoDetalhado } from '../../components/public/DiasRegistrados';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ActivityIndicator } from 'react-native';
+import LottieView from 'lottie-react-native';
 
+const timeZone = 'America/Sao_Paulo';
 const screenWidth = Dimensions.get('window').width - 40;
 
 interface RelatorioProps {
@@ -49,6 +60,7 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
   const [relatorio, setRelatorio] = useState<RelatorioType | null>(null);
   const [user, setUser] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(true);
+
   const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
   const iconeChefe = require('../../assets/images/telas-admin/icone_chefe.png');
   const iconeFuncionario = require('../../assets/images/telas-admin/icone_funcionario.png');
@@ -79,14 +91,17 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
     }
   }
 
-  async function carregarRelatorio() {
-    try {
-      const res = await api.get('/relatorio/me');
-      setRelatorio(res.data);
-    } catch (err) {
-      console.log('Erro ao carregar relatório', err);
-    }
+ async function carregarRelatorio() {
+  try {
+    const res = await api.get('/relatorio/me');
+    setRelatorio(res.data);
+  } catch (err) {
+    console.log('Erro ao carregar relatório', err);
+  } finally {
+    setCarregando(false);
   }
+}
+
 
   async function carregarRelatorioFuncionario(id: string) {
     try {
@@ -98,12 +113,17 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
       setCarregando(false);
     }
   }
+  const toLocalDate = (iso: string) => {
+    const dataUTC = new Date(iso);
+    const dataLocal = new Date(dataUTC.getTime() - dataUTC.getTimezoneOffset() * 60000);
+    return dataLocal;
+  };
 
   async function baixarPDF() {
     if (!relatorio) return;
 
-    const periodoInicio = format(parseISO(relatorio.periodo.inicio), 'dd/MM/yyyy', { locale: ptBR });
-    const periodoFim = format(parseISO(relatorio.periodo.fim), 'dd/MM/yyyy', { locale: ptBR });
+    const periodoInicio = format(toLocalDate(relatorio.periodo.inicio), 'dd/MM/yyyy', { locale: ptBR });
+    const periodoFim = format(toLocalDate(relatorio.periodo.fim), 'dd/MM/yyyy', { locale: ptBR });
 
     const pontoCores = {
       Entrada: '#4CAF50',
@@ -122,68 +142,64 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
 
     const pontosHTML = relatorio.pontosDetalhados
       .map(item => {
-        const diaSemana = format(parseISO(item.data), 'EEEE', { locale: ptBR });
-        const dataFormatada = format(parseISO(item.data), 'dd/MM/yyyy', { locale: ptBR });
+        const diaSemana = format(toLocalDate(item.data), 'EEEE', { locale: ptBR });
+        const dataFormatada = format(toLocalDate(item.data), 'dd/MM/yyyy', { locale: ptBR });
 
-        // Função bolinha compatível iOS/Android
+        const formatPontoHora = (hora?: string) => (hora ? format(toLocalDate(hora), 'HH:mm') : '-/-');
+
         const bolinha = (tipo?: string) =>
-          `<div style="
-        display:inline-block;
-        width:14px;
-        height:14px;
-        border-radius:7px;
-        background-color:${tipo ? pontoCores[tipo as keyof typeof pontoCores] : '#ccc'};
-        margin-right:5px;
-      "></div>`;
+          `<div style="display:inline-block;width:14px;height:14px;border-radius:7px;background-color:${
+            tipo ? pontoCores[tipo as keyof typeof pontoCores] : '#ccc'
+          };margin-right:5px;"></div>`;
 
         return `
-      <tr style="background-color:#f9f9f9;">
-        <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">
-          ${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}
-        </td>
-        <td style="padding:8px; border:1px solid #ddd;">${dataFormatada}</td>
-        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Entrada')}${item.entrada ? format(parseISO(item.entrada), 'HH:mm') : '-/-'}</td>
-        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Almoço')}${item.almoco ? format(parseISO(item.almoco), 'HH:mm') : '-/-'}</td>
-        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Retorno')}${item.retorno ? format(parseISO(item.retorno), 'HH:mm') : '-/-'}</td>
-        <td style="padding:8px; border:1px solid #ddd;">${bolinha('Saída')}${item.saida ? format(parseISO(item.saida), 'HH:mm') : '-/-'}</td>
-        <td style="padding:8px; border:1px solid #ddd;">${formatHoras(item.horasTrabalhadas)}</td>
-      </tr>   
-    `;
+        <tr style="background-color:#f9f9f9;">
+          <td style="padding:8px; border:1px solid #ddd; font-weight:bold;">
+            ${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}
+          </td>
+          <td style="padding:8px; border:1px solid #ddd;">${dataFormatada}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Entrada')}${formatPontoHora(item.entrada)}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Almoço')}${formatPontoHora(item.almoco)}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Retorno')}${formatPontoHora(item.retorno)}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${bolinha('Saída')}${formatPontoHora(item.saida)}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${formatHoras(item.horasTrabalhadas)}</td>
+        </tr>
+      `;
       })
       .join('');
 
     const html = `
-    <div style="font-family:sans-serif; margin:20px;">
-      <h1 style="color:#3C188F;">Relatório de Ponto</h1>
-      <p><strong>Funcionário:</strong> ${relatorio.funcionario.nome}</p>
-      <p><strong>Período:</strong> ${periodoInicio} até ${periodoFim}</p>
-      <h3 style="color:#3C188F;">Totais</h3>
-      <ul>
-        <li>Horas trabalhadas: ${formatHoras(relatorio.totais.horasTrabalhadas)}</li>
-        <li>Horas extras: ${formatHoras(relatorio.totais.horasExtras)}</li>
-        <li>Horas descontadas: ${formatHoras(relatorio.totais.horasDescontadas)}</li>
-        <li>Salário líquido: R$ ${relatorio.totais.salarioLiquido.toFixed(2)}</li>
-      </ul>
+      <div style="font-family:sans-serif; margin:20px;">
+        <h1 style="color:#3C188F;">Relatório de Ponto</h1>
+        <p><strong>Funcionário:</strong> ${relatorio.funcionario.nome}</p>
+        <p><strong>Período:</strong> ${periodoInicio} até ${periodoFim}</p>
+        <h3 style="color:#3C188F;">Totais</h3>
+        <ul>
+          <li>Horas trabalhadas: ${formatHoras(relatorio.totais.horasTrabalhadas)}</li>
+          <li>Horas extras: ${formatHoras(relatorio.totais.horasExtras)}</li>
+          <li>Horas descontadas: ${formatHoras(relatorio.totais.horasDescontadas)}</li>
+          <li>Salário líquido: R$ ${relatorio.totais.salarioLiquido.toFixed(2)}</li>
+        </ul>
 
-      <h3 style="color:#3C188F;">Pontos Detalhados</h3>
-      <table style="border-collapse:collapse; width:100%;">
-        <thead>
-          <tr style="background-color:#3C188F; color:#fff;">
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Dia</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Data</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Entrada</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Almoço</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Retorno</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Saída</th>
-            <th style="padding:8px; border:1px solid #ddd; color:#fff;">Horas</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pontosHTML}
-        </tbody>
-      </table>
-    </div>
-  `;
+        <h3 style="color:#3C188F;">Pontos Detalhados</h3>
+        <table style="border-collapse:collapse; width:100%;">
+          <thead>
+            <tr style="background-color:#3C188F; color:#fff;">
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Dia</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Data</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Entrada</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Almoço</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Retorno</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Saída</th>
+              <th style="padding:8px; border:1px solid #ddd; color:#fff;">Horas</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pontosHTML}
+          </tbody>
+        </table>
+      </div>
+    `;
 
     try {
       const { uri } = await Print.printToFileAsync({ html });
@@ -204,98 +220,125 @@ export default function Relatorio({ selectedId, voltar }: RelatorioProps) {
     );
   }
 
-  const chartData = [
-    { name: 'Horas Trabalhadas', population: relatorio!.totais.horasTrabalhadasDecimal, color: '#4CAF50' },
-    { name: 'Horas Extras', population: relatorio!.totais.horasExtrasDecimal, color: '#2196F3' },
-    { name: 'Descontadas', population: relatorio!.totais.horasDescontadasDecimal, color: '#F44336' }
-  ];
+const temPontos =
+    relatorio?.pontosDetalhados.length &&
+    (relatorio.totais.horasTrabalhadasDecimal > 0 ||
+      relatorio.totais.horasExtrasDecimal > 0 ||
+      relatorio.totais.horasDescontadasDecimal > 0);
+
+  const chartData = temPontos
+    ? [
+        { name: 'Horas Trabalhadas', population: relatorio!.totais.horasTrabalhadasDecimal, color: '#4CAF50' },
+        { name: 'Horas Extras', population: relatorio!.totais.horasExtrasDecimal, color: '#2196F3' },
+        { name: 'Descontadas', population: relatorio!.totais.horasDescontadasDecimal, color: '#F44336' }
+      ]
+    : [
+        { name: 'Sem dados', population: 1, color: '#BDBDBD' } 
+      ];
 
   return (
-    <>
-      <Navbar />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 30 }}>
-        {/* Título + botão Voltar */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-          <Text style={styles.title}>Relatório do Funcionario</Text>
-          {voltar && (
-            <TouchableOpacity onPress={voltar} style={styles.btnSmall}>
-              <Text style={styles.btnSmallText}>Voltar</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+  <>
+    <Navbar />
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 30 }}>
 
-        <View style={styles.infoContainer}>
+      {/* Título + botão Voltar */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+        <Text style={styles.title}>Relatório do Funcionário</Text>
+        {voltar && (
+          <TouchableOpacity onPress={voltar} style={styles.btnSmall}>
+            <Text style={styles.btnSmallText}>Voltar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Se NÃO tiver escalas — mostrar aviso e parar aqui */}
+      {relatorio && relatorio.pontosDetalhados.length === 0 ? (
+        <View style={{ alignItems: 'center', marginTop: 40 }}>
+          <LottieView
+            source={require('../../assets/lottie/sem_dados.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#555', marginBottom: 30 }}>
+            Não há escalas registradas.
+          </Text>
+
+          <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
+            <Text style={styles.btnText}>📄 Baixar PDF</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
           {/* Informações do funcionário */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-            <Image
-              source={getUserImage(relatorio!.funcionario.foto)}
-              style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{relatorio!.funcionario.nome}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <Image
-                  source={getRoleIcon(relatorio!.funcionario.role)}
-                  style={{ width: 18, height: 18, marginRight: 6 }}
+          <View style={styles.infoContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+              <Image
+                source={getUserImage(relatorio!.funcionario.foto)}
+                style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }}
+              />
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{relatorio!.funcionario.nome}</Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                  <Image source={getRoleIcon(relatorio!.funcionario.role)} style={{ width: 18, height: 18, marginRight: 6 }} />
+                  <Text style={{ fontSize: 14 }}>
+                    {relatorio!.funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}
+                  </Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <Image source={setorIcon} style={{ width: 18, height: 18, marginRight: 6 }} />
+                  <Text style={{ fontSize: 14 }}>{relatorio!.funcionario.setor || 'Sem setor'}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Gráfico só aparece se tiver escalas */}
+            {relatorio && relatorio.pontosDetalhados.length > 0 && (
+              <View style={{ alignItems: 'center', marginTop: 10 }}>
+                <PieChart
+                  data={chartData}
+                  width={screenWidth - 20}
+                  height={180}
+                  accessor="population"
+                  backgroundColor="transparent"
+                  paddingLeft="-15"
+                  hasLegend={true}
+                  chartConfig={{ color: () => '#000', labelColor: () => '#000', decimalPlaces: 1 }}
+                  center={[0, 0]}
                 />
-                <Text style={{ fontSize: 14 }}>
-                  {relatorio!.funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}
-                </Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                <Image source={setorIcon} style={{ width: 18, height: 18, marginRight: 6 }} />
-                <Text style={{ fontSize: 14 }}>{relatorio!.funcionario.setor || 'Sem setor'}</Text>
-              </View>
-            </View>
+            )}
           </View>
 
-          {/* Linha separadora */}
-          <View style={styles.divider} />
+          <Text style={styles.subTitle}>Registrados Semanais</Text>
 
-          {/* Gráfico */}
-          <View style={{ alignItems: 'center', marginTop: 10 }}>
-            <PieChart
-              data={chartData}
-              width={screenWidth - 20}
-              height={180}
-              accessor="population"
-              backgroundColor="transparent"
-              paddingLeft="-15"
-              hasLegend={true}
-              chartConfig={{
-                color: () => '#000',
-                labelColor: () => '#000',
-                decimalPlaces: 1
-              }}
-              center={[0, 0]}
-            />
-          </View>
-        </View>
+          <FlatList
+            data={relatorio!.pontosDetalhados}
+            keyExtractor={(item, index) => item.data + index}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 10 }}
+            renderItem={({ item }) => (
+              <View style={styles.slide}>
+                <DiasRegistrados pontos={[item]} />
+              </View>
+            )}
+          />
 
-        <Text style={styles.subTitle}>Registrados Semanais</Text>
-
-        {/* Dias Registrados em scroll horizontal */}
-        <FlatList
-          data={relatorio!.pontosDetalhados}
-          keyExtractor={(item, index) => item.data + index}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 10 }}
-          renderItem={({ item }) => (
-            <View style={styles.slide}>
-              <DiasRegistrados pontos={[item]} />
-            </View>
-          )}
-        />
-
-        <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
-          <Text style={styles.btnText}>📄 Baixar PDF</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </>
-  );
+          <TouchableOpacity style={styles.btn} onPress={baixarPDF}>
+            <Text style={styles.btnText}>📄 Baixar PDF</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </ScrollView>
+  </>
+);
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

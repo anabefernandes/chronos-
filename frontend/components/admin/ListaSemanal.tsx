@@ -1,15 +1,15 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../../contexts/AuthContext';
+import LottieView from 'lottie-react-native';
 
 interface Props {
   escalas: any[];
   role: string | null;
-  onEdit?: (escala: any) => void;
   onDelete?: (escala: any) => void;
 }
 
-export default function ListaSemanal({ escalas, role, onEdit, onDelete }: Props) {
+export default function ListaSemanal({ escalas, role, onDelete }: Props) {
   const { usuarios } = useContext(AuthContext);
 
   const getDiaSemanaCurto = (dataString: string) => {
@@ -44,6 +44,17 @@ export default function ListaSemanal({ escalas, role, onEdit, onDelete }: Props)
   return (
     <>
       <Text style={styles.tituloLista}>Escalas Semanais</Text>
+      {escalas.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <LottieView
+            source={require('../../assets/lottie/nenhum_funcionario_encontrado.json')}
+            autoPlay
+            loop
+            style={{ width: 200, height: 200 }}
+          />
+          <Text style={styles.emptyText}>Nenhuma escala encontrada.</Text>
+        </View>
+      )}
 
       <ScrollView
         horizontal
@@ -74,16 +85,8 @@ export default function ListaSemanal({ escalas, role, onEdit, onDelete }: Props)
                     </View>
                   </View>
 
-                  {/* Ícones de ação */}
                   <View style={styles.acoesContainerInline}>
-                    <TouchableOpacity onPress={() => onEdit && onEdit(e)}>
-                      <Image
-                        source={require('../../assets/images/telas-admin/icone_editar.png')}
-                        style={styles.iconeAcao}
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => onDelete && onDelete(e)} style={{ marginLeft: 10 }}>
+                    <TouchableOpacity onPress={() => onDelete && onDelete(e)}>
                       <Image
                         source={require('../../assets/images/telas-admin/icone_excluir.png')}
                         style={styles.iconeAcao}
@@ -184,7 +187,8 @@ const styles = StyleSheet.create({
   iconeAcao: {
     width: 22,
     height: 22,
-    resizeMode: 'contain'
+    resizeMode: 'contain',
+    top: -15
   },
   foto: {
     width: 55,
@@ -226,10 +230,14 @@ const styles = StyleSheet.create({
     padding: 10
   },
   trabalhoLinha: {
-    backgroundColor: '#f1ebfcff'
+    backgroundColor: '#f3f0f9ff',
+    borderWidth: 1,
+    borderColor: '#d6c9faff'
   },
   folgaLinha: {
-    backgroundColor: '#e2f3ffff'
+    backgroundColor: '#eaf2f8ff',
+    borderWidth: 1,
+    borderColor: '#c9e1faff'
   },
   colunaData: {
     width: 68,
@@ -279,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#c6edc6'
   },
   tagSaida: {
-    backgroundColor: '#ffc8a8'
+    backgroundColor: '#CFCFCF'
   },
   tagFolgaBox: {
     backgroundColor: '#a8dbff',
@@ -315,5 +323,16 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#e5e2e2ff',
     marginVertical: 10
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40
+  },
+  emptyText: {
+    marginTop: -5,
+    fontSize: 15,
+    color: '#5d5c5eff',
+    fontFamily: 'Poppins_600SemiBold'
   }
 });

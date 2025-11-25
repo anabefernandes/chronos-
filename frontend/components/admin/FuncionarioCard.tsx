@@ -1,62 +1,26 @@
-import React, { Key, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+import React, { Key } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
 export interface Funcionario {
   id: Key | null | undefined;
   _id: string;
   nome: string;
-  email?: string;
   role: 'funcionario' | 'chefe';
-  cargo?: string;
-  cargaHorariaDiaria?: number;
   foto?: string;
   status?: 'Ativo' | 'Atraso' | 'Folga' | 'Almoço' | 'Inativo';
-  horario?: string;
-  observacao?: string;
-  tarefas?: string;
-  escala?: string;
   setor: string;
-  salario?: number;
 }
 
 interface FuncionarioCardProps {
   funcionario: Funcionario;
   onEdit?: (funcionario: Funcionario) => void;
   onDelete?: (id: string) => void;
-  onSelect?: (funcionario: Funcionario) => void;
   showActions?: boolean;
 }
 
-export default function FuncionarioCard({
-  funcionario,
-  onEdit,
-  onDelete,
-  onSelect,
-  showActions = true
-}: FuncionarioCardProps) {
-  const [expanded, setExpanded] = useState(false);
-
-  const toggleExpand = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(!expanded);
-  };
-
-  const handlePress = () => {
-    if (onSelect) {
-      onSelect(funcionario);
-    } else {
-      toggleExpand();
-    }
-  };
-
-  // Mapear status para exibição correta
+export default function FuncionarioCard({ funcionario, onEdit, onDelete, showActions = true }: FuncionarioCardProps) {
   const displayStatus = () => {
     if (!funcionario.status) return 'Inativo';
-
     switch (funcionario.status.toLowerCase()) {
       case 'almoco':
       case 'almoço':
@@ -80,16 +44,16 @@ export default function FuncionarioCard({
     Ativo: '#C1E1C1',
     Atraso: '#F4C7C3',
     Folga: '#B9D7F0',
-    Almoço: '#FFD580', // cor laranja
+    Almoço: '#FFD580',
     Inativo: '#BDBDBD'
   };
-
-  const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
 
   const getRoleIcon = () => {
     if (funcionario.role === 'chefe') return require('../../assets/images/telas-admin/icone_chefe.png');
     return require('../../assets/images/telas-admin/icone_funcionario.png');
   };
+
+  const setorIcon = require('../../assets/images/telas-admin/icone_setor.png');
 
   const getUserImage = (foto?: string) => {
     if (!foto || foto.trim() === '') return require('../../assets/images/telas-public/sem_foto.png');
@@ -102,103 +66,85 @@ export default function FuncionarioCard({
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.9} onPress={handlePress} style={[styles.card, expanded && styles.cardExpanded]}>
-      <View style={styles.header}>
-        <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.nome}>{funcionario.nome || 'NOVO USUÁRIO'}</Text>
+    <View style={styles.card}>
+      <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
 
-          <View style={styles.infoRow}>
-            <Image source={getRoleIcon()} style={styles.infoIcon} />
-            <Text style={styles.infoText}>{funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
-          </View>
+      <View style={styles.infoContainer}>
+        <Text style={styles.nome} numberOfLines={1} ellipsizeMode="tail">
+          {funcionario.nome || 'NOVO USUÁRIO'}
+        </Text>
 
-          <View style={styles.infoRow}>
-            <Image source={setorIcon} style={styles.infoIcon} />
-            <Text style={styles.infoText}>{funcionario.setor}</Text>
-          </View>
+        <View style={styles.infoRow}>
+          <Image source={getRoleIcon()} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{funcionario.role === 'chefe' ? 'Chefe' : 'Funcionário'}</Text>
         </View>
 
-        {showActions && (
-          <View style={styles.actionIcons}>
-            {onEdit && (
-              <TouchableOpacity onPress={() => onEdit(funcionario)}>
-                <Image source={require('../../assets/images/telas-admin/icone_editar.png')} style={styles.iconImage} />
-              </TouchableOpacity>
-            )}
-            {onDelete && (
-              <TouchableOpacity onPress={() => onDelete(funcionario._id)}>
-                <Image source={require('../../assets/images/telas-admin/icone_excluir.png')} style={styles.iconImage} />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        <View style={[styles.statusBox, { backgroundColor: statusColorMap[displayStatus()] || '#BDBDBD' }]}>
-          <Text style={styles.statusText}>{displayStatus()}</Text>
+        <View style={styles.infoRow}>
+          <Image source={setorIcon} style={styles.infoIcon} />
+          <Text style={styles.infoText}>{funcionario.setor}</Text>
         </View>
       </View>
 
-      {!onSelect && expanded && (
-        <View style={styles.expandedContainer}>
-          <View style={styles.row}>
-            <View style={styles.infoBox}>
-              <Text style={styles.label}>Horário:</Text>
-              <Text style={styles.value}>{funcionario.horario || '-'}</Text>
-              <Text style={styles.label}>Observação:</Text>
-              <Text style={styles.value}>{funcionario.observacao || '-'}</Text>
-            </View>
-
-            <View style={styles.infoBox}>
-              <Text style={styles.label}>Tarefas:</Text>
-              <Text style={styles.value}>{funcionario.tarefas || '-'}</Text>
-              <Text style={styles.label}>Escala:</Text>
-              <Text style={styles.value}>{funcionario.escala || '-'}</Text>
-            </View>
+      {showActions && (
+        <View style={styles.actionContainer}>
+          <View style={[styles.statusBox, { backgroundColor: statusColorMap[displayStatus()] || '#BDBDBD' }]}>
+            <Text style={styles.statusText}>{displayStatus()}</Text>
           </View>
+
+          {onEdit && (
+            <TouchableOpacity onPress={() => onEdit(funcionario)}>
+              <Image source={require('../../assets/images/telas-admin/icone_editar.png')} style={styles.iconImage} />
+            </TouchableOpacity>
+          )}
+
+          {onDelete && (
+            <TouchableOpacity onPress={() => onDelete(funcionario._id)}>
+              <Image source={require('../../assets/images/telas-admin/icone_excluir.png')} style={styles.iconImage} />
+            </TouchableOpacity>
+          )}
         </View>
       )}
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 12,
     padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#504f5322',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    borderWidth: 1.5,
-    borderColor: '#504f5322'
-  },
-  cardExpanded: {
-    borderWidth: 1.5,
-    borderColor: '#2e1b694b',
-    shadowOpacity: 0,
-    elevation: 0
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    minHeight: 70
   },
   foto: {
     width: 50,
     height: 50,
     borderRadius: 25
   },
+  infoContainer: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center'
+  },
   nome: {
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    maxWidth: 200,
+    flexShrink: 1
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2
+    marginTop: 4
   },
   infoIcon: {
     width: 18,
@@ -208,7 +154,14 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#131212ff'
+    color: '#131212ff',
+    flexShrink: 1
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginLeft: 8
   },
   statusBox: {
     minWidth: 70,
@@ -216,47 +169,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    marginLeft: 8
+    paddingHorizontal: 10
   },
   statusText: {
     fontSize: 12,
     fontWeight: 'bold'
   },
-  expandedContainer: {
-    marginTop: 12
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  },
-  infoBox: {
-    flex: 1,
-    backgroundColor: '#EEF2FF',
-    borderRadius: 10,
-    padding: 10,
-    marginHorizontal: 4,
-    borderWidth: 1,
-    borderColor: '#D1D5DB'
-  },
-  label: {
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 4
-  },
-  value: {
-    color: '#555',
-    marginBottom: 4
-  },
-  actionIcons: {
-    flexDirection: 'row',
-    marginLeft: 8,
-    gap: 8
-  },
   iconImage: {
     width: 22,
     height: 22,
-    resizeMode: 'contain',
-    marginLeft: 8
+    resizeMode: 'contain'
   }
 });

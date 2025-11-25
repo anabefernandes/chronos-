@@ -85,7 +85,9 @@ export default function CardDiaSelecionado({ diaSelecionado, escalas, onClose }:
                 key={idx}
                 style={[
                   styles.funcionarioCard,
-                  dia.folga ? { backgroundColor: '#e2f3ffff' } : { backgroundColor: '#f1ebfcff' }
+                  dia.folga
+                    ? { backgroundColor: '#eaf2f8ff', borderColor: '#c9e1faff' }
+                    : { backgroundColor: '#f3f0f9ff', borderColor: '#d6c9faff' }
                 ]}
               >
                 <View style={styles.row}>
@@ -112,7 +114,7 @@ export default function CardDiaSelecionado({ diaSelecionado, escalas, onClose }:
                     <View style={[styles.horaBox, { backgroundColor: '#C7F4C7', flex: 1, marginRight: 4 }]}>
                       <Text style={styles.horaText}>Entrada: {dia.horaEntrada}</Text>
                     </View>
-                    <View style={[styles.horaBox, { backgroundColor: '#FFD9C7', flex: 1, marginLeft: 4 }]}>
+                    <View style={[styles.horaBox, { backgroundColor: '#CFCFCF', flex: 1, marginLeft: 4 }]}>
                       <Text style={styles.horaText}>Saída: {dia.horaSaida}</Text>
                     </View>
                   </View>
@@ -165,7 +167,8 @@ const styles = StyleSheet.create({
   funcionarioCard: {
     borderRadius: 16,
     padding: 12,
-    marginBottom: 12
+    marginBottom: 12,
+    borderWidth: 1,
   },
   row: {
     flexDirection: 'row',

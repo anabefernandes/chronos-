@@ -21,9 +21,11 @@ import LottieView from 'lottie-react-native';
 export default function EnrollScreen() {
   const router = useRouter();
   const toast = useToast();
+
   const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
   const [overlayType, setOverlayType] = useState<'success' | 'error'>('success');
+
   const infoAnimated = useRef(new Animated.Value(0)).current;
   const msg1Anim = useRef(new Animated.Value(0)).current;
   const msg2Anim = useRef(new Animated.Value(0)).current;
@@ -33,6 +35,7 @@ export default function EnrollScreen() {
     if (photo) {
       msg1Anim.setValue(0);
       msg2Anim.setValue(0);
+
       Animated.sequence([
         Animated.timing(msg1Anim, {
           toValue: 1,
@@ -40,7 +43,6 @@ export default function EnrollScreen() {
           easing: Easing.out(Easing.ease),
           useNativeDriver: true
         }),
-
         Animated.timing(msg2Anim, {
           toValue: 1,
           duration: 400,
@@ -51,7 +53,7 @@ export default function EnrollScreen() {
     }
   }, [photo]);
 
-  const startAnimations = () => {
+  const startAnimations = () =>
     animatedValues.forEach((anim, i) => {
       Animated.spring(anim, {
         toValue: 1,
@@ -61,7 +63,6 @@ export default function EnrollScreen() {
         useNativeDriver: true
       }).start();
     });
-  };
 
   useEffect(() => {
     if (!photo) startAnimations();
@@ -140,26 +141,33 @@ export default function EnrollScreen() {
 
       const data = await response.json();
 
+      // --- SUCESSO ---
       if (response.ok) {
-        setOverlayType('success');
-        showOverlayFunc(); // ◀️ MOSTRA O SUCESSO E REDIRECIONA
-      } else {
-        setOverlayType('error');
-        showOverlayFunc(); // ◀️ MOSTRA O ERRO
-      }
-    } catch (error) {
-      setOverlayType('error');
-      showOverlayFunc(); // ◀️ MOSTRA O ERRO
-      console.error(error);
-    }
-  };
+        // CASO 1 — Rosto já cadastrado
+        if (data?.status === 'already_enrolled' || data?.message?.includes('já cadastrado')) {
+          toast.showToast('Atenção, seu rosto já foi cadastrado!', 'error');
+          setTimeout(() => {
+            router.replace('/telas-iniciais/perfil');
+          }, 800);
+          return;
+        }
 
-  const showOverlayFunc = () => {
-    setShowOverlay(true);
-    setTimeout(() => {
-      setShowOverlay(false);
-      if (overlayType === 'success') router.replace('/telas-iniciais/perfil');
-    }, 2500);
+        // CASO 2 — Primeiro cadastro realizado
+        toast.showToast('Rosto cadastrado com sucesso!', 'success');
+        setTimeout(() => {
+          router.replace('/telas-iniciais/perfil');
+        }, 800);
+        return;
+      }
+
+      // --- ERRO TRATADO PELO SERVIDOR ---
+      toast.showToast(data?.error || 'Não foi possível cadastrar, tente novamente.', 'error');
+    } catch (error) {
+      console.error(error);
+
+      // --- ERRO DE CONEXÃO ---
+      toast.showToast('Não foi possível cadastrar, tente novamente.', 'error');
+    }
   };
 
   const instructions = [
@@ -175,185 +183,322 @@ export default function EnrollScreen() {
   ];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {!photo ? (
-          <>
-            <Text style={styles.title}>Cadastro Facial</Text>
-            <Image source={require('../../assets/images/telas-public/reconhecimento.jpg')} style={styles.faceImage} />
+    <ScrollView contentContainerStyle={{ ...styles.container, flexGrow: 1 }}>
+      {!photo ? (
+        <>
+          <Text style={styles.title}>Cadastro Facial</Text>
 
-            <View style={styles.card}>
-              <Text style={styles.subtitle}>Pronto para capturar sua foto?{'\n'}Siga as instruções abaixo!</Text>
-            </View>
+          <Image source={require('../../assets/images/telas-public/reconhecimento.jpg')} style={styles.faceImage} />
 
-            <View style={styles.instructions}>
-              {instructions.map((item, index) => (
-                <Animated.View
-                  key={index}
-                  style={{
-                    opacity: animatedValues[index],
-                    transform: [
-                      { scale: animatedValues[index].interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }
-                    ],
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginVertical: 10
-                  }}
-                >
-                  <Image
-                    source={item.icon}
-                    style={[styles.icon, index === instructions.length - 1 && { width: 30, height: 30 }]}
-                  />
-                  <View style={styles.instructionCard}>
-                    <Text style={styles.instructionText}>{item.text}</Text>
-                  </View>
-                </Animated.View>
-              ))}
-            </View>
-
-            <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => router.replace('/telas-iniciais/perfil')}>
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.startButton} onPress={handleTakePhoto}>
-                <Text style={styles.buttonText}>Iniciar</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          <>
-            <Text style={styles.titleVisualizacao}>Pré-visualização da Foto</Text>
-            <Image source={{ uri: photo.uri }} style={styles.preview} />
-
-            <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setPhoto(null)}>
-                <Text style={styles.buttonText}>Tentar de Novo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.startButton} onPress={handleEnroll}>
-                <Text style={styles.buttonText}>Cadastrar</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Animated.View
-              style={[
-                styles.msgBubble,
-                {
-                  opacity: msg1Anim,
-                  transform: [{ translateY: msg1Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
-                }
-              ]}
-            >
-              <Image source={require('../../assets/images/telas-public/icone_robo.png')} style={styles.robotFloat} />
-              <Text style={styles.infoTitle}>Você sabia?</Text>
-              <Text style={styles.msgText}>
-                O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso.
-              </Text>
-            </Animated.View>
-
-            <Animated.View
-              style={[
-                styles.msgBubble,
-                {
-                  opacity: msg2Anim,
-                  transform: [{ translateY: msg2Anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
-                }
-              ]}
-            >
-              <Text style={styles.msgText}>Além de agilizar seus pontos e manter seus dados seguros!</Text>
-            </Animated.View>
-          </>
-        )}
-
-        {showOverlay && (
-          <View style={styles.overlay}>
-            <LottieView
-              source={
-                overlayType === 'success'
-                  ? require('../../assets/lottie/success.json')
-                  : require('../../assets/lottie/fail.json')
-              }
-              autoPlay
-              loop={false}
-              style={{ width: 200, height: 200 }}
-            />
-            <Text style={styles.overlayText}>
-              {overlayType === 'success' ? 'Cadastro facial realizado!' : 'Falha no cadastro facial.'}
-            </Text>
+          <View style={styles.card}>
+            <Text style={styles.subtitle}>Pronto para capturar sua foto?{'\n'}Siga as instruções abaixo!</Text>
           </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+
+          <View style={styles.instructions}>
+            {instructions.map((item, index) => (
+              <Animated.View
+                key={index}
+                style={{
+                  opacity: animatedValues[index],
+                  transform: [
+                    {
+                      scale: animatedValues[index].interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.8, 1]
+                      })
+                    }
+                  ],
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginVertical: 10
+                }}
+              >
+                <Image
+                  source={item.icon}
+                  style={[styles.icon, index === instructions.length - 1 && { width: 30, height: 30 }]}
+                />
+
+                <View style={styles.instructionCard}>
+                  <Text style={styles.instructionText}>{item.text}</Text>
+                </View>
+              </Animated.View>
+            ))}
+          </View>
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => router.replace('/telas-iniciais/perfil')}>
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.startButton} onPress={handleTakePhoto}>
+              <Text style={styles.buttonText}>Iniciar</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <>
+          {/* --- Tela COM foto (preview) --- */}
+          <Text style={styles.titleVisualizacao}>Pré-visualização da Foto</Text>
+
+          <Image source={{ uri: photo.uri }} style={styles.preview} />
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setPhoto(null)}>
+              <Text style={styles.buttonText}>Tentar de Novo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.startButton} onPress={handleEnroll}>
+              <Text style={styles.buttonText}>Cadastrar</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Mensagem 1 */}
+          <Animated.View
+            style={[
+              styles.msgBubble,
+              {
+                opacity: msg1Anim,
+                transform: [
+                  {
+                    translateY: msg1Anim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0]
+                    })
+                  }
+                ]
+              }
+            ]}
+          >
+            <Image source={require('../../assets/images/telas-public/icone_robo.png')} style={styles.robotFloat} />
+
+            <Text style={styles.infoTitle}>Você sabia?</Text>
+
+            <Text style={styles.msgText}>
+              O reconhecimento facial protege sua conta, garantindo que apenas você tenha acesso.
+            </Text>
+          </Animated.View>
+
+          {/* Mensagem 2 */}
+          <Animated.View
+            style={[
+              styles.msgBubble,
+              {
+                opacity: msg2Anim,
+                transform: [
+                  {
+                    translateY: msg2Anim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0]
+                    })
+                  }
+                ]
+              }
+            ]}
+          >
+            <Text style={styles.msgText}>Além de agilizar seus pontos e manter seus dados seguros!</Text>
+          </Animated.View>
+        </>
+      )}
+
+      {/* Overlay de Sucesso/Erro */}
+      {showOverlay && (
+        <View style={styles.overlay}>
+          <LottieView
+            source={
+              overlayType === 'success'
+                ? require('../../assets/lottie/success.json')
+                : require('../../assets/lottie/fail.json')
+            }
+            autoPlay
+            loop={false}
+            style={{ width: 200, height: 200 }}
+          />
+          <Text style={styles.overlayText}>
+            {overlayType === 'success' ? 'Cadastro facial realizado!' : 'Falha no cadastro facial.'}
+          </Text>
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    padding: 16,
-    paddingBottom: 50,
-    backgroundColor: '#fff'
+    padding: 20,
+    backgroundColor: '#f2f2f7'
   },
   title: {
     fontSize: 22,
+    fontFamily: 'Poppins_600SemiBold',
     fontWeight: 'bold',
-    marginBottom: 20
+    color: '#3C188F',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 50
   },
-  faceImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 20
+  titleVisualizacao: {
+    fontSize: 22,
+    fontFamily: 'Poppins_600SemiBold',
+    fontWeight: 'bold',
+    color: '#3C188F',
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 55
   },
   card: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: 16,
+    marginHorizontal: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5
+  },
+  subtitle: {
+    fontSize: 17,
+    fontFamily: 'Poppins_400Regular',
+    color: '#3C188F',
+    textAlign: 'center',
+    lineHeight: 22
+  },
+  faceImage: {
+    width: 300,
+    height: 270,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 30
+  },
+  instructions: {
+    marginHorizontal: 5
+  },
+  instructionCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 14,
+    flex: 1,
+    shadowColor: '#3C188F',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8
+  },
+  instructionText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#333'
+  },
+  icon: {
+    width: 28,
+    height: 28,
+    marginRight: 12
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginTop: 18,
     marginBottom: 20
   },
-  subtitle: { fontSize: 16, textAlign: 'center' },
-  instructions: { width: '100%' },
-  icon: { width: 40, height: 40, marginRight: 10 },
-  instructionCard: { flex: 1 },
-  instructionText: { fontSize: 14 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 20 },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#ccc',
-    padding: 12,
-    borderRadius: 10,
-    marginRight: 10,
-    alignItems: 'center'
+    backgroundColor: '#B0B0B0',
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginRight: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4
   },
   startButton: {
     flex: 1,
-    backgroundColor: '#ff69b4',
-    padding: 12,
-    borderRadius: 10,
-    marginLeft: 10,
-    alignItems: 'center'
+    backgroundColor: '#3C188F',
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginLeft: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6
   },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  titleVisualizacao: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
-  preview: { width: 250, height: 250, borderRadius: 12, marginBottom: 20 },
-  msgBubble: { backgroundColor: '#f5f5f5', padding: 12, borderRadius: 10, marginVertical: 10, width: '90%' },
-  robotFloat: { width: 40, height: 40, position: 'absolute', top: -20, left: -20 },
-  infoTitle: { fontWeight: 'bold', marginBottom: 4 },
-  msgText: { fontSize: 14 },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16
+  },
+  preview: {
+    width: 300,
+    height: 300,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 20
+  },
+  msgBubble: {
+    backgroundColor: '#dfeaf5ff',
+    padding: 16,
+    borderRadius: 18,
+    width: '88%',
+    alignSelf: 'center',
+    marginTop: 14,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  infoIcon: {
+    width: 55,
+    height: 55,
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  msgText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#3C188F',
+    textAlign: 'center',
+    fontFamily: 'Poppins_400Regular'
+  },
+  infoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4c24a9ff',
+    marginBottom: 15,
+    marginLeft: 3,
+    textAlign: 'center'
+  },
+  infoText: {
+    fontSize: 15,
+    color: '#3C188F',
+    lineHeight: 20
+  },
   overlay: {
     position: 'absolute',
-    top: '40%',
-    left: '10%',
-    right: '10%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.79)',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10
+    zIndex: 1000
   },
-  overlayText: { marginTop: 10, fontWeight: 'bold', fontSize: 16, textAlign: 'center' }
+  overlayText: {
+    marginTop: 20,
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center'
+  },
+  robotFloat: {
+    width: 60,
+    height: 60,
+    position: 'absolute',
+    top: -25,
+    right: 1,
+    zIndex: 99
+  }
 });
