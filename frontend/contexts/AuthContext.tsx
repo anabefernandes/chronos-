@@ -138,13 +138,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!userId) return;
     try {
       const notificacoes = await listarNotificacoes(userId);
-      const naoLidas = notificacoes.filter((n: any) => !n.lida).length;
-      if (showAlert && naoLidas > prevNotificacoesRef.current) {
-        Alert.alert('📢 Nova tarefa!', 'Você recebeu uma nova tarefa.');
+
+      // Filtra apenas notificações do tipo 'tarefa'
+      const naoLidas = notificacoes.filter((n: any) => !n.lida);
+   
+      if (showAlert && naoLidas.length > prevNotificacoesRef.current) {
+        Alert.alert('📢 Nova notificação!', 'Você recebeu uma nova notificação.');
         Vibration.vibrate(500);
       }
-      prevNotificacoesRef.current = naoLidas;
-      setNotificacoesNaoLidas(naoLidas);
+
+      prevNotificacoesRef.current = naoLidas.length;
+      setNotificacoesNaoLidas(naoLidas.length);
+
+      // Atualiza a referência e o estado apenas com tarefas
+      prevNotificacoesRef.current = naoLidas.length;
+      setNotificacoesNaoLidas(naoLidas.length);
     } catch (err) {
       console.log('Erro ao listar notificações:', err);
     }

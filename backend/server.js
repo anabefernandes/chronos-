@@ -10,7 +10,8 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const { startPython } = require("./pythonRunner.js");
+const { startPython } = require('./pythonRunner.js');
+const atualizarFolgas = require('./jobs/atualizarFolga');
 
 const app = express();
 
@@ -18,9 +19,11 @@ const app = express();
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*'
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*'
+  })
+);
 app.use(helmet());
 app.use(morgan('dev'));
 
@@ -36,6 +39,7 @@ const io = new Server(server, {
 });
 
 app.set('io', io);
+atualizarFolgas(io);
 
 io.on('connection', socket => {
   console.log('🟢 Usuário conectado via Socket:', socket.id);
@@ -98,7 +102,7 @@ const createAdmin = async () => {
   }
 };
 
-server.listen(PORT, "0.0.0.0", async () => {
+server.listen(PORT, '0.0.0.0', async () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   await createAdmin();
 });

@@ -21,6 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import LottieView from 'lottie-react-native';
 import HistoricoPontos from '../../components/public/HistoricoPontos';
+import Cronometro from '../../components/public/Cronometro';
 
 const { width } = Dimensions.get('window');
 
@@ -53,14 +54,14 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -24.02469729192365, //-24.005008255407475, -46.412322317781616
-  longitude: -46.488944203831636
+latitude: -24.024648294927673, //-24.005008255407475, -46.412322317781616
+      longitude: -46.488965661504366
 
   //casa ana -24.02469729192365, -46.488944203831636
 
 };
 
-const RAIO_PERMITIDO = 100;
+const RAIO_PERMITIDO = 500;
 type CapturedPhoto = { uri: string; base64?: string };
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -81,15 +82,25 @@ export default function Ponto() {
   const flatListRef = useRef<FlatList<StatusDoDia[]>>(null);
   const [localizacao, setLocalizacao] = useState<{ latitude: number; longitude: number } | null>(null);
   const [photo, setPhoto] = useState<CapturedPhoto | null>(null);
-  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
-  const [modalFailVisible, setModalFailVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+
+  // estados centralizados e únicos para overlays
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
+  const [modalMessage, setModalMessage] = useState('');
+
   const [historico, setHistorico] = useState<any[]>([]);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const historicoRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
+
+  // tempoInfo vem do endpoint /ponto/tempo-restante
+  const [tempoInfo, setTempoInfo] = useState<{
+    pontoBatido: { entrada: boolean; almoco: boolean; retorno: boolean; saida: boolean };
+    horaEntrada?: string | Date | null;
+    horaAlmoco?: string | Date | null;
+    horaSaida?: string | Date | null;
+    duracaoAlmocoMinutos?: number;
+  } | null>(null);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const isRegistered = (status: Status) => pontos.some(p => p.status === status);
@@ -98,7 +109,7 @@ export default function Ponto() {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setModalMessage('Precisamos da sua localização para registrar o ponto.');
-      setModalFailVisible(true);
+      setVerificationResult('fail');
       return null;
     }
     const location = await Location.getCurrentPositionAsync({});
@@ -134,17 +145,23 @@ export default function Ponto() {
 
   const handleVerifyAndRegister = async (status: Status) => {
     try {
-      // 1️⃣ FOTO
+      // reset previous states
+      setVerificationResult(null);
+      setModalMessage('');
+      setPhoto(null);
+
+      // 1) FOTO
       const capturedPhoto = await handleTakePhoto();
       if (!capturedPhoto?.base64) {
         setVerificationResult('fail');
         setModalMessage('Falha ao capturar a foto.');
         return;
       }
+      setPhoto(capturedPhoto);
 
       setLoading(true);
 
-      // 2️⃣ VERIFICAR LOCALIZAÇÃO ANTES DE QUALQUER COISA
+      // 2) LOCALIZAÇÃO
       const coords = await pedirPermissaoLocalizacao();
       if (!coords) {
         setLoading(false);
@@ -159,22 +176,22 @@ export default function Ponto() {
       );
 
       if (distancia > RAIO_PERMITIDO) {
-        // ❌ FORA DO RAIO — PARAR TUDO!
         setLoading(false);
-        setModalFailVisible(true);
+        setVerificationResult('fail');
         setModalMessage('Você está fora da localização permitida!');
         return;
       }
 
-      // 3️⃣ LOCALIZAÇÃO CORRETA → AGORA SIM VERIFICAR ROSTO
+      // 3) VERIFICA FACE (API externa)
       const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
         setLoading(false);
-        setModalFailVisible(true);
+        setVerificationResult('fail');
         setModalMessage('Usuário não encontrado. Faça login novamente.');
         return;
       }
 
+      // ATENÇÃO: variável de ambiente EXPO_PUBLIC_FACEAPI_URL deve estar configurada
       const verifyResponse = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -183,28 +200,30 @@ export default function Ponto() {
 
       const verifyData = await verifyResponse.json();
 
-      if (!verifyResponse.ok) {
-        // ❌ RECONHECIMENTO FALHOU → overlay de falha
+      if (!verifyResponse.ok || !verifyData || verifyData.success === false) {
         setLoading(false);
         setVerificationResult('fail');
         setModalMessage('Falha de reconhecimento!');
         return;
       }
 
-      // 4️⃣ SE LOCALIZAÇÃO + ROSTO OK → REGISTRAR PONTO
+      // 4) REGISTRAR PONTO NO BACKEND
       const res = await api.post('/ponto', { status, localizacao: coords });
       const pontoRegistrado = res.data.ponto;
+      // Atualiza array local e refaz fetch do histórico completo
       setPontos(prev => [...prev, pontoRegistrado]);
+      await fetchPontos();
+
+      // atualizar o tempoInfo (puxa do endpoint que fornece horários)
+      await carregarTempoRestante();
 
       setLoading(false);
-
-      // ✔ Sucesso → overlay verde
       setVerificationResult('success');
-      setModalMessage(`Ponto de ${capitalize(status)} registrado com sucesso!`);
+      setModalMessage(`Ponto de ${capitalize(status)}\n registrado com sucesso!`);
     } catch (err) {
-      console.error(err);
+      console.error('Erro em handleVerifyAndRegister:', err);
       setLoading(false);
-      setModalFailVisible(true);
+      setVerificationResult('fail');
       setModalMessage('Erro ao conectar ao servidor.');
     }
   };
@@ -212,7 +231,13 @@ export default function Ponto() {
   useEffect(() => {
     fetchUser();
     fetchPontos();
+    carregarTempoRestante();
   }, []);
+
+  // sempre que pontos mudarem, atualiza tempoInfo para garantir que cronometro resete
+  useEffect(() => {
+    carregarTempoRestante().catch(() => {});
+  }, [pontos]);
 
   const fetchUser = async () => {
     try {
@@ -229,9 +254,9 @@ export default function Ponto() {
       const hoje = new Date().toISOString().slice(0, 10);
       const pontosHoje = res.data.filter((p: Ponto) => new Date(p.horario).toISOString().slice(0, 10) === hoje);
       setPontos(pontosHoje);
+
       // Montar histórico agrupado por dia
       const agrupado: any = {};
-
       res.data.forEach((p: Ponto) => {
         const data = new Date(p.horario).toISOString().slice(0, 10); // yyyy-mm-dd
         const hora = new Date(p.horario).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -251,6 +276,29 @@ export default function Ponto() {
     }
   };
 
+  // chama endpoint /ponto/tempo-restante e guarda os horários esperados e flags
+  const carregarTempoRestante = async () => {
+    try {
+      const res = await api.get('/ponto/tempo-restante');
+      // backend envia: pontoBatido, horaEntrada, horaAlmoco, horaSaida, duracaoAlmocoMinutos
+      const data = res.data;
+      setTempoInfo({
+        pontoBatido: data.pontoBatido ?? {
+          entrada: false,
+          almoco: false,
+          retorno: false,
+          saida: false
+        },
+        horaEntrada: data.horaEntrada ?? null,
+        horaAlmoco: data.horaAlmoco ?? null,
+        horaSaida: data.horaSaida ?? null,
+        duracaoAlmocoMinutos: data.duracaoAlmocoMinutos ?? 60
+      });
+    } catch (err) {
+      console.log('Erro ao carregar tempo restante:', err);
+    }
+  };
+
   const slides: StatusDoDia[][] = [];
   for (let i = 0; i < statusDoDia.length; i += 2) slides.push(statusDoDia.slice(i, i + 2));
 
@@ -261,7 +309,21 @@ export default function Ponto() {
 
   return (
     <ScrollView ref={scrollRef} contentContainerStyle={{ paddingBottom: 20 }}>
-      <PontoHeader horario={undefined} data={undefined} />
+      <PontoHeader
+        horaEntrada={tempoInfo?.horaEntrada ?? user?.horaEntradaEscala ?? null}
+        duracaoAlmocoMinutos={tempoInfo?.duracaoAlmocoMinutos ?? user?.duracaoAlmoco ?? 60}
+        horaEntradaReal={pontos.find(p => p.status === 'entrada')?.horario ?? null}
+        horaAlmocoReal={pontos.find(p => p.status === 'almoco')?.horario ?? null}
+        horaRetornoReal={pontos.find(p => p.status === 'retorno')?.horario ?? null}
+        horaSaidaReal={pontos.find(p => p.status === 'saida')?.horario ?? null}
+        horaSaida={tempoInfo?.horaSaida ?? user?.horaSaidaEscala ?? null}
+        pontoBatido={{
+          entrada: pontos.some(p => p.status === 'entrada'),
+          almoco: pontos.some(p => p.status === 'almoco'),
+          retorno: pontos.some(p => p.status === 'retorno'),
+          saida: pontos.some(p => p.status === 'saida')
+        }}
+      />
 
       {/* Overlay de carregamento */}
       <Modal transparent visible={loading}>
@@ -285,11 +347,13 @@ export default function Ponto() {
             loop={false}
             style={{ width: 200, height: 200 }}
             onAnimationFinish={() => {
+              // após o sucesso, limpa estado e atualiza dados
               setVerificationResult(null);
-              setPhoto(null); // libera para bater outro ponto
+              setPhoto(null);
+              fetchPontos().catch(() => {});
             }}
           />
-          <Text style={styles.overlayText}>Rosto verificado! {'\n'}O ponto foi batido.</Text>
+          <Text style={styles.overlayText}>{modalMessage}</Text>
         </View>
       </Modal>
 
@@ -303,7 +367,7 @@ export default function Ponto() {
             style={{ width: 200, height: 200 }}
             onAnimationFinish={() => setVerificationResult(null)}
           />
-          <Text style={styles.overlayText}>Rosto não reconhecido,{'\n'} tente novamente.</Text>
+          <Text style={styles.overlayText}>{modalMessage}</Text>
         </View>
       </Modal>
 
@@ -381,6 +445,7 @@ export default function Ponto() {
           );
         })}
       </View>
+
       <TouchableOpacity style={styles.botaoHistorico} onPress={() => setMostrarHistorico(prev => !prev)}>
         <Text style={styles.botaoHistoricoTexto}>{mostrarHistorico ? 'Ocultar histórico ▲' : 'Ver histórico ▼'}</Text>
       </TouchableOpacity>
@@ -395,40 +460,6 @@ export default function Ponto() {
           <HistoricoPontos historico={historico} />
         </View>
       )}
-
-      {/* Modal de sucesso */}
-      <Modal
-        transparent
-        animationType="slide"
-        visible={modalSuccessVisible}
-        onRequestClose={() => setModalSuccessVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalBox, { backgroundColor: '#469348' }]}>
-            <Text style={styles.modalText}>{modalMessage}</Text>
-            <TouchableOpacity onPress={() => setModalSuccessVisible(false)}>
-              <Text style={styles.modalButton}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de falha */}
-      <Modal
-        transparent
-        animationType="slide"
-        visible={modalFailVisible}
-        onRequestClose={() => setModalFailVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalBox, { backgroundColor: '#AB3838' }]}>
-            <Text style={styles.modalText}>{modalMessage}</Text>
-            <TouchableOpacity onPress={() => setModalFailVisible(false)}>
-              <Text style={styles.modalButton}>Tentar Novamente</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }

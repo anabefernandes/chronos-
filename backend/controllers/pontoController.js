@@ -1,6 +1,68 @@
 const Ponto = require('../models/Ponto');
 const Holerite = require('../models/Holerite');
+const Escala = require('../models/Escala');
 const User = require('../models/User');
+const Notificacao = require('../models/Notificacao');
+
+function gerarHorarioEsperado(dataBase, horarioStr) {
+  if (!horarioStr) return null;
+  const [h, m] = horarioStr.split(':').map(Number);
+  const d = new Date(dataBase);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+exports.tempoRestante = async (req, res, next) => {
+  try {
+    const funcionarioId = req.user.id;
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const agora = new Date();
+
+    // pega os pontos do dia
+    const pontosDoDia = await Ponto.find({
+      funcionario: funcionarioId,
+      horario: { $gte: hoje, $lt: new Date(hoje.getTime() + 86400000) }
+    }).sort({ horario: 1 });
+
+    // escala do dia
+    const escala = await Escala.findOne({
+      funcionario: funcionarioId,
+      semanaInicio: { $lte: hoje },
+      semanaFim: { $gte: hoje }
+    });
+
+    const diaEscala = escala?.dias.find(d => new Date(d.data).getTime() === hoje.getTime());
+
+    // flags
+    const temEntrada = pontosDoDia.some(p => p.status === 'entrada');
+    const temAlmoco = pontosDoDia.some(p => p.status === 'almoco');
+    const temRetorno = pontosDoDia.some(p => p.status === 'retorno');
+    const temSaida = pontosDoDia.some(p => p.status === 'saida');
+
+    const horaEntrada = gerarHorarioEsperado(hoje, diaEscala?.horaEntrada);
+    const horaSaida = gerarHorarioEsperado(hoje, diaEscala?.horaSaida);
+
+    const horaAlmoco = pontosDoDia.find(p => p.status === 'almoco')?.horario || null;
+
+    res.json({
+      pontoBatido: {
+        entrada: temEntrada,
+        almoco: temAlmoco,
+        retorno: temRetorno,
+        saida: temSaida
+      },
+      horaEntrada,
+      horaAlmoco,
+      horaSaida,
+      duracaoAlmocoMinutos: 60
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
 
 // 🕐 Função atualizada para calcular horas do dia com regras completas do almoço
 function calcularHorasDoDiaComFlag(pontosDoDia) {
@@ -110,20 +172,19 @@ exports.registrarPonto = async (req, res, next) => {
     const { status, localizacao } = req.body;
     const funcionarioId = req.user.id;
 
-    if (!status) {
-      return res.status(400).json({ msg: 'Status é obrigatório' });
-    }
-
+    // Validações iniciais
+    if (!status) return res.status(400).json({ msg: 'Status é obrigatório' });
     if (!localizacao || !localizacao.latitude || !localizacao.longitude) {
       return res.status(400).json({ msg: 'Localização é obrigatória' });
     }
 
     // 📍 Local fixo de trabalho
     const LOCAL_TRABALHO = {
-      latitude: -24.02469729192365, //-24.005008255407475, -46.412322317781616
-      longitude: -46.488944203831636
+      latitude: -24.024648294927673, //-24.005008255407475, -46.412322317781616
+      longitude: -46.488965661504366
     };
-    const RAIO_PERMITIDO = 100; // metros
+    // ana: -24.024648294927673, -46.488965661504366
+    const RAIO_PERMITIDO = 500; // metros
 
     const distancia = calcularDistancia(
       localizacao.latitude,
@@ -138,61 +199,115 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    // ✅ 1. Cria o ponto
+    // 1️⃣ Criar o ponto
     const ponto = await Ponto.create({
       funcionario: funcionarioId,
       status,
+      horario: new Date(),
       localizacao
     });
 
-    // --- BUSCA O FUNCIONÁRIO AQUI (apenas uma vez, para usar horários e folgas) ---
+    const hoje = new Date(ponto.horario);
+    hoje.setHours(0, 0, 0, 0);
+
+    // 2️⃣ Verifica folga automática
+    const escalaDoDia = await Escala.findOne({
+      funcionario: funcionarioId,
+      semanaInicio: { $lte: hoje },
+      semanaFim: { $gte: hoje }
+    });
+
+    let diaEscalaHoje = null;
+    if (escalaDoDia) {
+      diaEscalaHoje = escalaDoDia.dias.find(d => {
+        const dataDia = new Date(d.data);
+        dataDia.setHours(0, 0, 0, 0);
+        return dataDia.getTime() === hoje.getTime();
+      });
+    }
+
+    if (diaEscalaHoje?.folga) {
+      const novoStatus = 'Folga';
+      await User.findByIdAndUpdate(funcionarioId, { status: novoStatus });
+      req.app.get('io').emit('statusAtualizado', { userId: funcionarioId, novoStatus });
+
+      return res.status(200).json({
+        msg: 'Hoje é dia de folga ✅',
+        novoStatus,
+        flagHorario: 'Dia de Folga',
+        ponto
+      });
+    }
+
+    // 3️⃣ Busca funcionário
     const funcionario = await User.findById(funcionarioId);
 
-    // -----------------------------
-    // Lógica mínima para gerar flagHorario
-    // -----------------------------
+    // 4️⃣ Calcula flagHorario
     let flagHorario = null;
+    if (escalaDoDia) {
+      const diaEscala = escalaDoDia.dias.find(d => {
+        const dataDia = new Date(d.data);
+        dataDia.setHours(0, 0, 0, 0);
+        return dataDia.getTime() === hoje.getTime();
+      });
 
-    // Verifica folga semanal primeiro (se configurada)
-    const hoje = new Date(ponto.horario);
-    const diaSemana = hoje.getDay(); // 0 = domingo, 6 = sábado
-    if (funcionario && Array.isArray(funcionario.folgaSemana) && funcionario.folgaSemana.includes(diaSemana)) {
-      flagHorario = 'Dia de Folga';
-    } else if (funcionario && funcionario.horarioEntrada && funcionario.horarioSaida) {
-      // Só calcula se usuário tiver horários configurados
-      const horarioEntradaEsperado = gerarHorarioEsperado(hoje, funcionario.horarioEntrada);
-      const horarioSaidaEsperada = gerarHorarioEsperado(hoje, funcionario.horarioSaida);
-
-      // limites em minutos (padrão, você pode ajustar)
-      const LIMITE_ATRASO = 5; // >5min = atraso
-      const LIMITE_ADIANTADO = 10; // <-10min = adiantado
-      const LIMITE_SAIDA_CEDO = 10; // saiu >10min antes = saída cedo
-      const LIMITE_EXTRA = 10; // saiu >10min depois = hora extra
-
-      if (status === 'entrada' && horarioEntradaEsperado) {
-        const diffEntrada = (new Date(ponto.horario) - horarioEntradaEsperado) / 60000; // min
-        if (diffEntrada > LIMITE_ATRASO) {
-          flagHorario = 'Entrada Atrasada';
-        } else if (diffEntrada < -LIMITE_ADIANTADO) {
-          flagHorario = 'Entrada Antecipada';
-        } else {
-          flagHorario = 'Entrada no Horário';
+      if (diaEscala) {
+        if (diaEscala.folga) flagHorario = 'Dia de Folga';
+        else if (status === 'entrada' && diaEscala.horaEntrada) {
+          const horarioEntradaEsperado = gerarHorarioEsperado(hoje, diaEscala.horaEntrada);
+          const diffEntrada = (ponto.horario - horarioEntradaEsperado) / 60000;
+          flagHorario = diffEntrada > 5 ? 'Entrada Atrasada' : 'Entrada no Horário';
+        } else if (status === 'saida' && diaEscala.horaSaida) {
+          const horarioSaidaEsperado = gerarHorarioEsperado(hoje, diaEscala.horaSaida);
+          const diffSaida = (ponto.horario - horarioSaidaEsperado) / 60000;
+          if (diffSaida < -10) flagHorario = 'Saída Cedo';
+          else if (diffSaida > 10) flagHorario = 'Hora Extra';
+          else flagHorario = 'Saída no Horário';
         }
       }
+    } else if (funcionario) {
+      const diaSemana = hoje.getDay();
+      if (Array.isArray(funcionario.folgaSemana) && funcionario.folgaSemana.includes(diaSemana)) {
+        flagHorario = 'Dia de Folga';
+      } else if (funcionario.horarioEntrada && funcionario.horarioSaida) {
+        const horarioEntradaEsperado = gerarHorarioEsperado(hoje, funcionario.horarioEntrada);
+        const horarioSaidaEsperada = gerarHorarioEsperado(hoje, funcionario.horarioSaida);
 
-      if (status === 'saida' && horarioSaidaEsperada) {
-        const diffSaida = (new Date(ponto.horario) - horarioSaidaEsperada) / 60000; // min
-        if (diffSaida < -LIMITE_SAIDA_CEDO) {
-          flagHorario = 'Saída Cedo';
-        } else if (diffSaida > LIMITE_EXTRA) {
-          flagHorario = 'Hora Extra';
-        } else {
-          flagHorario = 'Saída no Horário';
+        if (status === 'entrada') {
+          const diffEntrada = (ponto.horario - horarioEntradaEsperado) / 60000;
+          flagHorario = diffEntrada > 5 ? 'Entrada Atrasada' : 'Entrada no Horário';
+        }
+        if (status === 'saida') {
+          const diffSaida = (ponto.horario - horarioSaidaEsperada) / 60000;
+          if (diffSaida < -10) flagHorario = 'Saída Cedo';
+          else if (diffSaida > 10) flagHorario = 'Hora Extra';
+          else flagHorario = 'Saída no Horário';
         }
       }
     }
 
-    // ✅ 2. Define novo status (mantendo seu switch, mas com pequenos overrides)
+    // 4.1️⃣ Checagem almoço excedido
+    const almocoInicio = (
+      await Ponto.findOne({
+        funcionario: funcionarioId,
+        status: 'almoco',
+        horario: { $gte: hoje, $lt: new Date(hoje.getTime() + 24 * 60 * 60 * 1000) }
+      })
+    )?.horario;
+    const almocoFim = (
+      await Ponto.findOne({
+        funcionario: funcionarioId,
+        status: 'retorno',
+        horario: { $gte: hoje, $lt: new Date(hoje.getTime() + 24 * 60 * 60 * 1000) }
+      })
+    )?.horario;
+
+    if (almocoInicio && almocoFim) {
+      const diffAlmoco = (new Date(almocoFim) - new Date(almocoInicio)) / 60000;
+      if (diffAlmoco > 75) flagHorario = 'Excedeu Almoço';
+    }
+
+    // 5️⃣ Atualiza status do usuário
     let novoStatus = 'Inativo';
     switch (status) {
       case 'entrada':
@@ -213,22 +328,13 @@ exports.registrarPonto = async (req, res, next) => {
         break;
     }
 
-    // Overrides mínimos:
-    if (flagHorario === 'Dia de Folga') {
-      novoStatus = 'Folga';
-    } else if (flagHorario === 'Entrada Atrasada') {
-      novoStatus = 'Atraso';
-    }
+    if (flagHorario === 'Dia de Folga') novoStatus = 'Folga';
+    else if (flagHorario === 'Entrada Atrasada') novoStatus = 'Atraso';
 
     await User.findByIdAndUpdate(funcionarioId, { status: novoStatus });
+    req.app.get('io').emit('statusAtualizado', { userId: funcionarioId, novoStatus });
 
-    const io = req.app.get('io');
-    io.emit('statusAtualizado', {
-      userId: funcionarioId,
-      novoStatus
-    });
-
-    // ⚙️ Cálculo do holerite
+    // 6️⃣ Recalcular holerite
     const data = new Date(ponto.horario);
     const primeiroDia = new Date(data.getFullYear(), data.getMonth(), 1);
     const ultimoDia = new Date(data.getFullYear(), data.getMonth() + 1, 0);
@@ -244,7 +350,7 @@ exports.registrarPonto = async (req, res, next) => {
       horario: { $gte: primeiroDia, $lte: ultimoDia }
     }).sort({ horario: 1 });
 
-    // Agrupar pontos por dia
+    // Agrupa pontos por dia
     const dias = {};
     pontos.forEach(p => {
       const diaStr = new Date(p.horario).toISOString().slice(0, 10);
@@ -252,13 +358,11 @@ exports.registrarPonto = async (req, res, next) => {
       dias[diaStr].push(p);
     });
 
-    // 🧮 Calcular horas, extras e descontos
-    // (aqui usamos o funcionario já carregado acima)
+    // Calcula horas e holerite
     const cargaHoraria = funcionario?.cargaHorariaDiaria || 8;
-
-    let totalHoras = 0;
-    let totalHorasExtras = 0;
-    let totalHorasDescontadas = 0;
+    let totalHoras = 0,
+      totalHorasExtras = 0,
+      totalHorasDescontadas = 0;
     const detalhesDias = [];
 
     for (const diaStr in dias) {
@@ -266,9 +370,8 @@ exports.registrarPonto = async (req, res, next) => {
       const horas = calcularHorasDoDiaComFlag(pontosDoDia);
       totalHoras += horas;
 
-      let horasExtras = 0;
-      let horasFaltantes = 0;
-
+      let horasExtras = 0,
+        horasFaltantes = 0;
       if (horas > cargaHoraria) {
         horasExtras = horas - cargaHoraria;
         totalHorasExtras += horasExtras;
@@ -289,46 +392,29 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    // 💰 Cálculo financeiro
-    // 💰 Pegar salário mensal e carga horária diária do funcionário
+    // Calcula salário
     const salarioMensal = funcionario?.salario || 0;
-    const cargaHorariaDiaria = funcionario?.cargaHorariaDiaria || 8; // exemplo: 8h/dia
-
-    // 🗓️ Calcular dias úteis do mês (segunda a sexta)
-    function diasUteisDoMes(ano, mes) {
+    const cargaDiariaLiquida = cargaHoraria - 1;
+    const diasUteis = (() => {
       let count = 0;
-      let ultimoDia = new Date(ano, mes + 1, 0).getDate();
-
-      for (let dia = 1; dia <= ultimoDia; dia++) {
-        const d = new Date(ano, mes, dia).getDay();
-        if (d !== 0 && d !== 6) count++; // Ignora sábado (6) e domingo (0)
+      let ultimoDiaMes = new Date(data.getFullYear(), data.getMonth() + 1, 0).getDate();
+      for (let d = 1; d <= ultimoDiaMes; d++) {
+        const dia = new Date(data.getFullYear(), data.getMonth(), d).getDay();
+        if (dia !== 0 && dia !== 6) count++;
       }
       return count;
-    }
+    })();
 
-    const ano = data.getFullYear();
-    const mes = data.getMonth();
-
-    const diasUteis = diasUteisDoMes(ano, mes);
-
-    // 🕐 Carga mensal total considerando 1h de almoço (não paga)
-    const cargaDiariaLiquida = cargaHorariaDiaria - 1;
     const cargaMensalLiquida = cargaDiariaLiquida * diasUteis;
-
-    // 🎯 Valor real da hora
     const valorHora = cargaMensalLiquida > 0 ? salarioMensal / cargaMensalLiquida : 0;
-
-    const valorHoraExtra = valorHora * 1.5; // 50% adicional
+    const valorHoraExtra = valorHora * 1.5;
     const descontosFixos = holerite ? holerite.descontos : 0;
 
-    // ---- Cálculo Final ----
     const salarioBase = totalHoras * valorHora;
     const valorExtras = totalHorasExtras * valorHoraExtra;
     const valorDescontos = totalHorasDescontadas * valorHora;
-
     const salarioLiquido = salarioBase + valorExtras - valorDescontos - descontosFixos;
 
-    // 🧾 Atualizar ou criar holerite
     if (holerite) {
       holerite.totalHoras = totalHoras;
       holerite.totalHorasExtras = totalHorasExtras;
@@ -351,8 +437,36 @@ exports.registrarPonto = async (req, res, next) => {
       });
     }
 
-    // ✅ 4. Retorna resultado completo (agora com flagHorario)
-    res.status(201).json({
+    // 7️⃣ Enviar notificações
+    const enviarNotificacao = async (usuario, titulo, descricao, subtipo) => {
+      const notificacao = await Notificacao.create({
+        usuario,
+        titulo,
+        descricao,
+        tipo: 'alerta',
+        subtipo
+      });
+      req.app.get('io').to(usuario.toString()).emit('nova_notificacao', notificacao);
+    };
+    if (flagHorario && funcionarioId) {
+      switch (flagHorario) {
+        case 'Entrada Atrasada':
+          await enviarNotificacao(funcionarioId, 'Você registrou o ponto de entrada atrasado hoje.');
+          break;
+        case 'Saída Cedo':
+          await enviarNotificacao(funcionarioId, 'Você registrou o ponto de saída antes do horário previsto.');
+          break;
+        case 'Hora Extra':
+          await enviarNotificacao(funcionarioId, 'Você registrou horas extras hoje.');
+          break;
+        case 'Excedeu Almoço':
+          await enviarNotificacao(funcionarioId, 'Seu intervalo de almoço ultrapassou o limite permitido.');
+          break;
+      }
+    }
+
+    // ✅ Retorna resultado completo
+    return res.status(201).json({
       msg: 'Ponto registrado, status atualizado e holerite recalculado',
       ponto,
       novoStatus,
@@ -384,6 +498,54 @@ exports.todosPontos = async (req, res, next) => {
       .sort({ horario: -1 });
     res.json(pontos);
   } catch (err) {
+    next(err);
+  }
+};
+exports.getStatusAtual = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('status nome');
+    if (!user) {
+      return res.status(404).json({ msg: 'Usuário não encontrado' });
+    }
+
+    res.json({
+      userId,
+      status: user.status
+    });
+  } catch (err) {
+    console.error('Erro ao obter status atual:', err);
+    next(err);
+  }
+};
+
+exports.checkFolga = async (req, res, next) => {
+  try {
+    const funcionarioId = req.user.id;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const escalaHoje = await Escala.findOne({
+      funcionario: funcionarioId,
+      semanaInicio: { $lte: hoje },
+      semanaFim: { $gte: hoje }
+    });
+
+    let folga = false;
+
+    if (escalaHoje) {
+      const diaEscala = escalaHoje.dias.find(d => {
+        const dataDia = new Date(d.data);
+        dataDia.setHours(0, 0, 0, 0);
+        return dataDia.getTime() === hoje.getTime();
+      });
+      if (diaEscala?.folga) folga = true;
+    }
+
+    res.json({ folga });
+  } catch (err) {
+    console.error('Erro ao checar folga:', err);
     next(err);
   }
 };

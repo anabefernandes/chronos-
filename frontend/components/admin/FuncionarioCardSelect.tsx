@@ -12,27 +12,9 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
     if (onSelect) onSelect(funcionario);
   };
 
-  // Função para mapear status corretamente
+  // Status já vem padronizado do backend
   const displayStatus = () => {
-    if (!funcionario.status) return 'Inativo';
-
-    switch (funcionario.status.toLowerCase()) {
-      case 'almoco':
-      case 'almoço':
-        return 'Almoço';
-      case 'entrada':
-      case 'ativo':
-        return 'Ativo';
-      case 'saida':
-      case 'inativo':
-        return 'Inativo';
-      case 'folga':
-        return 'Folga';
-      case 'atraso':
-        return 'Atraso';
-      default:
-        return funcionario.status;
-    }
+    return funcionario.status || 'Inativo';
   };
 
   const statusColorMap: Record<string, string> = {
@@ -56,6 +38,7 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
     let baseURL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
     if (baseURL?.endsWith('/api')) baseURL = baseURL.replace(/\/api$/, '');
     const cleanFoto = foto.replace(/^\/+/, '');
+
     return { uri: `${baseURL}/${cleanFoto}` };
   };
 
@@ -63,6 +46,7 @@ export default function FuncionarioCardSelect({ funcionario, onSelect }: Funcion
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={handlePress}>
       <View style={styles.row}>
         <Image source={getUserImage(funcionario.foto)} style={styles.foto} />
+
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={styles.nome}>{funcionario.nome || 'NOVO USUÁRIO'}</Text>
 

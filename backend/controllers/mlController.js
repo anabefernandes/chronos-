@@ -5,13 +5,9 @@ const path = require('path');
 function chamarPython(inputData) {
   return new Promise((resolve, reject) => {
     // Caminhos possíveis do Python
-    const venvPythonWindows = path.join(__dirname, '../ml/ml.venv/Scripts/python.exe');
-    const venvPythonUnix = path.join(__dirname, '../ml/ml.venv/bin/python');
-    const pythonPath = fs.existsSync(venvPythonWindows)
-      ? venvPythonWindows
-      : fs.existsSync(venvPythonUnix)
-      ? venvPythonUnix
-      : 'python'; // fallback: Python global
+    const venvPythonWindows = path.join(__dirname, '../ml.venv/Scripts/python.exe');
+    const venvPythonUnix = path.join(__dirname, '../ml.venv/bin/python');
+    const pythonPath = fs.existsSync(__dirname, '../ml/ml.venv/Scripts/python.exe');
 
     // Caminho para o script app.py
     const appPath = path.join(__dirname, '../ml/app.py');

@@ -26,7 +26,7 @@ export default function Dashboard({ setActiveScreen }: DashboardProps) {
   ];
 
   useEffect(() => {
-    const fetchUsuarios = async () => {
+    const fetchUsuariosComStatus = async () => {
       try {
         const resFuncionarios = await api.get('/user/listarFuncionarios');
         const funcionarios = resFuncionarios.data;
@@ -34,29 +34,49 @@ export default function Dashboard({ setActiveScreen }: DashboardProps) {
         const resChefes = await api.get('/user/listarChefe');
         const chefes = resChefes.data;
 
-        const usuariosFiltrados: Funcionario[] = [...funcionarios, ...chefes].map((u: any) => ({
-          id: u._id,
-          _id: u._id,
-          nome: u.nome,
-          email: u.email,
-          role: u.role as 'funcionario' | 'chefe',
-          cargo: u.cargo,
-          foto: u.foto,
-          status: u.status as 'Ativo' | 'Atraso' | 'Almoço' | 'Inativo' | 'Folga',
-          horario: u.horario,
-          observacao: u.observacao,
-          tarefas: u.tarefas,
-          escala: u.escala,
-          setor: u.setor,
-        }));
+        const usuarios = [...funcionarios, ...chefes];
 
-        setFuncionarios(usuariosFiltrados);
+        const usuariosComStatus = await Promise.all(
+          usuarios.map(async (u: any) => {
+            try {
+              const resStatus = await api.get(`/ponto/statusAtual/${u._id}`);
+              return {
+                ...u,
+                status: resStatus.data.status
+              };
+            } catch (err) {
+              console.log('Erro ao buscar status do usuário:', u.nome);
+              return {
+                ...u,
+                status: 'Inativo'
+              };
+            }
+          })
+        );
+
+        setFuncionarios(
+          usuariosComStatus.map((u: any) => ({
+            id: u._id,
+            _id: u._id,
+            nome: u.nome,
+            email: u.email,
+            role: u.role,
+            cargo: u.cargo,
+            foto: u.foto,
+            status: u.status,
+            horario: u.horario,
+            observacao: u.observacao,
+            tarefas: u.tarefas,
+            escala: u.escala,
+            setor: u.setor
+          }))
+        );
       } catch (err) {
         console.error('Erro ao buscar usuários:', err);
       }
     };
 
-    fetchUsuarios();
+    fetchUsuariosComStatus();
   }, []);
 
   const filteredFuncionariosComFiltro =

@@ -231,3 +231,8 @@ export const listarEscalasPorFuncionario = async (funcionarioId: string) => {
     throw error;
   }
 };
+
+export const getTempoRestante = async () => {
+  const res = await api.get('/ponto/tempo-restante');
+  return res.data;
+};
