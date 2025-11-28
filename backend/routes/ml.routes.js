@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const ctrl = require('../controllers/mlcontroller');
+const ctrl = require('../controllers/mlController');
 const path = require('path');
 
 /**

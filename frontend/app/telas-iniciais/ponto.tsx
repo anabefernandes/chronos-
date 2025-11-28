@@ -82,7 +82,7 @@ export default function Ponto() {
 
   // estados centralizados e únicos para overlays
   const [loading, setLoading] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | null>(null);
+  const [verificationResult, setVerificationResult] = useState<'success' | 'fail' | 'folga' | null>(null);
   const [modalMessage, setModalMessage] = useState('');
 
   const [historico, setHistorico] = useState<any[]>([]);
@@ -142,6 +142,11 @@ export default function Ponto() {
 
   const handleVerifyAndRegister = async (status: Status) => {
     try {
+      if (user?.folgaHoje) {
+        setVerificationResult('folga');
+        setModalMessage('Você está de folga hoje!');
+        return;
+      }
       // reset previous states
       setVerificationResult(null);
       setModalMessage('');
@@ -332,6 +337,19 @@ export default function Ponto() {
             style={{ width: 200, height: 200 }}
           />
           <Text style={styles.overlayText}>Reconhecimento em andamento...</Text>
+        </View>
+      </Modal>
+
+      <Modal transparent visible={verificationResult === 'folga'}>
+        <View style={styles.overlayContainer}>
+          <LottieView
+            source={require('../../assets/lottie/folga.json')} // seu Lottie de folga
+            autoPlay
+            loop={false}
+            style={{ width: 200, height: 200 }}
+            onAnimationFinish={() => setVerificationResult(null)}
+          />
+          <Text style={styles.overlayText}>{modalMessage}</Text>
         </View>
       </Modal>
 
