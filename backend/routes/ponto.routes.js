@@ -1,8 +1,8 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/pontoController');
 const { auth, requireRole } = require('../middlewares/auth');
-console.log(ctrl);
 
+console.log(ctrl);
 
 /**
  * @swagger
@@ -72,5 +72,21 @@ router.get('/meus', auth, ctrl.meusPontos);
  *         description: Lista de pontos
  */
 router.get('/todos', auth, requireRole('admin', 'chefe'), ctrl.todosPontos);
+router.get('/statusAtual/:userId', auth, ctrl.getStatusAtual);
+router.get('/check-folga', auth, ctrl.checkFolga);
+
+/**
+ * @swagger
+ * /ponto/tempo-restante:
+ *   get:
+ *     summary: Retorna o próximo ponto e tempo restante
+ *     tags: [Ponto]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Próximo ponto e tempo restante
+ */
+router.get('/tempo-restante', auth, ctrl.tempoRestante);
 
 module.exports = router;

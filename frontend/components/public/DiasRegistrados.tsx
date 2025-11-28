@@ -25,12 +25,7 @@ const pontoCores = {
   Saída: '#F44336'
 };
 
-// Converte string ISO UTC para horário local de SP
-const toLocalDate = (iso: string) => {
-  const dataUTC = new Date(iso);
-  const dataLocal = new Date(dataUTC.getTime() - dataUTC.getTimezoneOffset() * 60000);
-  return dataLocal;
-};
+const toLocalDate = (iso: string) => new Date(iso);
 
 export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
   const formatHora = (hora?: string) => {
@@ -47,9 +42,11 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
   };
 
   const renderItem = ({ item }: { item: PontoDetalhado }) => {
-    const dataLocal = toLocalDate(item.data);
-    const diaSemana = format(dataLocal, 'EEEE', { locale: ptBR });
-    const dataFormatada = format(dataLocal, 'dd/MM/yyyy', { locale: ptBR });
+    const dataOriginal = item.data.split('T')[0]; 
+    const dataNormalize = new Date(dataOriginal + 'T12:00:00'); 
+    const dataFormatada = format(dataNormalize, 'dd/MM/yyyy', { locale: ptBR });
+
+    const diaSemana = format(dataNormalize, 'EEEE', { locale: ptBR });
 
     const pontosDia = [
       { tipo: 'Entrada', hora: item.entrada },
@@ -78,10 +75,7 @@ export default function DiasRegistrados({ pontos }: DiasRegistradosProps) {
         ))}
 
         <View style={styles.horasContainer}>
-          <Image
-            source={require('../../assets/images/telas-admin/icone_relogio.png')}
-            style={styles.horasIcon}
-          />
+          <Image source={require('../../assets/images/telas-admin/icone_relogio.png')} style={styles.horasIcon} />
           <Text style={styles.horasLabel}>Horas Trabalhadas:</Text>
           <Text style={styles.horas}>{formatHorasTrabalhadas(item.horasTrabalhadas)}</Text>
         </View>
@@ -109,11 +103,11 @@ const styles = StyleSheet.create({
     padding: 15,
     marginRight: 10,
     borderRadius: 12,
-    borderWidth: 1, 
-    borderColor: '#ddd', 
+    borderWidth: 1,
+    borderColor: '#ddd',
     shadowColor: '#000',
-    shadowOpacity: 0.2, 
-    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 5
   },

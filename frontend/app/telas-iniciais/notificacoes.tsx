@@ -73,7 +73,7 @@ export default function Notificacoes() {
         text: 'Sim',
         onPress: async () => {
           try {
-            for (const n of notificacoes) await excluirNotificacao(n._id);
+            await Promise.all(notificacoes.map(n => excluirNotificacao(n._id)));
             carregarNotificacoes();
             showToast('Todas as notificações foram excluídas.', 'success');
           } catch (err) {
@@ -96,13 +96,22 @@ export default function Notificacoes() {
 
   useEffect(() => {
     if (!userId) return;
-    const socket = io(process.env.EXPO_PUBLIC_API_URL || '', { transports: ['websocket'], reconnection: true });
-    socket.emit('join', userId);
-    socket.on('nova_notificacao', (notificacao: any) => {
-      setNotificacoes(prev => [notificacao, ...prev]);
+
+    const socket = io(process.env.EXPO_PUBLIC_API_URL || '', {
+      transports: ['websocket'],
+      reconnection: true
     });
 
+    socket.emit('join', userId);
+
+    const handleNovaNotificacao = (notificacao: any) => {
+      setNotificacoes(prev => [notificacao, ...prev]);
+    };
+
+    socket.on('nova_notificacao', handleNovaNotificacao);
+
     return () => {
+      socket.off('nova_notificacao', handleNovaNotificacao);
       socket.disconnect();
     };
   }, [userId]);
@@ -125,20 +134,59 @@ export default function Notificacoes() {
   const renderNotificacao = ({ item }: any) => {
     let corGradiente: [string, string];
     let icone: any;
-    let titulo: string;
+
+    // Título fixo do card
+    let tituloCard: string;
+
+    // Mensagem real da notificação
+    let mensagem: string = item.descricao || item.titulo || 'Sem descrição disponível';
 
     switch (item.tipo) {
       case 'escala':
-        corGradiente = ['#57b6beff', '#92dbe0ff'] as [string, string];
+        corGradiente = ['#57b6beff', '#92dbe0ff'];
         icone = require('../../assets/images/telas-public/icone_notificacao-escalas.png');
-        titulo = 'Nova Escala!';
+        tituloCard = 'Nova Escala!';
+        break;
+
+      case 'alerta':
+        switch (item.subtipo) {
+          case 'atraso':
+            corGradiente = ['#d88f8fff', '#f76b6bff'];
+            icone = require('../../assets/images/telas-admin/icone_atraso.png');
+            tituloCard = 'Atraso na Entrada';
+            break;
+
+          case 'saida':
+            corGradiente = ['#ff7961', '#ff7961'];
+            icone = require('../../assets/images/telas-public/icone_hora-cedo.png');
+            tituloCard = 'Saída Cedo';
+            break;
+
+          case 'extra':
+            corGradiente = ['#4caf50', '#80e27e'];
+            icone = require('../../assets/images/telas-public/icone_hora-extra.png');
+            tituloCard = 'Hora Extra';
+            break;
+
+          case 'almoco':
+            corGradiente = ['#f44336', '#ff7961'];
+            icone = require('../../assets/images/telas-public/icone_hora-almoco.png');
+            tituloCard = 'Excedeu Almoço';
+            break;
+
+          default:
+            corGradiente = ['#f44336', '#ff7961'];
+            icone = require('../../assets/images/telas-public/icone_hora-atraso.png');
+            tituloCard = 'Alerta!';
+            break;
+        }
         break;
 
       case 'tarefa':
       default:
-        corGradiente = ['#4aa4ed', '#6bb9f7'] as [string, string];
+        corGradiente = ['#4aa4ed', '#6bb9f7'];
         icone = require('../../assets/images/telas-public/icone_notificacao-tarefas.png');
-        titulo = 'Nova Tarefa!';
+        tituloCard = 'Nova Tarefa!';
         break;
     }
 
@@ -150,9 +198,14 @@ export default function Notificacoes() {
           </LinearGradient>
 
           <View style={styles.textoContainer}>
-            <Text style={styles.titulo}>{titulo}</Text>
-            <Text style={styles.subtitulo}>{item.titulo}</Text>
-            <Text style={styles.descricao}>{item.descricao}</Text>
+            {/* Título fixo */}
+            <Text style={styles.titulo}>{tituloCard}</Text>
+
+            {/* Subtítulo opcional (caso você queira usar depois) */}
+            {item.subtitulo ? <Text style={styles.subtitulo}>{item.subtitulo}</Text> : null}
+
+            {/* Mensagem da notificação */}
+            <Text style={styles.descricao}>{mensagem}</Text>
           </View>
 
           <TouchableOpacity onPress={() => handleExcluir(item._id)}>
@@ -214,6 +267,7 @@ export default function Notificacoes() {
               keyExtractor={item => item._id}
               contentContainerStyle={{ paddingBottom: 20 }}
               renderItem={renderNotificacao}
+              initialNumToRender={6}
             />
             {notificacoes.length > 6 && (
               <TouchableOpacity onPress={() => setMostrarTodas(!mostrarTodas)} style={styles.verMaisButton}>
@@ -301,11 +355,14 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12
+    marginRight: 12,
+   
   },
   iconeImagem: {
     width: 28,
-    height: 28
+    height: 28,
+    resizeMode: 'contain',
+    alignSelf: 'center',
   },
   textoContainer: {
     flex: 1

@@ -31,8 +31,13 @@ exports.criarOuEditarEscala = async (req, res) => {
     semanaFim.setUTCHours(23, 59, 59, 999);
 
     const nomesDias = [
-      'domingo', 'segunda-feira', 'terça-feira', 'quarta-feira',
-      'quinta-feira', 'sexta-feira', 'sábado'
+      'domingo',
+      'segunda-feira',
+      'terça-feira',
+      'quarta-feira',
+      'quinta-feira',
+      'sexta-feira',
+      'sábado'
     ];
     const diaSemana = nomesDias[dataBase.getUTCDay()];
 
@@ -54,9 +59,7 @@ exports.criarOuEditarEscala = async (req, res) => {
     if (escala) {
       tipo = 'atualizacao';
 
-      const diaIndex = escala.dias.findIndex(
-        d => new Date(d.data).toUTCString() === dataBase.toUTCString()
-      );
+      const diaIndex = escala.dias.findIndex(d => new Date(d.data).toUTCString() === dataBase.toUTCString());
 
       if (diaIndex >= 0) {
         escala.dias[diaIndex] = {
@@ -127,19 +130,21 @@ exports.criarOuEditarEscala = async (req, res) => {
     // Enviar via socket
     const io = req.app.get('io');
     io.to(funcionario.toString()).emit('nova_notificacao', notificacao);
-
+    
+    await User.findByIdAndUpdate(funcionario, {
+      horaEntradaEscala: formatarHora(horaEntrada),
+      horaSaidaEscala: formatarHora(horaSaida),
+      folgaHoje: !!folga
+    });
     return res.status(201).json({
       msg: tipo === 'nova' ? 'Escala semanal criada com sucesso!' : 'Escala semanal atualizada!',
       escala
     });
-
   } catch (err) {
     console.error('Erro ao criar/editar escala semanal:', err);
     res.status(500).json({ msg: 'Erro interno ao criar/editar escala semanal' });
   }
 };
-
-
 
 //
 //  🗑️ EXCLUIR ESCALA
@@ -157,14 +162,11 @@ exports.excluirEscala = async (req, res) => {
     await Escala.findByIdAndDelete(id);
 
     return res.status(200).json({ msg: 'Escala excluída com sucesso!' });
-
   } catch (error) {
     console.error('Erro ao excluir escala:', error);
     return res.status(500).json({ msg: 'Erro interno do servidor.' });
   }
 };
-
-
 
 //
 //  📌 MINHAS ESCALAS
@@ -178,7 +180,6 @@ exports.minhasEscalas = async (req, res) => {
       .sort({ semanaInicio: 1 });
 
     res.json(escalas);
-
   } catch (err) {
     console.error('Erro ao listar escalas do funcionário:', err);
     res.status(500).json({ msg: 'Erro ao listar suas escalas' });
@@ -187,19 +188,14 @@ exports.minhasEscalas = async (req, res) => {
 
 exports.todasEscalas = async (req, res) => {
   try {
-    const escalas = await Escala.find()
-      .populate('funcionario', 'nome foto setor role')
-      .sort({ semanaInicio: -1 });
+    const escalas = await Escala.find().populate('funcionario', 'nome foto setor role').sort({ semanaInicio: -1 });
 
     res.json(escalas);
-
   } catch (err) {
     console.error('Erro ao listar todas as escalas:', err);
     res.status(500).json({ msg: 'Erro ao listar escalas' });
   }
 };
-
-
 
 //
 //  📌 ESCALAS POR FUNCIONÁRIO (usada pela rota /:funcionarioId)
@@ -217,14 +213,11 @@ exports.escalasPorFuncionario = async (req, res) => {
       .sort({ semanaInicio: 1 });
 
     res.json(escalas);
-
   } catch (err) {
     console.error('Erro ao buscar escalas do funcionário:', err);
     res.status(500).json({ msg: 'Erro ao buscar escalas do funcionário.' });
   }
 };
-
-
 
 //
 //  ⏰ HORÁRIO DO DIA
@@ -267,7 +260,6 @@ exports.horarioDoDia = async (req, res) => {
       horaEntrada: dia.horaEntrada,
       horaSaida: dia.horaSaida
     });
-
   } catch (err) {
     console.error('Erro ao buscar horário do dia:', err);
     res.status(500).json({ msg: 'Erro ao buscar horário do dia.' });

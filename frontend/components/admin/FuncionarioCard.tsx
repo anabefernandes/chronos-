@@ -19,25 +19,9 @@ interface FuncionarioCardProps {
 }
 
 export default function FuncionarioCard({ funcionario, onEdit, onDelete, showActions = true }: FuncionarioCardProps) {
+  // Status já vem padronizado do backend
   const displayStatus = () => {
-    if (!funcionario.status) return 'Inativo';
-    switch (funcionario.status.toLowerCase()) {
-      case 'almoco':
-      case 'almoço':
-        return 'Almoço';
-      case 'entrada':
-      case 'ativo':
-        return 'Ativo';
-      case 'saida':
-      case 'inativo':
-        return 'Inativo';
-      case 'folga':
-        return 'Folga';
-      case 'atraso':
-        return 'Atraso';
-      default:
-        return funcionario.status;
-    }
+    return funcionario.status || 'Inativo';
   };
 
   const statusColorMap: Record<string, string> = {
@@ -61,6 +45,7 @@ export default function FuncionarioCard({ funcionario, onEdit, onDelete, showAct
 
     let baseURL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
     if (baseURL?.endsWith('/api')) baseURL = baseURL.replace(/\/api$/, '');
+
     const cleanFoto = foto.replace(/^\/+/, '');
     return { uri: `${baseURL}/${cleanFoto}` };
   };

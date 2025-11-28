@@ -6,16 +6,40 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { AuthContext } from '../../contexts/AuthContext';
 import { listarNotificacoes } from '../../services/userService';
+import Cronometro from './Cronometro';
+
 import { io } from 'socket.io-client';
 
 interface PontoHeaderProps {
   horario?: string;
   data?: string;
+
+  horaEntrada?: string | Date | null;
+  duracaoAlmocoMinutos?: number;
+  horaAlmocoReal?: string | Date | null;
+  horaRetornoReal?: string | Date | null;
+  horaEntradaReal?: string | Date | null;
+  horaSaidaReal?: string | Date | null;
+  horaSaida?: string | Date | null;
+  pontoBatido?: any;
 }
 
-export default function PontoHeader({ horario: backendHorario, data: backendData }: PontoHeaderProps) {
+export default function PontoHeader({
+  horario: backendHorario,
+  data: backendData,
+
+  horaEntrada,
+  duracaoAlmocoMinutos,
+  horaAlmocoReal,
+  horaRetornoReal,
+  horaEntradaReal,
+  horaSaidaReal,
+  horaSaida,
+  pontoBatido
+}: PontoHeaderProps) {
   const router = useRouter();
   const { nome, setor, getFoto, userId } = useContext(AuthContext);
+  const [mostrarCronometro, setMostrarCronometro] = useState(false);
 
   // 🔹 Normaliza a foto para aceitar require ou uri
   const fotoURL = (() => {
@@ -140,8 +164,32 @@ export default function PontoHeader({ horario: backendHorario, data: backendData
           <Text style={styles.setor}>{setor || 'Setor não informado'}</Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.horario}>{horario}</Text>
-          <Text style={styles.data}>{data}</Text>
+          {/* 🔘 BOTÃO PNG PARA ALTERNAR */}
+          <TouchableOpacity style={styles.toggleButton} onPress={() => setMostrarCronometro(prev => !prev)}>
+            <Image
+              source={require('../../assets/images/telas-public/icone_alternar.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+
+          {mostrarCronometro ? (
+            <Cronometro
+              horaEntrada={horaEntrada}
+              duracaoAlmocoMinutos={duracaoAlmocoMinutos ?? 60}
+              horaAlmocoReal={horaAlmocoReal}
+              horaRetornoReal={horaRetornoReal}
+              horaEntradaReal={horaEntradaReal}
+              horaSaidaReal={horaSaidaReal}
+              horaSaida={horaSaida}
+              pontoBatido={pontoBatido}
+            />
+          ) : (
+            <>
+              <Text style={styles.horario}>{horario}</Text>
+              <Text style={styles.data}>{data}</Text>
+            </>
+          )}
         </View>
       </View>
     </View>
@@ -198,6 +246,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#E0E0E0'
   },
+
   card: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -210,8 +259,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
-    minHeight: 100
+    minHeight: 120,
+    height: 120,
+    width: 300,
+    justifyContent: 'center'
   },
+
   horario: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -237,5 +290,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold'
+  },
+  toggleButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 6,
+    zIndex: 20
   }
 });

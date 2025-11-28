@@ -4,26 +4,29 @@ const { io } = require('../server');
 
 exports.criarNotificacao = async (req, res, next) => {
   try {
-    const { usuario, titulo, descricao, tipo } = req.body; // tipo enviado pelo frontend
+    const { usuario, titulo, descricao, tipo, subtipo } = req.body; // tipo e subtipo enviados pelo frontend
+
     if (!usuario || !titulo) {
       return res.status(400).json({ msg: 'Usuário e título são obrigatórios' });
     }
 
     const user = await User.findById(usuario);
     if (!user) return res.status(404).json({ msg: 'Usuário não encontrado' });
-
     const notificacao = await Notificacao.create({
       usuario,
       titulo,
       descricao,
-      tipo: tipo || 'tarefa' // default para 'tarefa' se não enviar
+      tipo: tipo || 'ponto',
+      subtipo: subtipo || null
     });
 
+    // Emitir notificação via socket para o usuário
     io.to(usuario).emit('nova_notificacao', {
       _id: notificacao._id,
       titulo: notificacao.titulo,
       descricao: notificacao.descricao,
       tipo: notificacao.tipo,
+      subtipo: notificacao.subtipo,
       lida: notificacao.lida,
       dataCriacao: notificacao.dataCriacao
     });
