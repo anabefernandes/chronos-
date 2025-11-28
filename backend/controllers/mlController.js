@@ -5,8 +5,8 @@ const path = require('path');
 function chamarPython(inputData) {
   return new Promise((resolve, reject) => {
     // Caminhos possíveis do Python
-    const venvPythonWindows = path.join(__dirname, '../ml_env/Scripts/python.exe');
-    const venvPythonUnix = path.join(__dirname, '../ml_env/bin/python');
+    const venvPythonWindows = path.join(__dirname, '../ml/ml.venv/Scripts/python.exe');
+    const venvPythonUnix = path.join(__dirname, '../ml/ml.venv/bin/python');
     const pythonPath = fs.existsSync(venvPythonWindows)
       ? venvPythonWindows
       : fs.existsSync(venvPythonUnix)
@@ -17,7 +17,7 @@ function chamarPython(inputData) {
     const appPath = path.join(__dirname, '../ml/app.py');
 
     const python = spawn(pythonPath, [appPath, JSON.stringify(inputData)], {
-      cwd: path.join(__dirname, '..') // garante acesso ao modelo.pkl e CSV
+      cwd: path.join(__dirname, '../ml') // garante acesso ao modelo.pkl e CSV
     });
 
     let output = '';
@@ -57,6 +57,8 @@ exports.predictPrioridade = async (req, res, next) => {
 
     res.json({ prioridade });
   } catch (err) {
+    console.error('🔥 ERRO NO PYTHON:', err);
+    res.status(500).json({ erro: 'Erro ao processar ML', detalhe: err.toString() });
     next(err);
   }
 };
