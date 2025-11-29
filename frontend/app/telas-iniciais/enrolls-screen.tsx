@@ -118,57 +118,130 @@ export default function EnrollScreen() {
   };
 
   const handleEnroll = async () => {
-    if (!photo?.base64) {
-      toast.showToast('Tire uma foto antes de cadastrar.', 'error');
+  if (!photo?.base64) {
+    toast.showToast('Tire uma foto antes de cadastrar.', 'error');
+    return;
+  }
+
+  try {
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      toast.showToast('Usuário não encontrado. Faça login novamente.', 'error');
       return;
     }
 
+    const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/enroll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        image: photo.base64
+      })
+    });
+
+    const text = await response.text(); // lê como texto primeiro
+    let data = null;
+
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        toast.showToast('Usuário não encontrado. Faça login novamente.', 'error');
-        return;
-      }
+      data = JSON.parse(text); // tenta converter para JSON
+    } catch (err) {
+      console.log('Resposta bruta do Face API:', text);
+      toast.showToast(`Erro no servidor: ${text}`, 'error');
+      return;
+    }
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/enroll`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          image: photo.base64
-        })
-      });
-
-      const data = await response.json();
-
-      // --- SUCESSO ---
-      if (response.ok) {
-        // CASO 1 — Rosto já cadastrado
-        if (data?.status === 'already_enrolled' || data?.message?.includes('já cadastrado')) {
-          toast.showToast('Atenção, seu rosto já foi cadastrado!', 'error');
-          setTimeout(() => {
-            router.replace('/telas-iniciais/perfil');
-          }, 800);
-          return;
-        }
-
-        // CASO 2 — Primeiro cadastro realizado
-        toast.showToast('Rosto cadastrado com sucesso!', 'success');
+    // --- SUCESSO ---
+    if (response.ok) {
+      // CASO 1 — Rosto já cadastrado
+      if (data?.status === 'already_enrolled' || data?.message?.includes('já cadastrado')) {
+        toast.showToast('Atenção, seu rosto já foi cadastrado!', 'error');
         setTimeout(() => {
           router.replace('/telas-iniciais/perfil');
         }, 800);
         return;
       }
 
-      // --- ERRO TRATADO PELO SERVIDOR ---
-      toast.showToast(data?.error || 'Não foi possível cadastrar, tente novamente.', 'error');
-    } catch (error) {
-      console.error(error);
-
-      // --- ERRO DE CONEXÃO ---
-      toast.showToast('Não foi possível cadastrar, tente novamente.', 'error');
+      // CASO 2 — Primeiro cadastro realizado
+      toast.showToast('Rosto cadastrado com sucesso!', 'success');
+      setTimeout(() => {
+        router.replace('/telas-iniciais/perfil');
+      }, 800);
+      return;
     }
-  };
+
+    // --- ERRO TRATADO PELO SERVIDOR ---
+    toast.showToast(data?.error || 'Não foi possível cadastrar, tente novamente.', 'error');
+  } catch (error) {
+    console.error(error);
+    // --- ERRO DE CONEXÃO ---
+    toast.showToast('Não foi possível cadastrar, tente novamente.', 'error');
+  }
+};
+
+
+//   const handleEnroll = async () => {
+//     if (!photo?.base64) {
+//       toast.showToast('Tire uma foto antes de cadastrar.', 'error');
+//       return;
+//     }
+
+//     try {
+//       const userId = await AsyncStorage.getItem('userId');
+//       if (!userId) {
+//         toast.showToast('Usuário não encontrado. Faça login novamente.', 'error');
+//         return;
+//       }
+
+//       const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/enroll`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           user_id: userId,
+//           image: photo.base64
+//         })
+//       });
+
+//       // const data = await response.json();
+
+//       let data;
+// try {
+//   data = await response.json();
+// } catch (err) {
+//   const text = await response.text();
+//   console.log("Resposta bruta do Face API:", text);
+//   toast.showToast(`Erro no servidor: ${text}`, 'error');
+//   return;
+// }
+
+
+//       // --- SUCESSO ---
+//       if (response.ok) {
+//         // CASO 1 — Rosto já cadastrado
+//         if (data?.status === 'already_enrolled' || data?.message?.includes('já cadastrado')) {
+//           toast.showToast('Atenção, seu rosto já foi cadastrado!', 'error');
+//           setTimeout(() => {
+//             router.replace('/telas-iniciais/perfil');
+//           }, 800);
+//           return;
+//         }
+
+//         // CASO 2 — Primeiro cadastro realizado
+//         toast.showToast('Rosto cadastrado com sucesso!', 'success');
+//         setTimeout(() => {
+//           router.replace('/telas-iniciais/perfil');
+//         }, 800);
+//         return;
+//       }
+
+//       // --- ERRO TRATADO PELO SERVIDOR ---
+//       toast.showToast(data?.error || 'Não foi possível cadastrar, tente novamente.', 'error');
+//     } catch (error) {
+//       console.error(error);
+
+//       // --- ERRO DE CONEXÃO ---
+//       toast.showToast('Não foi possível cadastrar, tente novamente.', 'error');
+//     }
+//   };
 
   const instructions = [
     { icon: require('../../assets/images/telas-public/icone_lampada.png'), text: 'Prefira ambientes bem iluminados.' },
