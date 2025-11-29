@@ -54,8 +54,8 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -23.999429801631802,
-  longitude: -46.43188383244882
+  latitude: -24.000213905057834,
+  longitude: -46.43175508642242
 };
 
 const RAIO_PERMITIDO = 500;
