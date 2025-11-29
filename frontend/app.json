@@ -29,8 +29,6 @@
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.anonymous.chronos"
@@ -38,6 +36,16 @@
     "web": {
       "favicon": "./assets/expoGo/logo_daweb.png"
     },
-    "plugins": ["expo-font", "expo-router", "expo-audio"]
+    "plugins": [
+      "expo-font",
+      "expo-router",
+      "expo-audio"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e8b4e91e-976d-4b09-9733-5a23ae65d463"
+      }
+    }
   }
 }
