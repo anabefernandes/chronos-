@@ -180,8 +180,8 @@ exports.registrarPonto = async (req, res, next) => {
 
     // 📍 Local fixo de trabalho
     const LOCAL_TRABALHO = {
-      latitude: -24.000213905057834,
-      longitude: -46.43175508642242
+      latitude: -24.00013549493022,
+      longitude: -46.43179800176456
     };
     //fatec -24.005000134697887, -46.41235625962236
     //casa ju -24.00013549493022, -46.43179800176456
