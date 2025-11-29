@@ -52,42 +52,90 @@ export default function Verifyscreen() {
     }
   };
 
+  // const handleVerify = async () => {
+  //   if (!photo?.base64) {
+  //     Alert.alert('Erro', 'Por favor, tire uma foto para verificar.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const userId = await AsyncStorage.getItem('userId');
+  //     if (!userId) {
+  //       Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
+  //       return;
+  //     }
+
+  //     const response = await fetch(`${process.env.EXPO_PUBLIC_FACEAPI_URL}/verify`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({
+  //         image: photo.base64,
+  //         user_id: userId
+  //       })
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       // garante que match é boolean
+  //       const isMatch = data.match === true || data.match === 'true';
+  //       Alert.alert('Resultado', isMatch ? 'Rosto reconhecido!' : 'Rosto não reconhecido.');
+  //     } else {
+  //       Alert.alert('Erro', data.error || 'Falha na verificação.');
+  //     }
+  //   } catch (error) {
+  //     Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+  //     console.error(error);
+  //   }
+  // };
+
   const handleVerify = async () => {
-    if (!photo?.base64) {
-      Alert.alert('Erro', 'Por favor, tire uma foto para verificar.');
+  if (!photo?.base64) {
+    Alert.alert('Erro', 'Por favor, tire uma foto para verificar.');
+    return;
+  }
+
+  try {
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) {
+      Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
       return;
     }
 
+    const FACE_API_URL = process.env.EXPO_PUBLIC_FACEAPI_URL;
+    console.log("Chamada para:", `${FACE_API_URL}/verify`);
+
+    const response = await fetch(`${FACE_API_URL}/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: photo.base64,
+        user_id: userId
+      })
+    });
+
+    let data;
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) {
-        Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
-        return;
-      }
-
-      const response = await fetch(`${EXPO_PUBLIC_FACEAPI_URL}/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: photo.base64,
-          user_id: userId
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // garante que match é boolean
-        const isMatch = data.match === true || data.match === 'true';
-        Alert.alert('Resultado', isMatch ? 'Rosto reconhecido!' : 'Rosto não reconhecido.');
-      } else {
-        Alert.alert('Erro', data.error || 'Falha na verificação.');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
-      console.error(error);
+      data = await response.json();
+    } catch (err) {
+      const text = await response.text();
+      console.log("Resposta bruta do Face API:", text);
+      Alert.alert('Erro', `Erro no servidor: ${text}`);
+      return;
     }
-  };
+
+    if (response.ok) {
+      const isMatch = data.match === true || data.match === 'true';
+      Alert.alert('Resultado', isMatch ? 'Rosto reconhecido!' : 'Rosto não reconhecido.');
+    } else {
+      Alert.alert('Erro', data.error || 'Falha na verificação.');
+    }
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+  }
+};
+
 
   return (
     <View style={styles.container}>

@@ -23,7 +23,7 @@ frontend/.expo/
 *.expo-shared/
 
 # Uploads temporários
-backend/uploads/
+# backend/uploads/
 
 # Logs e arquivos temporários
 *.log
