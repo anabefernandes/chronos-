@@ -1,6 +1,8 @@
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
+const ML_URL = process.env.ML_URL; // URL do serviço ML externo
 
 function chamarPython(inputData) {
   return new Promise((resolve, reject) => {
@@ -40,6 +42,25 @@ function chamarPython(inputData) {
   });
 }
 
+// exports.predictPrioridade = async (req, res, next) => {
+//   try {
+//     const { idade, temperatura, saturacao, queixa } = req.body;
+
+//     if (idade === undefined || temperatura === undefined || saturacao === undefined || !queixa) {
+//       return res.status(400).json({ msg: 'Campos obrigatórios faltando' });
+//     }
+
+//     const inputData = { idade, temperatura, saturacao, queixa };
+//     const prioridade = await chamarPython(inputData);
+
+//     res.json({ prioridade });
+//   } catch (err) {
+//     console.error('🔥 ERRO NO PYTHON:', err);
+//     res.status(500).json({ erro: 'Erro ao processar ML', detalhe: err.toString() });
+//     next(err);
+//   }
+// };
+
 exports.predictPrioridade = async (req, res, next) => {
   try {
     const { idade, temperatura, saturacao, queixa } = req.body;
@@ -49,6 +70,22 @@ exports.predictPrioridade = async (req, res, next) => {
     }
 
     const inputData = { idade, temperatura, saturacao, queixa };
+
+    // 🔥 1. SE existir ML_URL → chama o serviço ML externo
+    if (ML_URL) {
+      try {
+        const resposta = await axios.post(`${ML_URL}/predict`, inputData, {
+          timeout: 10000
+        });
+
+        return res.json({ prioridade: resposta.data.prioridade });
+      } catch (err) {
+        console.error('Erro ao chamar ML externo:', err.message);
+        return res.status(500).json({ erro: 'Erro ao consultar ML externo' });
+      }
+    }
+
+    // 🔥 2. SENÃO → usa seu Python local (spawn)
     const prioridade = await chamarPython(inputData);
 
     res.json({ prioridade });
