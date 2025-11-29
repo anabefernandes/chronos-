@@ -54,8 +54,11 @@ const colors: Record<Status, string> = {
 };
 
 const LOCAL_FIXO = {
-  latitude: -24.000213905057834,
-  longitude: -46.43175508642242
+  latitude: -24.024648294927673, 
+  longitude: -46.488965661504366
+  //fatec -24.005000134697887, -46.41235625962236
+  //casa ju -24.00013549493022, -46.43179800176456
+  //casa ana -24.02469729192365, -46.488944203831636
 };
 
 const RAIO_PERMITIDO = 500;

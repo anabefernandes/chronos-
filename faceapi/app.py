@@ -20,7 +20,8 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 # Carrega variáveis do .env
 load_dotenv()
 
-PORT = int(os.getenv("FACEAPI_PORT", 5001))
+PORT = int(os.getenv("PORT", 5000))
+
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME", "Faces")
 

@@ -1,0 +1,27 @@
+
+
+TUTORIAL DE COMO FAZER FUNCIONAR O RECONHECIMENTO FACIAL
+
+1. Crie o ambiente virtual "python -m venv venv"
+2. Ative-o "venv\Scripts\activate"
+3. Baixe o dlib na sua máquina e instale-o no seu projeto, exemplo de prompt = pip install "C:\Users\Micro\Downloads\dlib-19.24.1-cp311-cp311-win_amd64.whl"
+4. Verifique se a instalação foi feita com êxito "python -m pip show dlib"
+5. Após, instale as dependências manualmente com "pip install face_recognition==1.3.0", "pip install "numpy<2" --force-reinstall", "pip install flask face_recognition numpy pillow", "pip install flask face_recognition opencv-python numpy", "pip install pymongo"
+6. Para mostrar se as principais bibliotecas foram instaladas, rode "python -m pip show face_recognition" e "pip show numpy"
+7. Por fim, para rodar o servidor digite "python app.py" e estará pronto para teste
+
+OBSERVAÇÃO: Minha versão do python é "Python 3.11.8", se possivel testar na mesma para evitar inconsistencia (python --version)
+OBS: Se der erro no tamanho da imagem, siginifica que o numpy está numa versão mais atual e incompativel com a versão so python, a versão funcional é (Version: 1.26.4), para isso, desisntale e instale o numpy de novo 
+(pip uninstall numpy -y)
+(pip install "numpy<2" --force-reinstall)
+Python 3.11.8
+
+npm install python-shell
+
+DEPENDÊNCIAS DA PASTA FRONT DO EXPO
+npx expo install expo-image-picker
+npx expo install expo-image-manipulator
+npm install @react-navigation/native
+npm install @react-navigation/native-stack
+npx expo install react-native-screens react-native-safe-area-context
+
