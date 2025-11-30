@@ -1,87 +1,204 @@
-# Chronos – Sistema de Controle de Ponto
+# Chronos – Sistema de Controle de Ponto com Reconhecimento Facial e Geolocalização
 
-Um sistema backend para gerenciamento de ponto, escala, tarefas e holerites de funcionários, com autenticação, permissões por papel (admin, chefia, funcionário) e cálculos automáticos de horas trabalhadas.
+Sistema completo para registro de ponto, escalas, holerites e tarefas, com autenticação baseada em papéis (admin, chefia, funcionário) e módulo de reconhecimento facial integrado via API em Python + Docker.
 
+O projeto possui:
+- Backend Node.js em deploy no Render
+- API de Reconhecimento Facial em Python (Docker Hub + Render)
+- Aplicativo Mobile (React Native + Expo) com APK disponível para download
+- Machine Learning para análises internas
+- Banco MongoDB
+- Frontend configurável via variáveis de ambiente
 
-## Tecnologias Utilizadas
+---
 
-- Node.js + Express.js: Backend RESTful
-- MongoDB: Banco de dados NoSQL
-- JWT 
-- Swagger (Documentação das rotas)
-- bcryptjs 
-- Controle de papéis (admin, chefia, funcionário)
+## 🚀 Links do Projeto
 
-## Funcionalidades Implementadas
-### Usuários
-- Cadastro de usuários (admin cria chefias e funcionários)
-- Listar funcionários e chefias
-- CRUD simples de usuários (editar/excluir)
+### 📱 APK Android
+Baixe e instale o app:  
+👉 https://expo.dev/accounts/anabiafernandes/projects/chronos/builds/d29dc61d-f2ec-466a-bc75-9af89e11fce4
 
-### Ponto
+### 🌐 Backend (Node + Express) – Deploy no Render
+https://chronos-8rba.onrender.com
 
-- Registrar entrada, saída, início de almoço e retorno
-- Armazenamento com timestamp e localização
-- Consulta de pontos do usuário logado
+### 🧠 API de Reconhecimento Facial (Python + Docker) – Deploy no Render
+https://minha-faceapi-latest.onrender.com
 
-### Holerite
+---
 
-- Criação e edição de holerite automático baseado nos pontos
-- Cálculo de horas trabalhadas por dia (subtraindo almoço, máximo 1h)
-- Cálculo do salário líquido (valor por hora * horas trabalhadas – descontos)
-- Detalhamento diário das horas trabalhadas
-- Holerite do usuário logado e lista completa (admin)
+## 🔧 Tecnologias Utilizadas
 
-### Escala
+### Backend
+- Node.js + Express
+- MongoDB
+- JWT
+- Swagger
+- bcryptjs
+- RBAC (roles: admin, chefia, funcionário)
 
-- Criação e edição de escalas para funcionários 
-- Consulta de escalas próprias ou de todos (admin)
+### Machine Learning / Reconhecimento Facial
+- Python
+- OpenCV / face recognition
+- Pandas, NumPy, Scikit-learn
+- Docker Hub + Render
 
-### Tarefas  
+### Mobile
+- React Native
+- Expo
+- APK gerado via EAS Build
 
-- Criação, atualização e exclusão de tarefas (chefia/admin)
-- Consulta de tarefas por funcionário
+---
 
-### Machine Learning
+## 📦 Funcionalidades
 
-#### Para êxito do teste, cada integrante deve criar um ambiente vitual dentro do projeto que está em sua máquina. Segue o passo a passo:
+### 👤 Usuários
+- CRUD completo
+- Admin cria chefias e funcionários
+- Controle de permissões por papel
 
-1. Entre na pasta do Machine Learning com "cd backend/ml"
-2. Crie o ambiente virtual "python -m venv ml.venv"
-3. Instale as dependências "pip install pandas scikit-learn numpy joblib"
-4. Se necessário instale também o dotenv "npm install dotenv"
-5. Por fim, ainda no ambiente virtual (ml_env), faça o teste dos arquivos .py 
-"py treinar_modelo.py" e "py app.py".
-6. Para teste, a URL do ML é "http://localhost:5000/api/ml/predict", 
-e no body em JSON preencha com os dados de sua preferência
-{ "idade": 25, "temperatura": 37.8, "saturacao": 98, "queixa": "Dor de garganta e tosse leve"} 
+### ⏱ Ponto
+- Registrar entrada, saída, início e retorno do almoço
+- Registro com timestamp e localização
+- Consulta dos pontos do usuário
 
-## Configuração
+### 🧾 Relatório em PDF
+- Cálculo automático de horas trabalhadas
+- Subtração automática de almoço
+- Cálculo de salário líquido
+- Gera relatório em PDF dos pontos batidos
+- Listagem (admin) e visualização individual
 
-1. Clonar o repositório:
+### 🗓 Escala
+- Criar e editar escalas
+- Consultar escala própria ou geral
+
+### 📋 Tarefas
+- CRUD de tarefas para funcionários
+- Gestão por chefia/admin
+
+### 🤖 Machine Learning
+- Modelo para análise/diagnóstico com integração ao backend
+- API em Python consumida pelo Node
+
+---
+
+## ⚙️ Como Rodar o Projeto Localmente
+
+### 1️⃣ Clonar o repositório
 
 ```bash
 git clone https://github.com/anabefernandes/chronos-.git
 cd chronos
 ```
-3. Criar arquivo .env com as variáveis:
 
-```bash
+---
+
+# 🛠 Backend (Node.js)
+
+### 2️⃣ Criar .env no backend:
+
+```env
 PORT=5000
-MONGO_URI=<SUA PORTA MONGODB>
-JWT_SECRET=supersecreta123
+MONGO_URI=<SUA_URL_MONGO>
+JWT_SECRET=<SENHA_SEGURA>
 
 CORS_ORIGIN=*
 CREATE_SECRET=123456
 ADMIN_EMAIL=admin@email.com
 ADMIN_PASSWORD=admin123
 ADMIN_NAME=Admin
-
 ```
-4. Rodar o servidor:
+
+### 3️⃣ Instalar dependências e rodar:
 
 ```bash
+npm install
 npm run dev
+```
 
+Backend estará disponível em:  
+`http://localhost:5000`
+
+---
+
+# 🧠 Machine Learning (Python)
+
+### Configuração local (opcional)
+
+```bash
+cd backend/ml
+python -m venv ml.venv
+source ml.venv/bin/activate  # ou ml.venv\Scripts\activate no Windows
+pip install pandas scikit-learn numpy joblib python-dotenv
+```
+
+### Rodar os scripts:
+
+```bash
+python treinar_modelo.py
+python app.py
+```
+
+### Endpoint de teste:
+
+```
+POST http://localhost:5000/api/ml/predict
+```
+
+### Exemplo de body:
+
+```json
+{
+  "idade": 25,
+  "temperatura": 37.8,
+  "saturacao": 98,
+  "queixa": "Dor de garganta e tosse leve"
+}
+```
+
+---
+
+# 📱 Frontend – React Native + Expo
+
+### ✔️ 1. Usando o APK (produção)
+Basta instalar o arquivo no Android.
+
+### ✔️ 2. Rodando localmente
+
+Criar arquivo `.env` no frontend:
+
+```env
+EXPO_PUBLIC_API_URL=https://chronos-8rba.onrender.com
+EXPO_PUBLIC_FACEAPI_URL=https://minha-faceapi-latest.onrender.com
+EXPO_PUBLIC_APP_NAME=Chronos
+EXPO_PUBLIC_APP_ENV=production
+```
+
+Rodar:
+
+```bash
+npm install
+npx expo start
+```
+
+Abrir no Expo Go ou no emulador Android.
+
+---
+
+# 🐳 Reconhecimento Facial via Docker (opcional)
+
+```bash
+docker pull <seu-usuario-docker>/<nome-da-imagem>
+docker run -p 5001:5001 <seu-usuario-docker>/<nome-da-imagem>
+```
+
+---
+
+# 📘 Documentação da API
+
+Backend possui documentação via Swagger em:
+
+```
+/api-docs
 ```
 
