@@ -201,4 +201,15 @@ Backend possui documentação via Swagger em:
 ```
 /api-docs
 ```
+---
 
+## 👨‍🏫 Créditos Acadêmicos
+
+Projeto desenvolvido para as disciplinas:
+	•	Laboratório de Dispositivos Móveis – Professor Alessandro Lima
+	•	Programação para Dispositivos Móveis – Professora Eulaliane Gonçalves
+
+## 👩‍💻 Equipe de Desenvolvimento
+	•	Frontend: Júlia Lopes
+	•	Backend: Maria Eduarda Fontes
+	•	Backend: Ana Beatriz Fernandes
